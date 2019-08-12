@@ -1,0 +1,125 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+}
+
+
+canvas {
+    display: block;
+}
+
+#main_messages {
+    /*display: flex;*/
+    display: none;
+    flex-direction: column;
+    justify-content: space-between;
+    align-content: stretch;
+    position: absolute;
+    left: 20px;
+    bottom: 20px;
+    height: 300px;
+    width: 300px;
+    background: rgba(237, 250, 255, 0.73);
+    /*overflow-y: auto;*/
+    border-radius: 10px;
+    font: normal 10pt/12pt sans-serif;
+}
+
+#all_messages {
+    overflow-y: auto;
+    height: 100%;
+    opacity: 0.5;
+    padding: 5px;
+}
+
+#all_messages > div {
+    padding: 5px;
+}
+
+.admin {
+    background: red;
+    color: white;
+}
+
+#send_message {
+    opacity: 0.5;
+    border-radius: 10px;
+    flex: 0 1 auto;
+    background: white;
+    bottom: 0;
+    height: 40px;
+    width: 100%;
+}
+
+#send_message > input {
+    border: solid black 1px;
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+    padding: 5px 10px;
+    font: normal 12pt/12pt sans-serif;
+}
+
+
+.row {
+    display: block;
+    position: relative;
+    width: 100%;
+    padding: 5px;
+}
+
+
+span.nick_name {
+    font-weight: bold;
+}
+
+
+div.verified {
+
+    background: url("../images/verefied.png") #FFF;
+    background-size: 15px 15px;
+    width: 15px;
+    height: 15px;
+    float: left;
+    margin-right: 2px;
+    border-radius: 15px;
+}
+
+div.admin_verified {
+    background: url("../images/admin.png") #FFF;
+    background-size: 15px 15px;
+    width: 15px;
+    height: 15px;
+    float: left;
+    margin-right: 2px;
+    border-radius: 15px;
+}
+
+#resize_chat {
+    background: blue;
+    border-radius: 15px;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    z-index: 1;
+}
+
+#coords {
+    position: absolute;
+    bottom: 50px;
+    left: 50%;
+    transform: translate(-50%, 0);;
+    border-radius: 15px;
+    border: solid 1px black;
+    background: rgba(185, 185, 185, 0.55);
+}

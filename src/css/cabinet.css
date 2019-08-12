@@ -1,0 +1,47 @@
+#main_container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 10px;
+    background: aliceblue;
+    padding: 40px;
+}
+
+#main_header {
+    display: flex;
+    flex-direction: row;
+}
+
+#main_header  .user_name {
+    cursor: pointer;
+    font: bold 20pt/25pt sans-serif;
+}
+
+#change_user_name{
+    display: none;
+}
+
+#load_image{
+    position: relative;
+    width: 150px;
+    height: 150px;
+}
+
+#load_image:hover #load_image_label{
+    visibility: visible;
+    opacity: 1;
+}
+
+#load_image_label {
+    transition: opacity 0.5s, visibility 0.5s;
+    visibility: hidden;
+    opacity: 0;
+    background: rgba(0, 0, 0, 0.71);
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    padding: 5px 5px 7px;
+    text-align: center;
+    color: white;
+}

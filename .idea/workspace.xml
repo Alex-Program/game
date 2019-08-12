@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="011e9982-741d-4222-841e-091d212022f0" name="Default Changelist" comment="" />
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ComposerSettings">
+    <execution>
+      <executable />
+    </execution>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="HTML File" />
+        <option value="CSS File" />
+        <option value="JavaScript File" />
+      </list>
+    </option>
+  </component>
+  <component name="JsBowerSettings">
+    <node-interpreter value="project" />
+    <bower-package value="" />
+    <bower.json value="" />
+  </component>
+  <component name="PhpServers">
+    <servers>
+      <server host="game.pw" id="e022b752-ff70-4732-9ac6-0185ad8086b9" name="game.pw" />
+      <server host="www.game.pw" id="297543e6-2a11-4721-8a88-ab8a5b40f0e4" name="www.game.pw" />
+    </servers>
+  </component>
+  <component name="ProjectId" id="1OaPHa7tXg6PqTm6K9fpsp1Nqdr" />
+  <component name="PropertiesComponent">
+    <property name="DefaultHtmlFileTemplate" value="HTML File" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="javascript.nodejs.core.library.configured.version" value="12.8.0" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/server/chat.js" />
+    <property name="list.type.of.created.stylesheet" value="CSS" />
+    <property name="nodejs_interpreter_path" value="node" />
+    <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
+    <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+    <property name="nodejs_package_manager_path" value="npm" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/src/js" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/view" />
+      <recent name="$PROJECT_DIR$/src/js" />
+    </key>
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager" selected="Node.js.chat.js">
+    <configuration name="chat.js" type="NodeJSConfigurationType" path-to-js-file="server/chat.js" working-dir="$PROJECT_DIR$">
+      <method v="2" />
+    </configuration>
+    <configuration name="server.js" type="NodeJSConfigurationType" nameIsGenerated="true" path-to-js-file="server/server.js" working-dir="$PROJECT_DIR$">
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Node.js.server.js" />
+      <item itemvalue="Node.js.chat.js" />
+    </list>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration>$USER_HOME$/.subversion</configuration>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="011e9982-741d-4222-841e-091d212022f0" name="Default Changelist" comment="" />
+      <created>1560156472847</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1560156472847</updated>
+      <workItem from="1560156475929" duration="3471000" />
+      <workItem from="1560162436606" duration="130000" />
+      <workItem from="1560162586426" duration="2223000" />
+      <workItem from="1560210429013" duration="140000" />
+      <workItem from="1560414965597" duration="5435000" />
+      <workItem from="1560470049714" duration="16000" />
+      <workItem from="1560501492272" duration="6327000" />
+      <workItem from="1560562820354" duration="4370000" />
+      <workItem from="1560577029629" duration="881000" />
+      <workItem from="1560594361954" duration="1795000" />
+      <workItem from="1560642014301" duration="167000" />
+      <workItem from="1561196196213" duration="672000" />
+      <workItem from="1561202467868" duration="271000" />
+      <workItem from="1561261491575" duration="54000" />
+      <workItem from="1562384199209" duration="280000" />
+      <workItem from="1562457819460" duration="80000" />
+      <workItem from="1562584617170" duration="1384000" />
+      <workItem from="1562629807716" duration="16000" />
+      <workItem from="1563438402289" duration="5495000" />
+      <workItem from="1563526057100" duration="1198000" />
+      <workItem from="1563598572156" duration="8465000" />
+      <workItem from="1563609755022" duration="8980000" />
+      <workItem from="1563666245860" duration="108000" />
+      <workItem from="1563698576486" duration="1178000" />
+      <workItem from="1563700996155" duration="2333000" />
+      <workItem from="1563757993549" duration="17000" />
+      <workItem from="1563884054032" duration="12274000" />
+      <workItem from="1563927110514" duration="30000" />
+      <workItem from="1563963441940" duration="4463000" />
+      <workItem from="1564012586360" duration="598000" />
+      <workItem from="1564042725974" duration="9200000" />
+      <workItem from="1564098299710" duration="753000" />
+      <workItem from="1564107596269" duration="4927000" />
+      <workItem from="1564120526853" duration="1322000" />
+      <workItem from="1564131098652" duration="7465000" />
+      <workItem from="1564186251681" duration="19566000" />
+      <workItem from="1564212546691" duration="34000" />
+      <workItem from="1564212654644" duration="3974000" />
+      <workItem from="1564228259536" duration="668000" />
+      <workItem from="1564301709181" duration="4975000" />
+      <workItem from="1564444337727" duration="1480000" />
+      <workItem from="1564453237549" duration="6901000" />
+      <workItem from="1564461894944" duration="631000" />
+      <workItem from="1564479322427" duration="4550000" />
+      <workItem from="1564530793444" duration="31000" />
+      <workItem from="1564540196683" duration="212000" />
+      <workItem from="1564547527541" duration="121000" />
+      <workItem from="1564552360415" duration="231000" />
+      <workItem from="1564562720794" duration="748000" />
+      <workItem from="1564617386122" duration="61000" />
+      <workItem from="1564648019728" duration="4342000" />
+      <workItem from="1564703598063" duration="14000" />
+      <workItem from="1564737138791" duration="3374000" />
+      <workItem from="1564794861375" duration="20747000" />
+      <workItem from="1564839502204" duration="2279000" />
+      <workItem from="1564875938098" duration="131000" />
+      <workItem from="1564910363298" duration="2899000" />
+      <workItem from="1564962338498" duration="293000" />
+      <workItem from="1564993876684" duration="1925000" />
+      <workItem from="1565048524539" duration="225000" />
+      <workItem from="1565118645544" duration="1593000" />
+      <workItem from="1565081205603" duration="5009000" />
+      <workItem from="1565134877257" duration="20920000" />
+      <workItem from="1565221639317" duration="163000" />
+      <workItem from="1565223374736" duration="122000" />
+      <workItem from="1565223522671" duration="52000" />
+      <workItem from="1565252573758" duration="5602000" />
+      <workItem from="1565307316289" duration="227000" />
+      <workItem from="1565343493927" duration="8042000" />
+      <workItem from="1565400015279" duration="5602000" />
+      <workItem from="1565406752378" duration="16290000" />
+      <workItem from="1565436058477" duration="605000" />
+      <workItem from="1565480786035" duration="144000" />
+      <workItem from="1565492364389" duration="702000" />
+      <workItem from="1565511687108" duration="3891000" />
+      <workItem from="1565568842780" duration="28000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+</project>

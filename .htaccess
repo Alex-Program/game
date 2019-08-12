@@ -1,0 +1,12 @@
+<IfModule mod_rewrite.c>
+RewriteEngine On
+#RewriteCond %{HTTPS} =off
+#RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [QSA,L]
+# не позволять httpd отдавать файлы, начинающиеся с точки (.htaccess, .svn, .git и прочие)
+RedirectMatch 403 /\..*$
+
+
+RewriteCond %{REQUEST_URI} !^/vendor/
+RewriteCond %{REQUEST_URI} !^/src/
+RewriteRule ^(.*)$ public/mvc.php?page=$1 [L,QSA]
+</IfModule>
