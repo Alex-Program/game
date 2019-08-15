@@ -1,0 +1,20 @@
+#main_container {
+    position: absolute;
+    left: 50%;
+    top: 100px;
+    transform: translate(-50%, 0);
+    background: aliceblue;
+    border-radius: 15px;
+    border: solid 1px grey;
+    display: flex;
+    flex-direction: row;
+    padding: 20px;
+}
+
+#main_container > div {
+    flex-grow: 1;
+}
+
+#main_canvas.selected {
+    cursor: grab;
+}

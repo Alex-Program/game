@@ -105,11 +105,24 @@
                     new Notify("Изменение профиля", "Имя не было обновлено. Попробуйте позже");
                 })
                 .finally(() => {
-                    $("#user_name_input").hide();
+                    $("#change_user_name").hide();
                     $("#main_header .user_name").show();
                     Preloader.stop()
                 });
 
+        })
+
+        .on("click", "#transfer_money", function () {
+            $("#right_menu").removeClass("closed");
+        })
+
+
+        .on("input", "#transfer_sum_input", function () {
+            if (!this.checkValidity()) return true;
+            let sum = +$(this).val();
+            let commission = Math.floor(sum * 0.1);
+            $("#commission").text(commission);
+            $("#total_sum").val(sum + commission);
         });
 
 })();

@@ -29,8 +29,11 @@ $(document).ready(function () {
         .then(data => {
             /**
              * @property img
+             * @property name
+             * @property balance
              */
             $(".user_name").text(data.data.name);
+            $(".balance").text(data.data.balance);
             let image = new Image();
             image.onload = () => $(".user_img").attr("src", image.src);
             image.src = data.data.img;

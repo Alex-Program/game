@@ -39,6 +39,14 @@ if ($request['action'] == "change_user_name") {
     exit;
 }
 
+if ($request['action'] == "get_user_skins") {
+    $skin = new Skin();
+
+    $allSkins = $skin->getSkinsByUserId(USER_ID);
+    echo json_encode(["result" => "true", "data" => $allSkins], 256);
+    exit;
+}
+
 if ($_POST['action'] == "change_user_img") {
     if (empty($_FILES['file']['tmp_name'])) {
         echo json_encode(["result" => "false", "data" => "invalid_request"], 256);

@@ -5,6 +5,7 @@
 html, body {
     min-width: 100vw;
     min-height: 100vh;
+    overflow-x: hidden;
 }
 
 body {
@@ -17,6 +18,11 @@ a, a:hover, a:active {
 }
 
 button {
+    cursor: pointer;
+}
+
+button, button:active, button:focus {
+    outline: none;
     cursor: pointer;
 }
 
@@ -327,6 +333,13 @@ button {
     background: #b60000;
 }
 
+.button {
+    transition: background 350ms, color 350ms;
+    border-radius: 15px;
+    padding: 5px 15px;
+    font-weight: bold;
+}
+
 .button_primary {
     transition: background 350ms;
     border-radius: 15px;
@@ -345,7 +358,20 @@ button {
     background: #a59b06;
 }
 
-input {
+.button_green {
+    background: #02c842;
+    border: solid 2px #027d2b;
+}
+
+.button_green:hover {
+    background: #02a53a;
+}
+
+.button_green:active {
+    background: #027d2b;
+}
+
+input:not(.no_style) {
     transition: border 0.5s;
     border-radius: 15px;
     border: solid 2px grey;
@@ -355,12 +381,12 @@ input {
     /*box-shadow: inset 1px 1px 1px rgba(53, 53, 53, 0.4);*/
 }
 
-input:focus {
+input:not(.no_style):focus {
     border: solid 2px #eae006;
 }
 
-input:invalid{
-    border: solid 2px red;
+input:invalid {
+    border: solid 2px red !important;
     box-shadow: none;
 }
 
@@ -440,5 +466,43 @@ input:invalid{
 
 #user_info_slide > a > div {
     padding: 10px;
+    text-align: center;
+}
+
+.input_div {
+    transition: border 0.5s;
+    display: flex;
+    flex-direction: row;
+    border-radius: 15px;
+    border: solid 1px grey;
+    overflow: hidden;
+}
+
+.input_div > * {
+    flex: 1 1 auto;
+}
+
+.input_div:hover {
+    border: solid 1px #eae006;
+}
+
+.input_div > div {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    transition: border-right 0.5s;
+    border-right: 1px solid grey;
+}
+
+.input_div:hover > div {
+    border-right: solid 1px #eae006;
+}
+
+
+.input_div > input {
+    border: none;
+    border-radius: 0 15px 15px 0;
+    padding: 5px;
     text-align: center;
 }
