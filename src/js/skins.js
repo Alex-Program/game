@@ -2,16 +2,29 @@
 
 
     class Canvas {
+
         canvas = document.getElementById("main_canvas");
         context = this.canvas.getContext("2d");
         image = null;
         x = 0;
         y = 0;
-        background = "#000000";
+        colors = {
+            background: "#000000",
+            cell: "#FF0000"
+        };
         transparentSkin = false;
         scale = 1;
 
         constructor() {
+            let canvasPos = this.canvas.getBoundingClientRect();
+            this.canvasPos = {
+                x: canvasPos.left,
+                y: canvasPos.top,
+                center: {
+                    x: canvasPos.left + this.canvas.width / 2,
+                    y: canvasPos.top + this.canvas.height / 2
+                }
+            };
             this.defaultText();
         }
 
@@ -30,6 +43,7 @@
         loadImage(image) {
             this.x = 0;
             this.y = 0;
+            this.scale = 1;
             this.image = image;
             this.drawImage();
         }
@@ -37,11 +51,11 @@
         drawImage() {
             if (this.image === null) return true;
             this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            this.context.fillStyle = this.background;
+            this.context.fillStyle = this.colors.background;
             this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
             this.context.beginPath();
             this.context.arc(this.canvas.width / 2, this.canvas.height / 2, this.canvas.width / 2, 0, Math.PI * 2, false);
-            this.context.fillStyle = "#000000";
+            this.context.fillStyle = this.colors.cell;
             if (this.transparentSkin) this.context.globalAlpha = 0;
             this.context.fill();
             this.context.closePath();
@@ -80,14 +94,31 @@
         })
 
 
-        .on("click", "#color_select_button", () => $("#color_select").click())
+        .on("click", ".color_select_button", function () {
+            $(this).prev(".color_select").click()
+        })
 
-        .on("change", "#color_select", function () {
+        .on("change", ".color_select", function () {
             let val = $(this).val();
-            $("#color_select_button").text(val);
-            canvas.background = val;
+            let type = $(this).attr("data-type");
+            $(this).next(".color_select_button").text(val);
+            canvas.colors[type] = val;
             canvas.drawImage();
         })
+
+        .on("change click", "#is_transparent", function(){
+            // if(canvas.image === null) return false;
+            canvas.transparentSkin = Boolean(this.checked);
+            canvas.drawImage();
+        })
+
+        .on("click", "#create_button", function(event){
+            event.stopPropagation();
+            $("#create_list").toggleClass("closed")
+        })
+
+        .on("click", () => $("#create_list").addClass("closed"))
+
 
         .on("mousedown", "#main_canvas", function (event) {
             if (canvas.image === null) return true;
@@ -113,8 +144,15 @@
 
     $("#main_canvas")[0].addEventListener("wheel", function (event) {
         if (canvas.image === null) return true;
+        let byX = (canvas.canvasPos.center.x - event.clientX) / 20;
+        let byY = (canvas.canvasPos.center.y - event.clientY) / 20;
         if (event.deltaY < 0) canvas.scale += 0.03;
-        else canvas.scale -= 0.03;
+        else {
+            canvas.scale -= 0.03;
+            [byX, byY] = [-byX, -byY];
+        }
+        canvas.x += byX;
+        canvas.y += byY;
 
         canvas.drawImage();
 
