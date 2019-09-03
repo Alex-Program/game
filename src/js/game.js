@@ -778,6 +778,31 @@
         return Math.round(number * (10 ** count)) / (10 ** count);
     }
 
+    function getAngle(sin, cos) {
+        let angle = Math.asin(sin);
+        if (cos < 0) angle = Math.PI - angle;
+
+        return {
+            radians: angle,
+            degree: angle * 180 / Math.PI
+        }
+    }
+
+    function degreeToRadians(degree) {
+        return degree * Math.PI / 180;
+    }
+
+    function rgbToHex(...rgb) {
+
+        for (let i = 0; i < 3; i++) {
+            let hex = Number(rgb[i]).toString(16);
+            if (hex.length < 2) hex = "0" + hex;
+            rgb[i] = hex;
+        }
+
+        return "#" + rgb.join("");
+    }
+
 ///////////////
 
     class Arc {
@@ -786,32 +811,42 @@
         }
 
         render() {
-            let drawableX = canvas.width * gameInfo.scale / 2 + this.x - gameInfo.centerX;
-            let drawableY = canvas.height * gameInfo.scale / 2 + this.y - gameInfo.centerY;
+            let drawableX = canvas.width / 2 + (this.x - gameInfo.centerX) / gameInfo.scale;
+            let drawableY = canvas.height / 2 + (this.y - gameInfo.centerY) / gameInfo.scale;
 
-            if (drawableX < 0 || drawableX > canvas.width * gameInfo.scale || drawableY < 0 || drawableY > canvas.height * gameInfo.scale) return true;
+            if (drawableX < 0 || drawableX > canvas.width || drawableY < 0 || drawableY > canvas.height) return true;
 
             context.beginPath();
             context.fillStyle = this.color;
-            context.arc(drawableX / gameInfo.scale, drawableY / gameInfo.scale, this.drawableRadius / gameInfo.scale, 0, 2 * Math.PI, false);
+            context.arc(drawableX, drawableY, this.drawableRadius / gameInfo.scale, 0, 2 * Math.PI, false);
             context.fill();
             context.closePath();
 
-            context.fillStyle = "#FFFFFF";
-            context.textAlign = "center";
-            context.textBaseline = "middle";
-            context.font = String(this.drawableRadius / (2 * gameInfo.scale)) + "px Verdana";
-            context.fillText(String(Math.floor(this.mass)), drawableX / gameInfo.scale, drawableY / gameInfo.scale);
+            if (this.constructor.name.toLowerCase() === "cell" && this.owner.isImage) {
+                context.save();
+                context.clip();
+                context.globalCompositeOperation = "source-atop";
+                context.drawImage(this.owner.image, drawableX - this.drawableRadius / gameInfo.scale, drawableY - this.drawableRadius / gameInfo.scale, this.drawableRadius * 2 / gameInfo.scale, this.drawableRadius * 2 / gameInfo.scale);
+                context.restore();
+            }
+
+            if (!["food", "bullet"].includes(this.constructor.name.toLowerCase())) {
+                context.fillStyle = "#FFFFFF";
+                context.textAlign = "center";
+                context.textBaseline = "middle";
+                context.font = String(this.drawableRadius / (3 * gameInfo.scale)) + "px Verdana";
+                context.fillText(String(Math.floor(this.mass)), drawableX, drawableY);
+            }
 
         }
 
         get drawableRadius() {
-            return this.mass / 10
+            return Math.sqrt(this.mass / Math.PI);
         }
 
         get radius() {
             let toMass = this.toMass || 0;
-            return (this.mass + toMass) / 10;
+            return Math.sqrt((this.mass + toMass) / Math.PI);
         }
 
         set radius(val) {
@@ -819,13 +854,21 @@
         }
 
         get speed() {
-            return 100 / this.mass;
+            return 1000 / this.mass;
         }
 
         get mouseDist() {
             let differentX = mouseCoords.x - this.x;
             let differentY = mouseCoords.y - this.y;
             return Math.sqrt(differentX ** 2 + differentY ** 2);
+        }
+
+        get timeRatio() {
+            return gameInfo.deltaTime / gameInfo.perSecond
+        }
+
+        outOfBorder() {
+            return (this.x <= 0 || this.x >= gameInfo.width || this.y <= 0 || this.y >= gameInfo.height);
         }
 
         static drawCompass() {
@@ -838,8 +881,165 @@
             context.closePath();
         }
 
+        static drawBorder() {
+            let arr = [
+                [0, 0],
+                [gameInfo.width, 0],
+                [gameInfo.width, gameInfo.height],
+                [0, gameInfo.height]
+            ];
+
+            context.beginPath();
+            for (let [x, y] of arr) {
+                let width = (x - gameInfo.centerX) / gameInfo.scale;
+                let height = (y - gameInfo.centerY) / gameInfo.scale;
+            }
+
+        };
+
     }
 
+
+    class Food extends Arc {
+
+        constructor(x, y, mass, color) {
+            super();
+
+            this.x = x;
+            this.y = y;
+            this.mass = mass;
+            this.toMass = 0;
+            this.color = color;
+        }
+
+        update() {
+            rendersArr.push(this);
+        }
+
+    }
+
+    class Bullet extends Arc {
+
+        constructor(x, y, sin, cos, mass, distance, color = "#ff0400") {
+            super();
+
+            this.x = x;
+            this.y = y;
+            this.sin = sin;
+            this.cos = cos;
+            this.mass = mass;
+            this.distance = distance;
+            this.color = color;
+        }
+
+        update() {
+
+            if (this.outOfBorder()) {
+                if (this.x <= 0 || this.x >= gameInfo.width) {
+                    this.cos = -this.cos;
+                }
+                if (this.y <= 0 || this.y >= gameInfo.height) {
+                    this.sin = -this.sin;
+                }
+                this.distance /= 2;
+            }
+
+            if (this.distance > 0) {
+                let speed = this.distance * this.timeRatio / 23;
+                if (speed < 1) speed = 1;
+                if (this.distance < speed) speed = this.distance;
+
+                this.x = roundFloor(this.x + speed * this.cos, 2);
+                this.y = roundFloor(this.y + speed * this.sin, 2);
+
+                if (this.x < 0) this.x = 0;
+                else if (this.x > gameInfo.width) this.x = gameInfo.width;
+
+                if (this.y < 0) this.y = 0;
+                else if (this.y > gameInfo.height) this.y = gameInfo.height;
+
+                this.distance = roundFloor(this.distance - speed, 2);
+            }
+
+            rendersArr.push(this);
+        }
+
+    }
+
+    class Virus extends Arc {
+
+        constructor(x, y, sin, cos, distance = 0, mass = 200, color = "#fff500") {
+            super();
+
+            this.x = x;
+            this.y = y;
+            this.sin = sin;
+            this.cos = cos;
+            this.distance = distance;
+            this.mass = mass;
+            this.toMass = 0;
+            this.color = color;
+        }
+
+        update() {
+
+            if (this.x <= 0 || this.x >= gameInfo.width) {
+                this.cos = -this.cos;
+            }
+            if (this.y <= 0 || this.y >= gameInfo.height) {
+                this.sin = -this.sin;
+            }
+
+            if (Math.abs(this.toMass) > 0) {
+                let speed = this.toMass * this.timeRatio / 5;
+                if (Math.abs(speed) < 1) speed = this.toMass >= 0 ? 1 : -1;
+                if (Math.abs(this.toMass) < Math.abs(speed)) speed = this.toMass;
+
+                this.mass = Math.round(this.mass + speed);
+                this.toMass = Math.round(this.toMass - speed);
+            }
+
+            if (this.distance > 0) {
+                let speed = this.distance * this.timeRatio / 20;
+                if (speed < 1) speed = 1;
+                if (this.distance < speed) speed = this.distance;
+
+                this.x = roundFloor(this.x + speed * this.cos, 2);
+                this.y = roundFloor(this.y + speed * this.sin, 2);
+
+                if (this.x < 0) this.x = 0;
+                else if (this.x > gameInfo.width) this.x = gameInfo.width;
+
+                if (this.y < 0) this.y = 0;
+                else if (this.y > gameInfo.height) this.y = gameInfo.height;
+
+                this.distance = roundFloor(this.distance - speed, 2);
+            }
+
+
+            for (let i = 0; i < bulletsArr.length; i++) {
+                let bullet = bulletsArr[i];
+
+                let c = Math.sqrt((this.x - bullet.x) ** 2 + (this.y - bullet.y) ** 2);
+                if (c > this.drawableRadius + bullet.drawableRadius + 3) continue;
+
+                this.toMass += 50;
+                bulletsArr.splice(i, 1);
+                i--;
+
+                if (this.mass >= 400) {
+                    this.toMass = roundFloor(this.toMass - (this.mass - 200));
+                    virusArr.push(
+                        new Virus(this.x, this.y, bullet.sin, bullet.cos, 200)
+                    )
+                }
+            }
+
+            rendersArr.push(this);
+
+        }
+
+    }
 
     class Cell extends Arc {
 
@@ -877,22 +1077,29 @@
             let speed = Math.min(this.mouseDist, this.speed);
 
             if (this.spaceDistance === 0) {
-                this.x = roundFloor(this.x + this.cos * speed, 2);
-                this.y = roundFloor(this.y + this.sin * speed, 2);
+                this.x = roundFloor(this.x + this.cos * speed * this.timeRatio, 2);
+                this.y = roundFloor(this.y + this.sin * speed * this.timeRatio, 2);
             }
 
             if (Math.abs(this.toMass) > 0) {
-                let speed = this.toMass / 5;
+                let speed = this.toMass * this.timeRatio / 5;
                 if (Math.abs(speed) < 1) speed = this.toMass >= 0 ? 1 : -1;
                 if (Math.abs(this.toMass) < Math.abs(speed)) speed = this.toMass;
 
                 this.mass = Math.round(this.mass + speed);
                 this.toMass = Math.round(this.toMass - speed);
+                if(this.main) {
+                    gameInfo.byScale += speed / 20000;
+                }
+                if (this.mass >= 22500) {
+                    this.mass = 22500;
+                    this.toMass = 0;
+                }
             }
 
             if (Math.abs(this.spaceDistance > 0)) {
-                if (this.spaceDistance <= this.totalSpaceDistane / 2) this.isCollising = true;
-                let speed = this.spaceDistance / 15;
+                if (this.spaceDistance <= this.totalSpaceDistane / 1.3) this.isCollising = true;
+                let speed = this.spaceDistance * this.timeRatio / 15;
                 if (Math.abs(speed) < 1) speed = this.spaceDistance >= 0 ? 1 : -1;
                 if (Math.abs(speed) > 10) speed = this.spaceDistance >= 0 ? 10 : -10;
                 if (Math.abs(this.spaceDistance) < Math.abs(speed)) speed = this.spaceDistance;
@@ -903,7 +1110,7 @@
             }
 
             if (Math.abs(this.engineDistance > 0)) {
-                let speed = this.engineDistance / 2;
+                let speed = this.engineDistance * this.timeRatio / 2;
                 if (Math.abs(speed) < 10) speed = this.engineDistance >= 0 ? 10 : -10;
                 if (Math.abs(speed) > 30) speed = this.engineDistance >= 0 ? 30 : -30;
                 if (Math.abs(this.engineDistance) < Math.abs(speed)) speed = this.engineDistance;
@@ -913,6 +1120,77 @@
                 this.engineDistance = roundFloor(this.engineDistance - speed, 2);
             }
 
+            for (let i = 0; i < bulletsArr.length; i++) {
+                let bullet = bulletsArr[i];
+                let c = Math.sqrt((this.x - bullet.x) ** 2 + (this.y - bullet.y) ** 2);
+                if (this.drawableRadius >= c) {
+                    this.toMass += 10;
+                    bulletsArr.splice(i, 1);
+                    i--;
+                }
+            }
+
+            for (let i = 0; i < virusArr.length; i++) {
+                if (this.mass < 250) break;
+
+                let virus = virusArr[i];
+
+                let c = Math.sqrt((this.x - virus.x) ** 2 + (this.y - virus.y) ** 2);
+                if (c > this.drawableRadius - 0.5 * virus.drawableRadius) continue;
+
+                let count = Math.min(Math.floor((this.mass / 2) / 50), 64 - this.owner.cells.length);
+                let mass = Math.floor((this.mass / 2) / count);
+                let angleStep = 180 / count;
+                let angle = getAngle(this.sin, this.cos);
+
+                this.isCollising = true;
+
+                let currentAngle = angle.degree - 90;
+
+                while (count > 0) {
+                    let sin = Math.sin(degreeToRadians(currentAngle));
+                    let cos = Math.cos(degreeToRadians(currentAngle));
+
+                    let distance = this.radius + mass / 10 + 5;
+                    this.owner.cells.push(
+                        new Cell(this.x + distance * cos, this.y + distance * sin, mass, sin, cos, false, this.color, this.owner, this.owner.cells.length, 50)
+                    );
+                    currentAngle += angleStep;
+                    count--;
+                    gameInfo.byScale += 0.1;
+                }
+
+                this.toMass -= this.mass / 2;
+                virusArr.splice(i, 1);
+                i--;
+            }
+
+            for (let i = 0; i < foodsArr.length; i++) {
+                let food = foodsArr[i];
+                let c = Math.sqrt((this.x - food.x) ** 2 + (this.y - food.y) ** 2);
+                if (c > this.drawableRadius + food.drawableRadius + 1) continue;
+
+                this.toMass += food.mass;
+                foodsArr.splice(i, 1);
+                i--;
+            }
+
+            if (this.x < 0) this.x = 0;
+            else if (this.x > gameInfo.width) this.x = gameInfo.width;
+
+            if (this.y < 0) this.y = 0;
+            else if (this.y > gameInfo.height) this.y = gameInfo.height;
+
+            this.engineSin = 0;
+            this.engineCos = 0;
+            if (this.x <= 0 || this.x >= gameInfo.width) {
+                this.engineCos = -this.cos;
+                this.engineDistance = this.x <= 0 ? -this.x : this.x - gameInfo.width;
+            }
+            if (this.y <= 0 || this.y >= gameInfo.height) {
+                this.engineSin = -this.sin;
+                this.engineDistance = this.y <= 0 ? -this.y : this.y - gameInfo.height;
+            }
 
             for (let i = 0; i < this.owner.cells.length; i++) {
                 if (i === this.owner.updateI) continue;
@@ -922,7 +1200,7 @@
                 if (!cell.isCollising || !this.isCollising) continue;
 
                 let distance = roundFloor(Math.sqrt((cell.x - this.x) ** 2 + (cell.y - this.y) ** 2), 2);
-                let different = roundFloor(this.drawableRadius + cell.drawableRadius + 10 - distance, 2);
+                let different = roundFloor(this.drawableRadius + cell.drawableRadius - distance, 2);
 
                 if (different > 0 && (!this.isConnect || !cell.isConnect)) {
                     let differentX = this.x - cell.x;
@@ -947,12 +1225,13 @@
                         i--;
                         this.owner.updateI--;
                     }
-                    gameInfo.scale = roundFloor(gameInfo.scale - 0.1, 2);
-                    this.isConnect = false;
-                    setTimeout(() => this.isConnect = true, 100);
+                    gameInfo.byScale -= 0.1;
+                    // this.isConnect = false;
+                    // setTimeout(() => this.isConnect = true, 100);
                 }
 
             }
+
 
 
             this.updateCenterDrawable();
@@ -987,13 +1266,14 @@
 
             let height = speed * sin;
             let width = speed * cos;
+            mouseCoords.x = roundFloor(mouseCoords.x + width * gameInfo.scale, 2);
+            mouseCoords.y = roundFloor(mouseCoords.y + height * gameInfo.scale, 2);
             gameInfo.centerX = roundFloor(gameInfo.centerX + width, 2);
             gameInfo.centerY = roundFloor(gameInfo.centerY + height, 2);
         }
 
 
         split() {
-            // console.log(this.mass + this.toMass);
             this.isCollising = true;
             let mass = this.mass + this.toMass;
             if (this.owner.cells.length === 64 || mass <= 250) return true;
@@ -1001,8 +1281,8 @@
             this.isConnect = false;
             setTimeout(() => this.isConnect = true, 1000);
 
-            let height = this.radius * this.sin;
-            let width = this.radius * this.cos;
+            let height = this.radius * this.sin * 1.1;
+            let width = this.radius * this.cos * 1.1;
 
             this.toMass = Math.floor(this.toMass - mass / 2);
 
@@ -1011,16 +1291,31 @@
             this.owner.cells.push(
                 new Cell(roundFloor(this.x + width, 2), roundFloor(this.y + height, 2), mass / 2, this.sin, this.cos, false, this.color, this.owner, this.owner.cells.length, distance)
             );
-            gameInfo.scale = roundFloor(gameInfo.scale + 0.1, 2);
+
+            gameInfo.byScale += 0.1;
         }
 
+
+        shoot() {
+            if (this.mass + this.toMass < 250) return true;
+
+            bulletsArr.push(
+                new Bullet(this.x + (this.radius + 5) * this.cos, this.y + (this.radius + 5) * this.sin, this.sin, this.cos, 150, 200)
+            );
+            this.toMass -= 10;
+        }
 
     }
 
 
     class Player {
+        isImage = false;
+        image = new Image();
 
         constructor(x, y, mass, color = "#000000") {
+            this.image.onload = () => this.isImage = true;
+            this.image.src = "https://avatars.mds.yandex.net/get-pdb/939186/3e8700ba-511c-45e1-b9fb-dc3f02e88ca4/s1200";
+
             gameInfo.centerX = x;
             gameInfo.centerY = y;
             this.cells = [
@@ -1045,6 +1340,13 @@
                 this.cells[i].split();
             }
 
+        }
+
+        shoot() {
+            let length = this.cells.length;
+            for (let i = 0; i < length; i++) {
+                this.cells[i].shoot();
+            }
         }
 
     }
@@ -1082,43 +1384,91 @@
         centerY: 0,
         width: 1000,
         height: 1000,
-        startMass: 200,
-        scale: 1
+        startMass: 500,
+        scale: 1,
+        byScale: 0,
+        updateTime: 0,
+        deltaTime: 0,
+        perSecond: 1000 / 60,
+        food: 500,
+        foodMinMass: 50,
+        foodMaxMass: 100,
+        virus: 0
     };
 
-
     let rendersArr = [];
+    let bulletsArr = [];
+    let virusArr = [];
+    let foodsArr = [];
+    for (let i = 0; i < gameInfo.virus; i++) {
+        virusArr.push(
+            new Virus(getRandomInt(10, gameInfo.width - 10), getRandomInt(10, gameInfo.height - 10), 0, 0, 0)
+        )
+    }
+    for (let i = 0; i < gameInfo.food; i++) {
+        foodsArr.push(
+            new Food(getRandomInt(10, gameInfo.width - 10), getRandomInt(10, gameInfo.height - 10), getRandomInt(gameInfo.foodMinMass, gameInfo.foodMaxMass), rgbToHex(getRandomInt(0, 255), getRandomInt(0, 255), getRandomInt(0, 255)))
+        )
+    }
 
     let player = new Player(getRandomInt(10, gameInfo.width), getRandomInt(10, gameInfo.height), gameInfo.startMass, "#000000");
 
 
     function render() {
         new Promise(() => {
-            // let time = performance.now();
-            context.clearRect(0, 0, canvas.width, canvas.height);
+            let time = performance.now();
+            while (performance.now() - gameInfo.updateTime >= gameInfo.perSecond) {
+                gameInfo.deltaTime = performance.now() - gameInfo.updateTime;
+                gameInfo.updateTime = performance.now();
 
-            rendersArr = [];
-            player.update();
+                context.clearRect(0, 0, canvas.width, canvas.height);
 
-            let renderLength = rendersArr.length;
-            for (let i = 0; i < renderLength; i += 2) {
-                rendersArr[i].render();
-                try {
-                    rendersArr[i + 1].render();
-                } catch (e) {
+                if (Math.abs(gameInfo.byScale) > 0) {
+                    let speed = gameInfo.byScale * (gameInfo.deltaTime / gameInfo.perSecond) / 10;
+                    if (Math.abs(speed) < 0.01) speed = gameInfo.byScale > 0 ? 0.01 : -0.01;
+                    if (Math.abs(gameInfo.byScale) < Math.abs(speed)) speed = gameInfo.byScale;
+
+                    gameInfo.scale += speed;
+                    gameInfo.byScale -= speed;
                 }
 
+                rendersArr = [];
+                player.update();
+
+                for (let i = 0; i < bulletsArr.length; i++) {
+                    bulletsArr[i].update();
+                }
+
+                for (let i = 0; i < virusArr.length; i++) {
+                    virusArr[i].update();
+                }
+
+                for (let i = 0; i < foodsArr.length; i++) {
+                    foodsArr[i].update();
+                }
+
+                let renderLength = rendersArr.length;
+                rendersArr = rendersArr.sort((a, b) => a.drawableRadius - b.drawableRadius);
+                for (let i = 0; i < renderLength; i += 2) {
+                    rendersArr[i].render();
+                    try {
+                        rendersArr[i + 1].render();
+                    } catch (e) {
+                    }
+
+                }
+
+                // Arc.drawCompass();
+
+                console.log(performance.now() - time);
             }
-
-            Arc.drawCompass();
-
-            // console.log(performance.now() - time);
             requestAnimationFrame(render);
         });
 
 
     }
 
+    gameInfo.updateTime = performance.now();
     render();
 
     let coordsHtml = $("#coords");
@@ -1142,6 +1492,22 @@
             return true;
         }
 
+        if (event.code.toLowerCase() === "keyw") {
+            player.shoot();
+            return true;
+        }
+
     });
+
+    {
+        let wheel = 0;
+        window.addEventListener("wheel", function (event) {
+            let byScale = event.deltaY > 0 ? 0.1 : -0.1;
+            if (Math.abs(wheel + byScale) > 0.5) return true;
+
+            wheel += byScale;
+            gameInfo.byScale += byScale;
+        });
+    }
 
 })();
