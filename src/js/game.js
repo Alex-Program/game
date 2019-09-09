@@ -803,6 +803,10 @@
         return "#" + rgb.join("");
     }
 
+    function getTimeByDelta(delta) {
+        return delta / gameInfo.perSecond;
+    }
+
 ///////////////
 
     class Arc {
@@ -822,7 +826,8 @@
             context.fill();
             context.closePath();
 
-            if (this.constructor.name.toLowerCase() === "cell" && this.owner.isImage) {
+            let name = this.constructor.name.toLowerCase();
+            if (name === "cell" && this.owner.isImage) {
                 context.save();
                 context.clip();
                 context.globalCompositeOperation = "source-atop";
@@ -830,23 +835,32 @@
                 context.restore();
             }
 
-            if (!["food", "bullet"].includes(this.constructor.name.toLowerCase())) {
-                context.fillStyle = "#FFFFFF";
-                context.textAlign = "center";
-                context.textBaseline = "middle";
-                context.font = String(this.drawableRadius / (3 * gameInfo.scale)) + "px Verdana";
-                context.fillText(String(Math.floor(this.mass)), drawableX, drawableY);
+            if (!["food", "bullet"].includes(name)) {
+                if (name === "cell") {
+                    this.drawText(drawableX, drawableY, this.drawableRadius / (3 * gameInfo.scale), this.owner.nick);
+                    drawableY += this.drawableRadius / (2 * gameInfo.scale);
+                }
+
+                this.drawText(drawableX, drawableY, this.drawableRadius / (3 * gameInfo.scale), Math.floor(this.mass));
             }
 
         }
 
+        drawText(x, y, size, value) {
+            context.fillStyle = "#FFFFFF";
+            context.textAlign = "center";
+            context.textBaseline = "middle";
+            context.font = String(size) + "px Verdana";
+            context.fillText(String(value), x, y);
+        }
+
         get drawableRadius() {
-            return Math.sqrt(this.mass / Math.PI);
+            return Math.sqrt(this.mass / Math.PI) * 3;
         }
 
         get radius() {
             let toMass = this.toMass || 0;
-            return Math.sqrt((this.mass + toMass) / Math.PI);
+            return Math.sqrt((this.mass + toMass) / Math.PI) * 3;
         }
 
         set radius(val) {
@@ -854,7 +868,7 @@
         }
 
         get speed() {
-            return 1000 / this.mass;
+            return 25 / this.drawableRadius;
         }
 
         get mouseDist() {
@@ -1088,8 +1102,8 @@
 
                 this.mass = Math.round(this.mass + speed);
                 this.toMass = Math.round(this.toMass - speed);
-                if(this.main) {
-                    gameInfo.byScale += speed / 20000;
+                if (this.main && this.owner.current) {
+                    gameInfo.byScale += speed / 40000;
                 }
                 if (this.mass >= 22500) {
                     this.mass = 22500;
@@ -1101,7 +1115,7 @@
                 if (this.spaceDistance <= this.totalSpaceDistane / 1.3) this.isCollising = true;
                 let speed = this.spaceDistance * this.timeRatio / 15;
                 if (Math.abs(speed) < 1) speed = this.spaceDistance >= 0 ? 1 : -1;
-                if (Math.abs(speed) > 10) speed = this.spaceDistance >= 0 ? 10 : -10;
+                // if (Math.abs(speed) > 10) speed = this.spaceDistance >= 0 ? 10 : -10;
                 if (Math.abs(this.spaceDistance) < Math.abs(speed)) speed = this.spaceDistance;
 
                 this.x = roundFloor(this.x + speed * this.spaceCos * this.speed, 2);
@@ -1157,7 +1171,7 @@
                     );
                     currentAngle += angleStep;
                     count--;
-                    gameInfo.byScale += 0.1;
+                    if (this.owner.current) gameInfo.byScale += 0.05;
                 }
 
                 this.toMass -= this.mass / 2;
@@ -1225,7 +1239,7 @@
                         i--;
                         this.owner.updateI--;
                     }
-                    gameInfo.byScale -= 0.1;
+                    if (this.owner.current) gameInfo.byScale -= 0.05;
                     // this.isConnect = false;
                     // setTimeout(() => this.isConnect = true, 100);
                 }
@@ -1233,24 +1247,26 @@
             }
 
 
-
             this.updateCenterDrawable();
             rendersArr.push(this);
         }
 
         updateDirection() {
-            let differentX = mouseCoords.x - this.x;
-            let differentY = mouseCoords.y - this.y;
+
+            let differentX = this.owner.mouse.x - this.x;
+            let differentY = this.owner.mouse.y - this.y;
 
             if (Math.abs(differentY) < 1) differentY = 0;
             if (Math.abs(differentX) < 1) differentX = 0;
 
             let c = Math.sqrt(differentX ** 2 + differentY ** 2);
-            this.sin = roundFloor(differentY / c, 2) || 0;
+            this.sin = roundFloor(differentY / c, 2) || -1;
             this.cos = roundFloor(differentX / c, 2) || 0;
         }
 
         updateCenterDrawable() {
+            if (!this.owner.current) return true;
+
             if (!this.main) return true;
 
             let differentX = this.x - gameInfo.centerX;
@@ -1269,14 +1285,20 @@
             mouseCoords.x = roundFloor(mouseCoords.x + width * gameInfo.scale, 2);
             mouseCoords.y = roundFloor(mouseCoords.y + height * gameInfo.scale, 2);
             gameInfo.centerX = roundFloor(gameInfo.centerX + width, 2);
+            if (gameInfo.centerX == 0) console.log(0);
             gameInfo.centerY = roundFloor(gameInfo.centerY + height, 2);
         }
 
 
-        split() {
+        split(delta) {
             this.isCollising = true;
             let mass = this.mass + this.toMass;
             if (this.owner.cells.length === 64 || mass <= 250) return true;
+
+            let speed = Math.min(this.mouseDist, this.speed);
+
+            this.x = roundFloor(this.x - this.cos * speed * delta, 2);
+            this.y = roundFloor(this.y - this.sin * speed * delta, 2);
 
             this.isConnect = false;
             setTimeout(() => this.isConnect = true, 1000);
@@ -1292,7 +1314,7 @@
                 new Cell(roundFloor(this.x + width, 2), roundFloor(this.y + height, 2), mass / 2, this.sin, this.cos, false, this.color, this.owner, this.owner.cells.length, distance)
             );
 
-            gameInfo.byScale += 0.1;
+            gameInfo.byScale += 0.05;
         }
 
 
@@ -1312,17 +1334,22 @@
         isImage = false;
         image = new Image();
 
-        constructor(x, y, mass, color = "#000000") {
+        constructor(x, y, mass, color = "#000000", current = false, id, nick) {
             this.image.onload = () => this.isImage = true;
             this.image.src = "https://avatars.mds.yandex.net/get-pdb/939186/3e8700ba-511c-45e1-b9fb-dc3f02e88ca4/s1200";
 
-            gameInfo.centerX = x;
-            gameInfo.centerY = y;
-            this.cells = [
-                new Cell(x, y, mass, null, null, true, color, this, 0)
-            ];
+            this.mouse = {
+                x: mouseCoords.x,
+                y: mouseCoords.y
+            };
 
+            this.cells = [
+                new Cell(x, y, mass, null, null, current, color, this, 0)
+            ];
+            this.current = current;
             this.updateI = 0;
+            this.id = id;
+            this.nick = nick;
         }
 
         update() {
@@ -1334,10 +1361,10 @@
         }
 
 
-        split() {
+        split(delta) {
             let length = this.cells.length;
             for (let i = 0; i < length; i++) {
-                this.cells[i].split();
+                this.cells[i].split(delta);
             }
 
         }
@@ -1347,6 +1374,10 @@
             for (let i = 0; i < length; i++) {
                 this.cells[i].shoot();
             }
+        }
+
+        mouseMove(x, y) {
+            [this.mouse.x, this.mouse.y] = [x, y];
         }
 
     }
@@ -1375,6 +1406,18 @@
     $("body")[0].addEventListener("mousemove", event => {
         mouseCoords.x = gameInfo.centerX - canvas.width * gameInfo.scale / 2 + event.clientX * gameInfo.scale;
         mouseCoords.y = gameInfo.centerY - canvas.height * gameInfo.scale / 2 + event.clientY * gameInfo.scale;
+
+        // if (playersArr.length > 0) {
+        //     playersArr[0].mouse.x = mouseCoords.x;
+        //     playersArr[0].mouse.y = mouseCoords.y;
+        // }
+        if (typeof (ws) !== "undefined") {
+            ws.sendJson({
+                action: "mouse_move",
+                x: mouseCoords.x,
+                y: mouseCoords.y
+            });
+        }
     });
     ///////////////
 
@@ -1393,35 +1436,26 @@
         food: 500,
         foodMinMass: 50,
         foodMaxMass: 100,
-        virus: 0
+        virus: 10
     };
 
     let rendersArr = [];
     let bulletsArr = [];
     let virusArr = [];
     let foodsArr = [];
-    for (let i = 0; i < gameInfo.virus; i++) {
-        virusArr.push(
-            new Virus(getRandomInt(10, gameInfo.width - 10), getRandomInt(10, gameInfo.height - 10), 0, 0, 0)
-        )
-    }
-    for (let i = 0; i < gameInfo.food; i++) {
-        foodsArr.push(
-            new Food(getRandomInt(10, gameInfo.width - 10), getRandomInt(10, gameInfo.height - 10), getRandomInt(gameInfo.foodMinMass, gameInfo.foodMaxMass), rgbToHex(getRandomInt(0, 255), getRandomInt(0, 255), getRandomInt(0, 255)))
-        )
-    }
+    let playersArr = [];
 
-    let player = new Player(getRandomInt(10, gameInfo.width), getRandomInt(10, gameInfo.height), gameInfo.startMass, "#000000");
-
+    let renderVar = null;
 
     function render() {
         new Promise(() => {
-            let time = performance.now();
+            // let time = performance.now();
             while (performance.now() - gameInfo.updateTime >= gameInfo.perSecond) {
                 gameInfo.deltaTime = performance.now() - gameInfo.updateTime;
                 gameInfo.updateTime = performance.now();
 
                 context.clearRect(0, 0, canvas.width, canvas.height);
+
 
                 if (Math.abs(gameInfo.byScale) > 0) {
                     let speed = gameInfo.byScale * (gameInfo.deltaTime / gameInfo.perSecond) / 10;
@@ -1433,7 +1467,10 @@
                 }
 
                 rendersArr = [];
-                player.update();
+
+                for (let i = 0; i < playersArr.length; i++) {
+                    playersArr[i].update();
+                }
 
                 for (let i = 0; i < bulletsArr.length; i++) {
                     bulletsArr[i].update();
@@ -1460,16 +1497,14 @@
 
                 // Arc.drawCompass();
 
-                console.log(performance.now() - time);
+                // console.log(performance.now() - time);
             }
-            requestAnimationFrame(render);
+            renderVar = requestAnimationFrame(render);
         });
 
 
     }
 
-    gameInfo.updateTime = performance.now();
-    render();
 
     let coordsHtml = $("#coords");
 
@@ -1481,9 +1516,115 @@
     updateHtml();
 
 
+    function getUnit(unit) {
+        let returned = null;
+        if (unit.name === "player") {
+            let current = unit.current === "true";
+            let player = new Player(0, 0, 0, unit.color, current, unit.id, unit.nick);
+            player.mouse.x = unit.mouseX;
+            player.mouse.y = unit.mouseY;
+
+            let length = unit.cells.length;
+            let arr = [];
+            for (let i = 0; i < length; i++) {
+
+                let cell = unit.cells[i];
+                let c = new Cell(cell.x, cell.y, cell.mass, 0, 0, cell.main, unit.color, player, cell.id, 0);
+                c.engineSin = cell.engineSin;
+                c.engineCos = cell.engineCos;
+                c.engineDistance = cell.engineDistance;
+                c.spaceCos = cell.spaceCos;
+                c.spaceSin = cell.spaceSin;
+                c.spaceDistance = cell.spaceDistance;
+                c.totalSpaceDistane = cell.totalSpaceDistane;
+                c.toMass = cell.toMass;
+                c.isConnect = cell.isConnect;
+                c.isCollising = cell.isCollising;
+                c.updateDirection();
+                arr.push(c);
+
+            }
+            player.cells = arr;
+            returned = player;
+
+        } else if (unit.name === "food") {
+            let food = new Food(unit.x, unit.y, unit.mass, unit.color);
+            food.toMass = unit.toMass;
+
+            returned = food;
+
+        } else if (unit.name === "bullet") {
+            let bullet = new Bullet(unit.x, unit.y, unit.sin, unit.cos, unit.mass, unit.distance, unit.color);
+            bullet.toMass = unit.toMass;
+
+            returned = bullet;
+
+        } else if (unit.name === "virus") {
+            let virus = new Virus(unit.x, unit.y, unit.sin, unit.cos, unit.distance, unit.mass, unit.color);
+            virus.toMass = unit.toMass;
+
+            returned = virus;
+        }
+
+        return returned;
+    }
+
+    function addUnit(unit) {
+        let name = unit.constructor.name.toLowerCase();
+        if (name === "player") {
+            if (playersArr.length > 0 && +playersArr[0].id === unit.id) return true;
+
+            if (unit.current) {
+                if (playersArr.length > 0 && playersArr[0].current) return true;
+                playersArr.unshift(unit);
+                gameInfo.updateTime = performance.now();
+                render();
+                ws.sendJson({action: "get_all_units"});
+                return true;
+            }
+            playersArr.push(unit);
+
+            return true;
+        }
+        if (name === "food") {
+            foodsArr.push(unit);
+            return true;
+        }
+        if (name === "bullet") {
+            bulletsArr.push(unit);
+            return true;
+        }
+        if (name === "virus") {
+            virusArr.push(unit);
+            return true;
+        }
+
+    }
+
+    /**
+     * @param id Number
+     * @returns Player | null
+     */
+    function findPlayer(id) {
+        let length = playersArr.length;
+        let player = null;
+        for (let i = 0; i < length; i++) {
+            if (+playersArr[i].id !== +id) continue;
+            player = playersArr[i];
+            break;
+        }
+
+        return player;
+    }
+
     window.addEventListener("keypress", event => {
         if (event.code.toLowerCase() === "space") {
-            player.split();
+            if (typeof ws !== "undefined") {
+                ws.sendJson({
+                    action: "player_split"
+                });
+            }
+            // playersArr[0].split();
             return true;
         }
 
@@ -1493,7 +1634,10 @@
         }
 
         if (event.code.toLowerCase() === "keyw") {
-            player.shoot();
+            if (typeof ws !== "undefined") {
+                ws.sendJson({action: "player_shoot"});
+            }
+            // playersArr[0].shoot();
             return true;
         }
 
@@ -1509,5 +1653,124 @@
             gameInfo.byScale += byScale;
         });
     }
+
+
+    let ws = new Ws("ws://127.0.0.1:8081");
+    ws.on("open", function () {
+
+        ws.sendJson({
+            action: "player_connect"
+        });
+
+    });
+    ws.on("message", function (event) {
+        let data = "";
+        try {
+            data = JSON.parse(event.data);
+            if (typeof (data) !== "object") throw("Error");
+        } catch {
+            return true;
+        }
+
+        if (data.action === "spawn_unit") {
+            delete data.action;
+            let unit = getUnit(data);
+            addUnit(unit);
+        }
+
+        if (data.action === "get_all_units") {
+            let length = data.units.length;
+            for (let i = 0; i < length; i++) {
+                let unit = getUnit(data.units[i]);
+                addUnit(unit);
+            }
+            setTimeout(function () {
+                ws.sendJson({action: "update_units"});
+            }, 100);
+            return true;
+        }
+
+        if (data.action === "player_disconnect") {
+            let length = playersArr.length;
+
+            for (let i = 0; i < length; i++) {
+                if (+playersArr[i].id !== +data.id) continue;
+                playersArr.splice(i, 1);
+                break;
+            }
+
+            return true;
+        }
+
+        if (data.action === "update_units") {
+            delete data.action;
+            let pArr = [];
+            let fArr = [];
+            let vArr = [];
+            let bArr = [];
+
+            let length = data.units.length;
+            for (let i = 0; i < length; i++) {
+                let unit = getUnit(data.units[i]);
+                let name = unit.constructor.name.toLowerCase();
+                if (name === "player") {
+                    if (playersArr.length > 0 && +unit.id === playersArr[0].id) {
+                        unit.current = true;
+                        pArr.unshift(unit);
+                        continue;
+                    }
+                    pArr.push(unit);
+                    continue;
+                }
+                if (name === "food") {
+                    fArr.push(unit);
+                    continue;
+                }
+                if (name === "virus") {
+                    vArr.push(unit);
+                    continue;
+                }
+                if (name === "bullet") {
+                    bArr.push(unit);
+                    continue;
+                }
+            }
+
+            cancelAnimationFrame(renderVar);
+            playersArr = pArr;
+            virusArr = vArr;
+            bulletsArr = bArr;
+            foodsArr = fArr;
+            gameInfo.updateTime -= Date.now() - data.time;
+            renderVar = requestAnimationFrame(render);
+            setTimeout(function () {
+                ws.sendJson({action: "update_units"});
+            }, 100);
+        }
+
+        if (data.action === "player_split") {
+            // let player = findPlayer(data.id);
+            // if (!player) return true;
+            //
+            // player.split(getTimeByDelta(Date.now() - data.time));
+            playersArr[0].split(1);
+            return true;
+        }
+
+        if (data.action === "mouse_move") {
+            let player = findPlayer(data.id);
+            if (!player) return true;
+
+            player.mouseMove(data.x, data.y);
+            return true;
+        }
+
+        let ping = $("#ping");
+        if (data.action === "ping") {
+            let delta = Date.now() - data.time;
+            ping.text(delta);
+        }
+
+    });
 
 })();

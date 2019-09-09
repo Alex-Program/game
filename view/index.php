@@ -8,6 +8,8 @@
 
 </canvas>
 
+<div id="ping"></div>
+
 <div id="coords">
 
 </div>

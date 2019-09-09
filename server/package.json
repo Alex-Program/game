@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "ws": "latest"
+    "perf_hooks": "0.0.1",
+    "ws": "^7.1.2"
   }
 }

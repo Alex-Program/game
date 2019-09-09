@@ -123,3 +123,13 @@ div.admin_verified {
     border: solid 1px black;
     background: rgba(185, 185, 185, 0.55);
 }
+
+#ping{
+    position: absolute;
+    top: 50px;
+    left: 50px;
+    border: solid 1px black;
+    color: red;
+    padding: 5px;
+    border-radius: 20px;
+}

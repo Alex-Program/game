@@ -1,7 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="011e9982-741d-4222-841e-091d212022f0" name="Default Changelist" comment="" />
+    <list default="true" id="011e9982-741d-4222-841e-091d212022f0" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/server/GameClasses/Perfromance.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/server/GameClasses/Units.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/server/functions.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/node_modules/async-limiter/.travis.yml" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/async-limiter/.travis.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/node_modules/async-limiter/LICENSE" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/async-limiter/LICENSE" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/node_modules/async-limiter/coverage/coverage.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/node_modules/async-limiter/coverage/lcov-report/async-throttle/index.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/node_modules/async-limiter/coverage/lcov-report/async-throttle/index.js.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/node_modules/async-limiter/coverage/lcov-report/base.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/node_modules/async-limiter/coverage/lcov-report/index.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/node_modules/async-limiter/coverage/lcov-report/prettify.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/node_modules/async-limiter/coverage/lcov-report/prettify.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/node_modules/async-limiter/coverage/lcov-report/sort-arrow-sprite.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/node_modules/async-limiter/coverage/lcov-report/sorter.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/node_modules/async-limiter/coverage/lcov.info" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/node_modules/async-limiter/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/async-limiter/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/node_modules/async-limiter/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/async-limiter/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/node_modules/async-limiter/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/async-limiter/readme.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/node_modules/ws/LICENSE" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/ws/LICENSE" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/node_modules/ws/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/ws/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/node_modules/ws/browser.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/ws/browser.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/node_modules/ws/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/ws/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/node_modules/ws/lib/buffer-util.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/ws/lib/buffer-util.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/node_modules/ws/lib/constants.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/ws/lib/constants.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/node_modules/ws/lib/event-target.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/ws/lib/event-target.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/node_modules/ws/lib/extension.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/ws/lib/extension.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/node_modules/ws/lib/permessage-deflate.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/ws/lib/permessage-deflate.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/node_modules/ws/lib/receiver.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/ws/lib/receiver.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/node_modules/ws/lib/sender.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/ws/lib/sender.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/node_modules/ws/lib/validation.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/ws/lib/validation.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/node_modules/ws/lib/websocket-server.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/ws/lib/websocket-server.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/node_modules/ws/lib/websocket.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/ws/lib/websocket.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/node_modules/ws/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/ws/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/server/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/server/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/css/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/css/index.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/js/Ws.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/Ws.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/js/game.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/game.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/view/index.php" beforeDir="false" afterPath="$PROJECT_DIR$/view/index.php" afterDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -22,6 +64,10 @@
       </list>
     </option>
   </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="UPDATE_TYPE" value="MERGE" />
+  </component>
   <component name="JsBowerSettings">
     <node-interpreter value="project" />
     <bower-package value="" />
@@ -34,17 +80,19 @@
     </servers>
   </component>
   <component name="ProjectId" id="1OaPHa7tXg6PqTm6K9fpsp1Nqdr" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="PropertiesComponent">
     <property name="DefaultHtmlFileTemplate" value="HTML File" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="javascript.nodejs.core.library.configured.version" value="12.8.0" />
+    <property name="javascript.nodejs.core.library.configured.version" value="10.15.2" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/server/chat.js" />
     <property name="list.type.of.created.stylesheet" value="CSS" />
     <property name="nodejs_interpreter_path" value="node" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="nodejs_package_manager_path" value="npm" />
-    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors.Language Defaults" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -68,7 +116,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Node.js.chat.js">
+  <component name="RunManager" selected="Node.js.server.js">
     <configuration name="chat.js" type="NodeJSConfigurationType" path-to-js-file="server/chat.js" working-dir="$PROJECT_DIR$">
       <method v="2" />
     </configuration>
@@ -76,8 +124,8 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Node.js.server.js" />
       <item itemvalue="Node.js.chat.js" />
+      <item itemvalue="Node.js.server.js" />
     </list>
   </component>
   <component name="SvnConfiguration">
@@ -166,10 +214,45 @@
       <workItem from="1565492364389" duration="702000" />
       <workItem from="1565511687108" duration="3891000" />
       <workItem from="1565568842780" duration="28000" />
+      <workItem from="1567215791805" duration="7886000" />
+      <workItem from="1567298564315" duration="15520000" />
+      <workItem from="1567384852297" duration="9798000" />
+      <workItem from="1567477483484" duration="5008000" />
+      <workItem from="1567509549037" duration="42000" />
+      <workItem from="1567649911781" duration="8840000" />
+      <workItem from="1567735026823" duration="10379000" />
+      <workItem from="1567838298555" duration="3904000" />
+      <workItem from="1567907843938" duration="20513000" />
+      <workItem from="1567995454467" duration="21641000" />
     </task>
+    <task id="LOCAL-00001" summary="add viruses">
+      <created>1567508394746</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1567508394746</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="add viruses" />
+    <option name="LAST_COMMIT_MESSAGE" value="add viruses" />
   </component>
 </project>
