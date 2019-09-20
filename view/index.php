@@ -14,16 +14,73 @@
 
 </div>
 
+<div id="open_chat" class="closed">
+    <img src="/src/images/chat.png" alt="Чат">
+</div>
+
 <div id="main_messages">
-    <div id="resize_chat"></div>
+    <div id="chat_settings">
+        <input type="color" id="chat_color_input" value="#EDFAFF" style="display: none;">
+        <img src="/src/images/color_picker.png" style="width: 20px; cursor: pointer;" id="change_chat_color">
+        <div id="resize_chat"></div>
+        <div id="close_chat">x</div>
+    </div>
     <div id="all_messages">
 
     </div>
     <div id="send_message">
-        <input type="text">
+        <input type="hidden" id="pm_id" value="">
+        <div id="chat_service" class="closed"></div>
+        <input type="text" id="message_text">
     </div>
 </div>
 
+<div id="main_menu">
+    <div style="display: flex; justify-content: center">
+        <div id="login">
+            <div>
+                <div>
+                    <input type="text" class="red_input">
+                </div>
+                <div>
+                    <input type="text" class="red_input">
+                </div>
+            </div>
+            <div style="display: flex; justify-content: center;">
+                <button class="button button_primary">Войти</button>
+            </div>
+        </div>
+    </div>
+    <div style="position: relative; display: flex; flex-direction: row;">
+        <div style="flex: 1 1 auto;">
+            <div class="triangle left" style="float: left;">
+                <img src="/src/images/triangle.png">
+                <div>Магазин</div>
+            </div>
+            <div class="triangle left" style="float: left; clear: both;">
+                <img src="/src/images/triangle.png">
+            </div>
+        </div>
+        <div style="flex: 1 1 auto;">
+            <div class="triangle right" style="float: right;">
+                <img src="/src/images/triangle.png">
+                <div>Личный кабинет</div>
+            </div>
+            <div class="triangle right" style="float: right; clear: both;">
+                <img src="/src/images/triangle.png">
+            </div>
+        </div>
+    </div>
+
+    <img id="play_button" src="/src/images/play_button.jpg">
+
+
+    <div id="servers_list">
+        <div>
+            wefwef
+        </div>
+    </div>
+</div>
 <!--<script defer src="src/js/pixi.js"></script>-->
 <script defer src="../src/js/index.js"></script>
 <script defer src="../src/js/game.js"></script>

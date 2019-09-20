@@ -98,12 +98,26 @@ function timeFormat(time = '', zone = false) {
     }
 }
 
-class Preloader{
-    static start(){
+function isEmpty(val) {
+    if (typeof val === "object") {
+        for (let k in val) {
+            return false;
+        }
+        return true;
+    }
+    if (typeof val === "number" || typeof val === "bigint" || typeof val === "symbol" || typeof val === "function") return false;
+    if (typeof val === "string") return val === "";
+    if (typeof val === "undefined" || val === null || isNaN(val) || val === undefined) return true;
+
+    return true;
+}
+
+class Preloader {
+    static start() {
         $("#preloader").removeClass("active closed").addClass("active");
     }
 
-    static stop(){
+    static stop() {
         $("#preloader").addClass("closed");
     }
 }

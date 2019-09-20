@@ -14,7 +14,10 @@ const webSocketServer = new WebSocketServer.Server({
 function wsMessage(message, id = null, besidesId = null) {
     if (!message.time) message.time = Date.now();
     message = JSON.stringify(message);
-    if (id !== null && clients.hasOwnProperty(id)) return clients[id].ws.send(message);
+    if (id !== null){
+        if(!clients.hasOwnProperty(id)) return false;
+        return clients[id].ws.send(message);
+    }
 
     for (let wsId in clients) {
         if (!clients.hasOwnProperty(wsId)) continue;
@@ -47,6 +50,7 @@ Units.game.startGame();
 
 console.log("ds");
 webSocketServer.on('connection', function (ws) {
+    console.log("player connect");
     let id = clientsSize;
     clientsSize++;
     clients[id] = {};
@@ -84,7 +88,7 @@ webSocketServer.on('connection', function (ws) {
             });
         }
         if (data.action === "player_shoot") {
-            Units.game.shoot(id);
+            Units.game.shoot(id, data.time);
             return true;
         }
         if (data.action === "player_split") {
@@ -97,11 +101,36 @@ webSocketServer.on('connection', function (ws) {
             return true;
         }
         if (data.action === "update_units") {
+            let time = Date.now();
             let arr = Units.game.getAllUnits();
             wsMessage({
                 action: "update_units",
-                units: arr
+                units: arr,
+                time
             }, id);
+        }
+
+        if (data.action === "chat_message") {
+            if (!data.message) return true;
+            let player = Units.game.findPlayer(id);
+            if (!player) return true;
+            player = player.player;
+            let pm = +data.pm;
+            let json = {
+                action: "chat_message",
+                message: data.message,
+                nick: player.nick,
+                color: player.color,
+                // isAdmin: 1,
+                pm,
+                id
+            };
+            if (pm) {
+                wsMessage(json, +data.pmId);
+                if(+data.pmId !== id) wsMessage(json, id);
+            } else wsMessage(json);
+
+            return true;
         }
     });
 

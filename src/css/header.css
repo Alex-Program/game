@@ -238,7 +238,6 @@ button, button:active, button:focus {
     position: fixed;
     right: 35px;
     bottom: 35px;
-
 }
 
 #open_chat > img {
@@ -516,7 +515,7 @@ input:invalid {
     overflow: hidden;
 }
 
-.tumbler > input{
+.tumbler > input {
     position: absolute;
     width: 100%;
     height: 100%;
@@ -525,7 +524,7 @@ input:invalid {
     cursor: pointer;
 }
 
-.tumbler > input + div{
+.tumbler > input + div {
     transition: background 350ms;
     background: red;
     position: relative;
@@ -533,11 +532,11 @@ input:invalid {
     height: 100%;
 }
 
-.tumbler > input:checked + div{
+.tumbler > input:checked + div {
     background: #02c842 !important;
 }
 
-.tumbler > input + div > div{
+.tumbler > input + div > div {
     transition: left 350ms;
     position: absolute;
     background: aliceblue;
@@ -547,6 +546,6 @@ input:invalid {
     width: 25px;
 }
 
-.tumbler > input:checked + div > div{
+.tumbler > input:checked + div > div {
     left: 35px;
 }

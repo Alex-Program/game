@@ -8,7 +8,7 @@ let gameInfo = {
     updateTime: 0,
     deltaTime: 0,
     perSecond: 1000 / 60,
-    food: 500,
+    food: 100,
     foodMinMass: 50,
     foodMaxMass: 100,
     virus: 10
@@ -155,6 +155,14 @@ class Virus extends Arc {
 
             this.mass = Math.round(this.mass + speed);
             this.toMass = Math.round(this.toMass - speed);
+
+            if (this.mass > 400) {
+                this.mass = 400;
+                this.toMass = -200;
+                game.virusArr.push(
+                    new Virus(this.x, this.y, this.sin, this.cos, 200)
+                )
+            }
         }
 
         if (this.distance > 0) {
@@ -185,12 +193,8 @@ class Virus extends Arc {
             game.bulletsArr.splice(i, 1);
             i--;
 
-            if (this.mass >= 400) {
-                this.toMass = Functions.roundFloor(this.toMass - (this.mass - 200));
-                game.virusArr.push(
-                    new Virus(this.x, this.y, bullet.sin, bullet.cos, 200)
-                )
-            }
+            this.sin = bullet.sin;
+            this.cos = bullet.cos;
         }
 
 
@@ -205,6 +209,8 @@ class Cell extends Arc {
 
         this.x = x;
         this.y = y;
+        this.prevX = x;
+        this.prevY = y;
         this.mass = mass;
         this.sin = sin;
         this.cos = cos;
@@ -229,18 +235,18 @@ class Cell extends Arc {
     }
 
 
-    update() {
+    update(delta = 1) {
         this.updateDirection();
 
         let speed = Math.min(this.mouseDist, this.speed);
 
         if (this.spaceDistance === 0) {
-            this.x = Functions.roundFloor(this.x + this.cos * speed * this.timeRatio, 2);
-            this.y = Functions.roundFloor(this.y + this.sin * speed * this.timeRatio, 2);
+            this.x = Functions.roundFloor(this.x + this.cos * speed * delta, 2);
+            this.y = Functions.roundFloor(this.y + this.sin * speed * delta, 2);
         }
 
         if (Math.abs(this.toMass) > 0) {
-            let speed = this.toMass * this.timeRatio / 5;
+            let speed = this.toMass * delta / 5;
             if (Math.abs(speed) < 1) speed = this.toMass >= 0 ? 1 : -1;
             if (Math.abs(this.toMass) < Math.abs(speed)) speed = this.toMass;
 
@@ -254,7 +260,7 @@ class Cell extends Arc {
 
         if (Math.abs(this.spaceDistance > 0)) {
             if (this.spaceDistance <= this.totalSpaceDistane / 1.3) this.isCollising = true;
-            let speed = this.spaceDistance * this.timeRatio / 15;
+            let speed = this.spaceDistance * delta / 15;
             if (Math.abs(speed) < 1) speed = this.spaceDistance >= 0 ? 1 : -1;
             // if (Math.abs(speed) > 10) speed = this.spaceDistance >= 0 ? 10 : -10;
             if (Math.abs(this.spaceDistance) < Math.abs(speed)) speed = this.spaceDistance;
@@ -265,7 +271,7 @@ class Cell extends Arc {
         }
 
         if (Math.abs(this.engineDistance > 0)) {
-            let speed = this.engineDistance * this.timeRatio / 2;
+            let speed = this.engineDistance * delta / 25;
             if (Math.abs(speed) < 10) speed = this.engineDistance >= 0 ? 10 : -10;
             if (Math.abs(speed) > 30) speed = this.engineDistance >= 0 ? 30 : -30;
             if (Math.abs(this.engineDistance) < Math.abs(speed)) speed = this.engineDistance;
@@ -308,7 +314,7 @@ class Cell extends Arc {
 
                 let distance = this.radius + mass / 10 + 5;
                 this.owner.cells.push(
-                    new Cell(this.x + distance * cos, this.y + distance * sin, mass, sin, cos, false, this.color, this.owner, this.owner.cells.length, 50)
+                    new Cell(this.x + distance * cos, this.y + distance * sin, mass, sin, cos, false, this.color, this.owner, ++this.owner.cellId, 50)
                 );
                 currentAngle += angleStep;
                 count--;
@@ -385,7 +391,7 @@ class Cell extends Arc {
 
         }
 
-
+        this.updateCoords();
     }
 
     updateDirection() {
@@ -401,16 +407,37 @@ class Cell extends Arc {
         this.cos = Functions.roundFloor(differentX / c, 2) || 0;
     }
 
+    updateCoords() {
+        if (!this.main) return true;
 
-    split(delta) {
+        let differentX = this.x - this.prevX;
+        let differentY = this.y - this.prevY;
+        let distance = Math.sqrt(differentX ** 2 + differentY ** 2);
+
+        let sin = differentY / distance || 0;
+        let cos = differentX / distance || 0;
+
+        let speed = distance / 10;
+        if (Math.abs(speed) < 1) speed = distance >= 0 ? 1 : -1;
+        if (Math.abs(distance) < Math.abs(speed)) speed = distance;
+
+        let height = speed * sin;
+        let width = speed * cos;
+        this.owner.mouse.x = Functions.roundFloor(this.owner.mouse.x + width, 2);
+        this.owner.mouse.y = Functions.roundFloor(this.owner.mouse.y + height, 2);
+        [this.prevX, this.prevY] = [this.x, this.y];
+    }
+
+
+    split() {
         this.isCollising = true;
         let mass = this.mass + this.toMass;
         if (this.owner.cells.length === 64 || mass <= 250) return true;
 
         let speed = Math.min(this.mouseDist, this.speed);
 
-        this.x = Functions.roundFloor(this.x - this.cos * speed * delta, 2);
-        this.y = Functions.roundFloor(this.y - this.sin * speed * delta, 2);
+        this.x = Functions.roundFloor(this.x - this.cos * speed, 2);
+        this.y = Functions.roundFloor(this.y - this.sin * speed, 2);
 
         this.isConnect = false;
         setTimeout(() => this.isConnect = true, 1000);
@@ -423,7 +450,7 @@ class Cell extends Arc {
         let distance = 50000 / mass + mass / 10;
 
         this.owner.cells.push(
-            new Cell(Functions.roundFloor(this.x + width, 2), Functions.roundFloor(this.y + height, 2), mass / 2, this.sin, this.cos, false, this.color, this.owner, this.owner.cells.length, distance)
+            new Cell(Functions.roundFloor(this.x + width, 2), Functions.roundFloor(this.y + height, 2), mass / 2, this.sin, this.cos, false, this.color, this.owner, ++this.owner.cellId, distance)
         );
 
     }
@@ -448,7 +475,7 @@ class Player {
             x: mouseX,
             y: mouseY
         };
-
+        this.cellId = 0;
         this.cells = [
             new Cell(x, y, mass, 0, 0, true, color, this, 0, 0)
         ];
@@ -466,18 +493,18 @@ class Player {
         game.onSpawnUnit(this);
     }
 
-    update() {
+    update(delta = 1) {
         this.updateI = 0;
         for (; this.updateI < this.cells.length; this.updateI++) {
-            this.cells[this.updateI].update();
+            this.cells[this.updateI].update(delta);
             // rendersArr.push(this.cells[this.updateI]);
         }
     }
 
-    split(delta) {
+    split() {
         let length = this.cells.length;
         for (let i = 0; i < length; i++) {
-            this.cells[i].split(delta);
+            this.cells[i].split();
         }
 
     }
@@ -505,6 +532,7 @@ class Game {
         this.virusArr = [];
         this.bulletsArr = [];
         this.playersArr = [];
+        this.gameStates = [];
         this.onSpawnUnit = (unit) => "";
 
     }
@@ -513,8 +541,6 @@ class Game {
         gameInfo.updateTime = performance.now();
 
         setTimeout(() => this.loop(), 0);
-
-
     }
 
     spawnUnit() {
@@ -538,7 +564,7 @@ class Game {
 
     updateUnit() {
         for (let i = 0; i < this.playersArr.length; i++) {
-            this.playersArr[i].update();
+            this.playersArr[i].update(this.getTimeByDelta(gameInfo.deltaTime));
         }
 
         for (let i = 0; i < this.bulletsArr.length; i++) {
@@ -554,8 +580,64 @@ class Game {
         }
     }
 
+    addGameState() {
+        this.gameStates.push({
+            time: Date.now(),
+            players: this.playersArr,
+            foods: this.foodsArr,
+            bullets: this.bulletsArr,
+            virus: this.virusArr
+        });
+        if (Date.now() - this.gameStates[0].time >= 1000) {
+            this.gameStates.shift();
+        }
+    }
+
+    /**
+     * @param time Number
+     * @return Object | null
+     */
+    getGameState(time) {
+        let length = this.gameStates.length;
+        if (length === 0) return null;
+        if (time < this.gameStates[0] - 15 || time > this.gameStates[length - 1] + 15) return null;
+        if (length === 1) {
+            return this.gameStates[0];
+        }
+        let state = null;
+        let prevTime = Math.abs(time - this.gameStates[0].time);
+        for (let i = 0; i < length; i++) {
+            if (Math.abs(time - this.gameStates[i].time) > prevTime || i === length - 1) {
+                state = this.gameStates[i - 1];
+                break;
+            }
+            prevTime = Math.abs(time - this.gameStates[i].time);
+        }
+
+        return state;
+    }
+
+    /**
+     * @param time Number
+     * @param wsId Number
+     * @return Player | null
+     */
+    getPlayerInGameState(time, wsId) {
+        let state = this.getGameState(time);
+        if (!state) return null;
+
+        let length = state.players.length;
+        let player = null;
+        for (let i = 0; i < length; i++) {
+            if (+state.players[i].wsId !== +wsId) continue;
+            player = state.players[i];
+            break;
+        }
+        return player;
+    }
+
     loop() {
-        let time = performance.now();
+        // let time = performance.now();
         while (performance.now() - gameInfo.updateTime >= gameInfo.perSecond) {
             gameInfo.deltaTime = performance.now() - gameInfo.updateTime;
             gameInfo.updateTime = performance.now();
@@ -563,6 +645,7 @@ class Game {
 
             this.spawnUnit();
             this.updateUnit();
+            this.addGameState();
 
             // console.log(performance.now() - time);
         }
@@ -571,7 +654,7 @@ class Game {
         setTimeout(() => this.loop(), 0);
     }
 
-    playerConnect(wsId, color, nick = "NickName") {
+    playerConnect(wsId, color, nick = "SandL") {
         this.playersArr.push(
             new Player(wsId, Functions.getRandomInt(10, gameInfo.width), Functions.getRandomInt(10, gameInfo.height), gameInfo.startMass, 0, 0, color, nick)
         );
@@ -589,12 +672,20 @@ class Game {
     }
 
     getAllUnits() {
-        let units = [...this.playersArr, ...this.foodsArr, ...this.virusArr, ...this.bulletsArr];
-        units = units.map(unit => {
+        let players = this.playersArr.map(unit => {
+            return this.getUnit(unit);
+        });
+        let foods = this.foodsArr.map(unit => {
+            return this.getUnit(unit);
+        });
+        let virus = this.virusArr.map(unit => {
+            return this.getUnit(unit);
+        });
+        let bullets = this.bulletsArr.map(unit => {
             return this.getUnit(unit);
         });
 
-        return units;
+        return {players, foods, virus, bullets};
     }
 
     getUnit(unit) {
@@ -656,34 +747,45 @@ class Game {
     /**
      *
      * @param wsId Number
-     * @returns Player|null
+     * @param arr Array
+     * @returns Object|null
      */
-    findPlayer(wsId) {
-        let length = this.playersArr.length;
+    findPlayer(wsId, arr = null) {
+        arr = arr || this.playersArr;
+        let length = arr.length;
         let player = null;
-        for (let i = 0; i < length; i++) {
-            if (+this.playersArr[i].wsId !== +wsId) continue;
-            player = this.playersArr[i];
+        let i = 0;
+        for (; i < length; i++) {
+            if (+arr[i].wsId !== +wsId) continue;
+            player = arr[i];
+            break;
         }
-        return player;
+        if (!player) return null;
+        return {player, count: i};
     }
 
-    shoot(wsId) {
-        let player = this.findPlayer(wsId);
-        if (!player) return true;
+    shoot(wsId, time) {
+        let playerState = this.getPlayerInGameState(time, wsId);
+        let playerNow = this.findPlayer(wsId);
+        if (!playerState || !playerNow) return true;
 
-        player.shoot();
+        this.playersArr[playerNow.count] = playerState;
+        this.playersArr[playerNow.count].shoot();
+        this.playersArr[playerNow.count].update(this.getTimeByDelta(Date.now() - time));
     }
 
     split(wsId, time) {
-        let player = this.findPlayer(wsId);
-        if (!player) return true;
+        let playerState = this.getPlayerInGameState(time, wsId);
+        let playerNow = this.findPlayer(wsId);
+        if (!playerState || !playerNow) return true;
 
-        player.split(this.getTimeByDelta(Date.now() - time));
+        this.playersArr[playerNow.count] = playerState;
+        this.playersArr[playerNow.count].split();
+        this.playersArr[playerNow.count].update(this.getTimeByDelta(Date.now() - time));
     }
 
     mouseMove(wsId, x, y, time) {
-        let player = this.findPlayer(wsId);
+        let {player} = this.findPlayer(wsId);
         if (!player) return true;
 
         setTimeout(() => {
