@@ -1,9 +1,5 @@
 (function () {
 
-    function getRandomInt(min, max) {
-        return Math.round((max - min) * Math.random() + min);
-    }
-
     function roundFloor(number, count = 2) {
         return Math.round(number * (10 ** count)) / (10 ** count);
     }
@@ -20,17 +16,6 @@
 
     function degreeToRadians(degree) {
         return degree * Math.PI / 180;
-    }
-
-    function rgbToHex(...rgb) {
-
-        for (let i = 0; i < 3; i++) {
-            let hex = Number(rgb[i]).toString(16);
-            if (hex.length < 2) hex = "0" + hex;
-            rgb[i] = hex;
-        }
-
-        return "#" + rgb.join("");
     }
 
     function getTimeByDelta(delta) {
@@ -57,8 +42,8 @@
             context.closePath();
 
             let name = this.constructor.name.toLowerCase();
-            if (name === "cell" && this.owner.isImage) {
-                this.drawImage(this.owner.image, drawableX, drawableY);
+            if (name === "cell" && imagesArr[this.owner.skinId]) {
+                this.drawImage(imagesArr[this.owner.skinId], drawableX, drawableY);
             }
 
             if (!["food", "bullet"].includes(name)) {
@@ -295,7 +280,7 @@
                 let c = Math.sqrt((this.x - bullet.x) ** 2 + (this.y - bullet.y) ** 2);
                 if (c > this.drawableRadius + bullet.drawableRadius + 3) continue;
 
-                this.toMass += 50;
+                this.toMass += bullet.mass;
                 bulletsArr.splice(i, 1);
                 i--;
 
@@ -336,7 +321,7 @@
             this.isDraw = isDraw;
             setTimeout(() => this.isConnect = true, 1000);
 
-            if (this.isDraw) gameInfo.byScale += 0.05;
+            if (this.isDraw && this.owner.current) gameInfo.byScale += 0.05;
             this.updateDirection();
         }
 
@@ -356,9 +341,9 @@
 
                 this.mass = Math.round(this.mass + speed);
                 this.toMass = Math.round(this.toMass - speed);
-                if (this.main && this.owner.current) {
-                    // gameInfo.byScale += speed / 40000;
-                }
+                // if (this.main && this.owner.current) {
+                //     gameInfo.byScale += speed / 40000;
+                // }
                 if (this.mass >= 22500) {
                     this.mass = 22500;
                     this.toMass = 0;
@@ -392,7 +377,7 @@
                 let bullet = bulletsArr[i];
                 let c = Math.sqrt((this.x - bullet.x) ** 2 + (this.y - bullet.y) ** 2);
                 if (this.drawableRadius >= c) {
-                    this.toMass += 10;
+                    this.toMass += bullet.mass;
                     bulletsArr.splice(i, 1);
                     i--;
                 }
@@ -421,7 +406,7 @@
 
                     let distance = this.radius + mass / 10 + 5;
                     this.owner.cells.push(
-                        new Cell(this.x + distance * cos, this.y + distance * sin, mass, sin, cos, false, this.color, this.owner, ++this.owner.cellId, 50)
+                        new Cell(this.x + distance * cos, this.y + distance * sin, mass, sin, cos, false, this.color, this.owner, ++this.owner.cellId, 50, true)
                     );
                     currentAngle += angleStep;
                     count--;
@@ -512,6 +497,7 @@
                     if (playersArr[p].updateI >= i) {
                         playersArr[p].updateI--;
                     }
+                    if (playersArr[p].cells.length === 0) continue;
                     if (cell.main) playersArr[p].cells[0].main = true;
 
                 }
@@ -602,14 +588,15 @@
 
 
     class Player {
-        isImage = false;
-        image = new Image();
+        skinId = null;
         cellId = 0;
         ids = [];
+        totalMass = 0;
+        mass = 0;
 
-        constructor(x, y, mass, color = "#000000", current = false, id, nick) {
-            this.image.onload = () => this.isImage = true;
-            this.image.src = "https://avatars.mds.yandex.net/get-pdb/939186/3e8700ba-511c-45e1-b9fb-dc3f02e88ca4/s1200";
+        constructor(x, y, mass, color = "#000000", current = false, id, nick, skin = "", skinId = "") {
+            this.skin = skin;
+            this.skinId = skinId;
 
             this.mouse = {
                 x: mouseCoords.x,
@@ -617,22 +604,34 @@
             };
 
             this.cells = [
-                new Cell(x, y, mass, null, null, current, color, this, 0)
+                new Cell(x, y, mass, null, null, current, color, this, 0, 0, true)
             ];
             this.current = current;
             this.updateI = 0;
             this.id = id;
             this.nick = nick;
 
+            this.loadImage();
+        }
 
+        loadImage() {
+            if (isEmpty(this.skin) || isEmpty(this.skinId)) return false;
+            loadImage(this.skinId, this.skin);
         }
 
         update(delta = 1) {
             this.updateI = 0;
+            let mass = 0;
             for (; this.updateI < this.cells.length; this.updateI++) {
                 this.cells[this.updateI].update(delta);
+                try {
+                    mass = (mass + this.cells[this.updateI].mass) || mass;
+                } catch {
+                }
                 // rendersArr.push(this.cells[this.updateI]);
             }
+            if (mass > this.totalMass) this.totalMass = mass;
+            this.mass = mass;
         }
 
 
@@ -795,6 +794,8 @@
 
 
     function loadImage(imageName, src) {
+        if (imagesArr[imageName] || imagesArr[imageName] === null) return false;
+
         imagesArr[imageName] = null;
         let image = new Image();
         image.onload = () => imagesArr[imageName] = image;
@@ -879,20 +880,20 @@
     let coordsHtml = $("#coords");
 
     function updateHtml() {
-        coordsHtml.text("X: " + Math.floor(gameInfo.centerX * 10) + " Y: " + Math.floor(gameInfo.centerY * 10));
+        coordsHtml.text("Mass: " + playersArr[0].mass + " X: " + Math.floor(gameInfo.centerX * 10) + " Y: " + Math.floor(gameInfo.centerY * 10));
         requestAnimationFrame(updateHtml);
     }
-
-    updateHtml();
 
 
     function getUnit(unit) {
         let returned = null;
         if (unit.name === "player") {
             let current = unit.current === "true";
-            let player = new Player(0, 0, 0, unit.color, current, unit.id, unit.nick);
+            let player = new Player(0, 0, 0, unit.color, current, unit.id, unit.nick, "", "");
             player.mouse.x = unit.mouseX;
             player.mouse.y = unit.mouseY;
+            player.skin = unit.skin;
+            player.skinId = unit.skinId;
 
             let length = unit.cells.length;
             let arr = [];
@@ -944,12 +945,14 @@
         if (name === "player") {
             if (playersArr.length > 0 && +playersArr[0].id === unit.id) return true;
 
+            unit.loadImage();
             if (unit.current) {
                 if (playersArr.length > 0 && playersArr[0].current) return true;
                 playersArr.unshift(unit);
                 gameInfo.updateTime = performance.now();
                 playersArr[0].update(delta);
                 render();
+                updateHtml();
                 ws.sendJson({action: "get_all_units"});
                 setTimeout(function () {
                     ws.sendJson({
@@ -1002,7 +1005,16 @@
 
         let input = $("#message_text");
         let message = input.val();
-        if(!message) return false;
+        message = message.trim();
+        if (!message) return false;
+
+        if (message[0] === "/") {
+            new Command(message.substr(1));
+            input.val("");
+            $("#chat_service").addClass("closed");
+            $("#pm_id").val("");
+            return true;
+        }
 
         let pmId = $("#pm_id").val();
         let pm = Number(pmId !== "");
@@ -1057,11 +1069,11 @@
     }
 
 
-    let ws = new Ws("ws://127.0.0.1:8081");
     ws.on("open", function () {
 
         ws.sendJson({
-            action: "player_connect"
+            action: "player_connect",
+            nick: "Мерлин"
         });
 
     });
@@ -1176,7 +1188,7 @@
             return true;
         }
 
-        if(data.action === "chat_message"){
+        if (data.action === "chat_message") {
             Message.getNewMessage(data);
             return true;
         }
@@ -1185,6 +1197,20 @@
         if (data.action === "ping") {
             let delta = Date.now() - data.time;
             ping.text(delta);
+        }
+
+        if (data.action === "nick_info") {
+            return true;
+        }
+
+        if(data.action === "game_message"){
+            Message.gameMessage(data.message);
+            return true;
+        }
+
+        if(data.action === "secondary_message"){
+            Message.smallMessage(data.message);
+            return true;
         }
 
     });

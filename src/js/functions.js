@@ -112,6 +112,21 @@ function isEmpty(val) {
     return true;
 }
 
+function getObjByInput(selector){
+    let obj = {};
+    $(selector).each(function(index, element){
+        let name = $(element).attr("data-name") || $(element).attr("name");
+        let type = $(element).attr("type") || "text";
+
+        if(type === "checkbox" || type === "radio"){
+            obj[name] = +$(element).prop("checked");
+        }
+        else obj[name] = $(element).val();
+    });
+
+    return obj;
+}
+
 class Preloader {
     static start() {
         $("#preloader").removeClass("active closed").addClass("active");

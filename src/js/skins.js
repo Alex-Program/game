@@ -67,6 +67,16 @@
             this.context.restore();
         }
 
+        saveImage() {
+            this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+            this.context.drawImage(this.image, this.x, this.y, this.canvas.width * this.scale, this.canvas.height * this.scale);
+            // this.context.restore();
+            let base64 = this.canvas.toDataURL("image/png", 1.0);
+            this.drawImage();
+            return base64;
+        }
+
     }
 
     let canvas = new Canvas();
@@ -77,6 +87,26 @@
         y: 0
     };
 
+    function getAllNicks() {
+        sendRequest("api/user", {action: "get_user_skins"})
+            .then(data => {
+                if (data.result !== "true") {
+                    new Notify("Загрузка ников", "Ошибка");
+                    return true;
+                }
+
+                $("#user_nicks").empty();
+                let nicks = data.data;
+                for (let nick of nicks) {
+                    let html = "<div class='nick' data-info='" + JSON.stringify(nick) + "'>" + nick.nick + "</div>";
+                    $("#user_nicks").append(html);
+                }
+            });
+    }
+
+    getAllNicks();
+
+    // select image
     $("body").on("click", "#select_file_button", () => $("#select_skin_image").click())
 
         .on("change", "#select_skin_image", function () {
@@ -94,10 +124,12 @@
         })
 
 
+        // change color
         .on("click", ".color_select_button", function () {
             $(this).prev(".color_select").click()
         })
 
+        // change color
         .on("change", ".color_select", function () {
             let val = $(this).val();
             let type = $(this).attr("data-type");
@@ -106,20 +138,15 @@
             canvas.drawImage();
         })
 
-        .on("change click", "#is_transparent", function(){
+        // change transparent skin
+        .on("change click", "#is_transparent", function () {
             // if(canvas.image === null) return false;
             canvas.transparentSkin = Boolean(this.checked);
             canvas.drawImage();
         })
 
-        .on("click", "#create_button", function(event){
-            event.stopPropagation();
-            $("#create_list").toggleClass("closed")
-        })
 
-        .on("click", () => $("#create_list").addClass("closed"))
-
-
+        // grab canvas image
         .on("mousedown", "#main_canvas", function (event) {
             if (canvas.image === null) return true;
             [previousCoords.x, previousCoords.y] = [event.clientX, event.clientY];
@@ -132,6 +159,7 @@
             selectedCanvas = false;
         })
 
+        // move canvas image
         .on("mousemove", function (event) {
             if (!selectedCanvas) return true;
             canvas.x += event.clientX - previousCoords.x;
@@ -139,9 +167,129 @@
             previousCoords.x = event.clientX;
             previousCoords.y = event.clientY;
             canvas.drawImage();
+        })
+
+
+        /// open create nick menu
+        .on("click", "#create_new_nick", function () {
+            $("#nick_info form")[0].reset();
+            $("#change_nick_button").parent().hide();
+            $("#create_nick_button").parent().show();
+            $("#nick_info h3").text("Создать ник");
+            $("#change_skin").addClass("closed");
+            $("#nick_info").removeClass("closed");
+        })
+
+        /// close nick menu
+        .on("click", "#close_nick_info", () => $("#nick_info").addClass("closed"))
+
+        .on("input", "input", function () {
+            $(this).addClass("changed");
+        })
+
+        // create nick
+        .on("click", "#create_nick_button", function () {
+            let obj = {};
+            $("#nick_info input").each(function (index, element) {
+                let name = $(element).attr("data-name");
+                let val;
+                if ($(element).attr("type") === "checkbox") val = +$(element).prop("checked");
+                else val = $(element).val();
+
+                if (name === "skin" && val) val = canvas.saveImage();
+                else if (name === "nick") val = val.substr(0, 15);
+                obj[name] = val;
+            });
+
+            if (!obj.nick || (!obj.password && !obj.skin)) return false;
+
+            obj.action = "create_nick";
+            sendRequest("api/user", obj)
+                .then(data => {
+                    if (data.result !== "true") {
+                        let msg = "Ошибка";
+                        if (data.data === "exists") msg = "Данный ник уже существует";
+                        new Notify("Создание ника", msg);
+                        return true;
+                    }
+
+                    getAllNicks();
+                    new Notify("Создание ника", "Ник успешно создан");
+                });
+        })
+
+
+        /// select exists nick
+        .on("click", ".nick", function () {
+            $(".nick.selected").removeClass("selected");
+            $(this).addClass("selected");
+            let data = JSON.parse($(this).attr("data-info"));
+            $("#change_skin input").prop("checked", false);
+            $("#nick_info input").each(function (index, element) {
+                let name = $(element).attr("data-name");
+                if (!data.hasOwnProperty(name)) return true;
+
+                if ($(element).attr("type") === "checkbox") {
+                    if (+data[name] === 0) data[name] = false;
+                    $(element).prop("checked", !isEmpty(data[name]));
+
+                    if (name === "skin") $(element).change();
+                } else $(element).val(data[name]);
+            });
+            if (!isEmpty(data.skin)) {
+                let image = new Image();
+                image.onload = () => canvas.loadImage(image);
+                image.src = data.skin;
+            }
+            $("#change_nick_button").parent().show();
+            $("#create_nick_button").parent().hide();
+            $("#nick_info h3").text("Изменить ник");
+            $("#nick_info").removeClass("closed");
+        })
+
+        .on("change", "input[data-name='skin']", function () {
+            if (!$("#nick_id").val()) return true;
+
+            if ($(this).prop("checked")) $("#change_skin").removeClass("closed");
+            else $("#change_skin").addClass("closed");
+        })
+
+        .on("change", "input[data-name='change_skin']", function () {
+            $("input[data-name='skin']").addClass("changed");
+        })
+
+
+        /// change nick
+        .on("click", "#change_nick_button", function () {
+            let obj = getObjByInput("#nick_info input.changed, #nick_id");
+            if (obj.skin && obj.change_skin) {
+                obj.skin = canvas.saveImage();
+            } else {
+                delete obj.skin;
+                delete obj.change_skin;
+            }
+
+            if (isEmpty(obj.id) || (isEmpty(obj.password) && isEmpty(obj.skin)) || (isEmpty(obj.nick) && "nick" in obj)) {
+                return false;
+            }
+
+            obj.action = "change_nick";
+            sendRequest("api/user", obj)
+                .then(data => {
+                    if (data.result !== "true") {
+                        let msg = "Ошибка";
+                        if (data.data === "exists") msg = "Данный ник уже существует";
+                        new Notify("Изменение ника", msg);
+                        return true;
+                    }
+
+                    getAllNicks();
+                    new Notify("Изменение ника", "Ник успешно изменен");
+                });
         });
 
 
+    /// zoom canvas image
     $("#main_canvas")[0].addEventListener("wheel", function (event) {
         if (canvas.image === null) return true;
         let byX = (canvas.canvasPos.center.x - event.clientX) / 20;

@@ -20,8 +20,7 @@
 
 <div id="main_messages">
     <div id="chat_settings">
-        <input type="color" id="chat_color_input" value="#EDFAFF" style="display: none;">
-        <img src="/src/images/color_picker.png" style="width: 20px; cursor: pointer;" id="change_chat_color">
+        <img src="/src/images/clear_chat.png" style="width: 25px; cursor: pointer;" id="clear_chat">
         <div id="resize_chat"></div>
         <div id="close_chat">x</div>
     </div>
@@ -33,6 +32,20 @@
         <div id="chat_service" class="closed"></div>
         <input type="text" id="message_text">
     </div>
+</div>
+
+<input type="hidden" id="selected_chat_user" value="">
+<div class="user_actions admin closed">
+    <div></div>
+    <div>Забанить IP</div>
+    <div>Кикнуть</div>
+    <div>Мут</div>
+</div>
+
+<div class="user_actions user closed">
+    <div></div>
+    <div>Не показывать сообщения</div>
+    <div>Выделять сообщения</div>
 </div>
 
 <div id="main_menu">

@@ -23,47 +23,75 @@
     cursor: grab;
 }
 
-#create_button {
-    position: absolute;
-    /*bottom: 10px;*/
-    right: 0;
-    border-radius: 20px;
-    cursor: pointer;
-    font: bold 15pt/10pt sans-serif;
-    padding: 0;
-}
-
-#create_list {
-    transition: opacity 0.5s, bottom 0.5s, visibility 0.5s;
-    position: absolute;
-    right: 0;
-    bottom: 10px;
-    background: aliceblue;
-    border: solid 1px grey;
-    border-radius: 15px;
-    overflow: hidden;
-    font: normal 12pt/15pt sans-serif;
-    opacity: 1;
-    visibility: visible;
-}
-
-#create_list.closed {
-    bottom: -10px;
-    opacity: 0;
-    visibility: hidden;
-}
-
-#create_list > div {
-    transition: background 0.5s;
-    padding: 10px;
-    cursor: pointer;
-}
-
-#create_list > div:hover {
-    background: #eae006;
-}
 
 .label_params {
     margin-bottom: 10px;
     font: normal 13pt/15pt sans-serif;
+}
+
+#create_new_nick {
+    border-radius: 15px;
+    padding: 5px 15px;
+    cursor: pointer;
+}
+
+#create_new_nick > span {
+    border-left: solid 1px black;
+    padding-left: 15px;
+}
+
+#nick_info {
+    transition: right 0.5s, opacity 0.5s;
+    position: fixed;
+    height: 100%;
+    background: aliceblue;
+    padding: 20px;
+    opacity: 1;
+    right: 0;
+    z-index: 1;
+    overflow: auto;
+    border-left: solid 3px black;
+}
+
+#nick_info.closed {
+    right: -100%;
+    opacity: 0;
+}
+
+#close_nick_info {
+    width: 35px;
+    position: absolute;
+    transform: translate(0, -10%);
+    cursor: pointer;
+}
+
+div.nick {
+    transition: background 0.5s;
+    font: bold 12pt/12pt sans-serif;
+    background: gold;
+    border-radius: 5px;
+    padding: 5px;
+    text-align: center;
+    cursor: pointer;
+    margin-bottom: 5px;
+}
+
+div.nick:hover {
+    background: #cdaa00;
+}
+
+div.nick.selected {
+    background: #02c842;
+}
+
+div.nick.selected:hover {
+    background: #02a53a;
+}
+
+#change_skin{
+    display: flex;
+}
+
+#change_skin.closed{
+    display: none;
 }

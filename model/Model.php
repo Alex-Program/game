@@ -38,4 +38,27 @@ class Model
         return $first_crypt . $second_crypt;
     }
 
+    public function getById($id)
+    {
+        $id = $this->mysqli->real_escape_string($id);
+
+        $sql = "SELECT * FROM `" . $this->table_name . "` WHERE `id`=" . $id;
+        $result = $this->mysqli->query($sql);
+        if ($result->num_rows === 0) return false;
+
+        return $result->fetch_assoc();
+    }
+
+    public function updateColumn($column, $value, $id)
+    {
+        $column = $this->mysqli->real_escape_string($column);
+        $value = $this->mysqli->real_escape_string($value);
+        $id = $this->mysqli->real_escape_string($id);
+
+        $sql = "UPDATE `" . $this->table_name . "` SET `" . $column . "`='" . $value . "' WHERE `id`=" . $id;
+        if ($this->mysqli->query($sql)) return true;
+
+        return false;
+    }
+
 }

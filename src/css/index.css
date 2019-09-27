@@ -38,11 +38,11 @@ button, button:active, button:focus, input {
 .button_primary {
     transition: background 350ms;
     border-radius: 15px;
-    background: #eae006;;
+    background: #eae006;
     padding: 5px 15px;
     color: black;
     font-weight: bold;
-    border: solid 2px #a59b06;;
+    border: solid 2px #a59b06;
 }
 
 .button_primary:hover {
@@ -95,7 +95,7 @@ button, button:active, button:focus, input {
     bottom: 20px;
     height: 300px;
     width: 300px;
-    background: rgba(237, 250, 255, 0.73);
+    background: rgba(237, 250, 255, 0.9);
     border-radius: 10px;
     font: normal 10pt/12pt sans-serif;
     visibility: visible;
@@ -182,6 +182,35 @@ button, button:active, button:focus, input {
 #all_messages .nick_name:hover {
     background: blue;
     color: white !important;
+}
+
+.div_message.hidden {
+    display: none;
+}
+
+.div_message.highlighted .message {
+    color: blue;
+}
+
+.game_message {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    border-bottom: solid 2px gold !important;
+    border-top: solid 2px gold;
+    border-left: solid 2px gold;
+    border-right: solid 2px gold;
+    font-weight: bold;
+    background: red;
+    color: gold;
+}
+
+.game_message > div {
+    padding: 5px;
+    border: dashed 1px gold;
+}
+
+.small_message {
+    font: normal 9pt/11pt sans-serif;
 }
 
 #send_message {
@@ -384,4 +413,41 @@ button, button:active, button:focus, input {
 #servers_list.show {
     bottom: 10px;
     opacity: 1;
+}
+
+.user_actions {
+    transition: opacity 0.5s, visibility 0.5s;
+    opacity: 1;
+    visibility: visible;
+    position: fixed;
+    border-radius: 10px;
+    background: black;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    font: bold 12pt/15pt sans-serif;
+}
+
+.user_actions.closed {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.user_actions > div:first-child {
+    background: red;
+    cursor: default;
+}
+
+
+.user_actions > div {
+    transition: background 0.5s;
+    background: black;
+    cursor: pointer;
+    color: white;
+    padding: 10px;
+    text-align: center;
+}
+
+.user_actions > div:not(:first-child):hover {
+    background: red;
 }

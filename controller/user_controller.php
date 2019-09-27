@@ -47,6 +47,97 @@ if ($request['action'] == "get_user_skins") {
     exit;
 }
 
+if ($request['action'] === "create_nick") {
+    if (empty($request['nick']) || (empty($request['skin']) && empty($request['password']))) {
+        echo json_encode(["result" => "false", "data" => "invalid_request"], 256);
+        exit;
+    }
+
+    $skin = new Skin();
+    if ($skin->getByNick($request['nick'])) {
+        echo json_encode(["result" => "false", "data" => "exists"]);
+        exit;
+    }
+
+
+    $skin_id = "";
+    if (!empty($request['skin'])) {
+        $img = Image::base64Decode($request['skin']);
+        if (!$img) {
+            echo json_encode(["result" => "false", "data" => "error"]);
+            exit;
+        }
+
+        $image = new Image();
+        $skin_id = $image->addImage($img);
+        if (!$skin_id) {
+            echo json_encode(["result" => "false", "data" => "error"]);
+            exit;
+        }
+    }
+
+
+    if ($nick_id = $skin->createNick($request['nick'], $request['password'], $skin_id, USER_ID)) {
+        echo json_encode(["result" => "true", "data" => $nick_id], 256);
+        exit;
+    }
+
+    echo json_encode(["result" => "false", "data" => "error"], 256);
+    exit;
+}
+
+if ($request['action'] === "change_nick") {
+    if (empty($request['id']) || (array_key_exists("nick", $request) && empty($request['nick'])) || (empty($request['password']) && empty($request['skin']))) {
+        echo json_encode(["result" => "false", "data" => "invalid_request"], 256);
+        exit;
+    }
+
+    $skin = new Skin();
+    $nick = $skin->getById($request['id']);
+    if (!$nick || $nick['user_id'] != USER_ID) {
+        echo json_encode(["result" => "false", "data" => "invalid_data"], 256);
+        exit;
+    }
+
+    if(!empty($request['nick']) && $skin->getByNick($request['nick'])){
+        echo json_encode(["result" => "false", "data" => "exists"], 256);
+        exit;
+    }
+
+    if (!empty($request['skin']) && (int)$request['change_skin']) {
+        $img = Image::base64Decode($request['skin']);
+        if (!$img) {
+            echo json_encode(["result" => "false", "data" => "error"], 256);
+            exit;
+        }
+
+        $image = new Image();
+        $skin_id = $image->addImage($img);
+        if (!$skin_id) {
+            echo json_encode(["result" => "false", "data" => "error"], 256);
+            exit;
+        }
+        if (!$skin->updateColumn("skin_id", $skin_id, $request['id'])) {
+            echo json_encode(["result" => "false", "data" => "error"], 256);
+            exit;
+        }
+
+    }
+    unset($request['skin']);
+    unset($request['change_skin']);
+
+    foreach ($request as $key => $value) {
+        if (!array_key_exists($key, $nick) || $key == "id" || $value == $nick[$key]) continue;
+        if (!$skin->updateColumn($key, $value, $request['id'])) {
+            echo json_encode(["result" => "false", "data" => "error"], 256);
+            exit;
+        }
+    }
+
+    echo json_encode(["result" => "true", "data" => ""], 256);
+    exit;
+}
+
 if ($_POST['action'] == "change_user_img") {
     if (empty($_FILES['file']['tmp_name'])) {
         echo json_encode(["result" => "false", "data" => "invalid_request"], 256);

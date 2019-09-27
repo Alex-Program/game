@@ -259,6 +259,7 @@ button, button:active, button:focus {
     overflow: hidden;
     bottom: 30px;
     right: 50px;
+    z-index: 1000000;
 }
 
 #notifications::-webkit-scrollbar {

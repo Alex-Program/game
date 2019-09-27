@@ -1,0 +1,82 @@
+#main_block {
+    position: absolute;
+    top: 200px;
+    left: 50%;
+    transform: translate(-50%, 0);
+    background: aliceblue;
+    border: solid 1px black;
+    border-radius: 15px;
+    padding: 20px;
+    display: flex;
+    flex-direction: row;
+}
+
+#create_new_stickers {
+    border-radius: 15px;
+    padding: 5px 15px;
+    cursor: pointer;
+}
+
+#create_new_stickers > span {
+    border-left: solid 1px black;
+    padding-left: 15px;
+}
+
+#main_canvas > div {
+    display: flex;
+    flex-direction: row;
+}
+
+canvas {
+    margin: 5px;
+    flex: 0 1 auto;
+    cursor: pointer;
+}
+
+.sticker_group, .sticker_set {
+    transition: background 0.5s;
+    padding: 5px;
+    border-radius: 5px;
+    background: gold;
+    text-align: center;
+    cursor: pointer;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.sticker_group:hover, .sticker_set:hover {
+    background: #c39f00;
+}
+
+.sticker_group.selected, .sticker_set.selected {
+    background: lightseagreen;
+}
+
+.sticker_set{
+    display: flex;
+    flex-direction: row;
+}
+
+.sticker_set > img{
+    height: 25px;
+    margin-left: 5px;
+    border-radius: 20px;
+}
+
+.sticker_set > div{
+    flex: 1 1 auto;
+    font-weight: bold;
+}
+
+#stickers_in_group {
+    margin-left: 20px;
+    padding: 15px;
+    display: none;
+    border-left: solid 2px black;
+    white-space: nowrap;
+}
+
+#add_stickers_div {
+    display: flex;
+    flex-direction: row;
+}

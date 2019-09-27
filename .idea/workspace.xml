@@ -1,48 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="011e9982-741d-4222-841e-091d212022f0" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/server/GameClasses/Perfromance.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/server/GameClasses/Units.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/server/functions.js" afterDir="false" />
+    <list default="true" id="011e9982-741d-4222-841e-091d212022f0" name="Default Changelist" comment="add chat, fix multiplayer">
+      <change afterPath="$PROJECT_DIR$/controller/admin_controller.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/controller/stickers_controller.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/model/Image.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/model/Sticker.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/css/stickers.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/js/stickers.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/view/stickers.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/game.pw.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/game.pw.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/node_modules/async-limiter/.travis.yml" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/async-limiter/.travis.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/node_modules/async-limiter/LICENSE" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/async-limiter/LICENSE" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/node_modules/async-limiter/coverage/coverage.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/node_modules/async-limiter/coverage/lcov-report/async-throttle/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/node_modules/async-limiter/coverage/lcov-report/async-throttle/index.js.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/node_modules/async-limiter/coverage/lcov-report/base.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/node_modules/async-limiter/coverage/lcov-report/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/node_modules/async-limiter/coverage/lcov-report/prettify.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/node_modules/async-limiter/coverage/lcov-report/prettify.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/node_modules/async-limiter/coverage/lcov-report/sort-arrow-sprite.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/node_modules/async-limiter/coverage/lcov-report/sorter.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/node_modules/async-limiter/coverage/lcov.info" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/node_modules/async-limiter/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/async-limiter/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/node_modules/async-limiter/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/async-limiter/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/node_modules/async-limiter/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/async-limiter/readme.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/node_modules/ws/LICENSE" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/ws/LICENSE" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/node_modules/ws/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/ws/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/node_modules/ws/browser.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/ws/browser.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/node_modules/ws/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/ws/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/node_modules/ws/lib/buffer-util.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/ws/lib/buffer-util.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/node_modules/ws/lib/constants.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/ws/lib/constants.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/node_modules/ws/lib/event-target.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/ws/lib/event-target.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/node_modules/ws/lib/extension.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/ws/lib/extension.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/node_modules/ws/lib/permessage-deflate.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/ws/lib/permessage-deflate.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/node_modules/ws/lib/receiver.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/ws/lib/receiver.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/node_modules/ws/lib/sender.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/ws/lib/sender.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/node_modules/ws/lib/validation.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/ws/lib/validation.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/node_modules/ws/lib/websocket-server.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/ws/lib/websocket-server.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/node_modules/ws/lib/websocket.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/ws/lib/websocket.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/node_modules/ws/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/server/node_modules/ws/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/auth_controller.php" beforeDir="false" afterPath="$PROJECT_DIR$/controller/auth_controller.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/user_controller.php" beforeDir="false" afterPath="$PROJECT_DIR$/controller/user_controller.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/Model.php" beforeDir="false" afterPath="$PROJECT_DIR$/model/Model.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/Skin.php" beforeDir="false" afterPath="$PROJECT_DIR$/model/Skin.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/GameClasses/Units.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/GameClasses/Units.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/functions.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/functions.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/server/package-lock.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/server/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/server.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/css/header.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/css/header.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/css/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/css/index.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/js/Ws.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/Ws.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/css/skins.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/css/skins.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/js/functions.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/functions.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/js/game.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/game.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/js/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/js/skins.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/skins.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/users_img/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/src/users_img/1.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/view/index.php" beforeDir="false" afterPath="$PROJECT_DIR$/view/index.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/view/skins.php" beforeDir="false" afterPath="$PROJECT_DIR$/view/skins.php" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -55,12 +44,15 @@
       <executable />
     </execution>
   </component>
+  <component name="FavoritesManager">
+    <favorites_list name="game.pw" />
+  </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="HTML File" />
-        <option value="CSS File" />
         <option value="JavaScript File" />
+        <option value="CSS File" />
       </list>
     </option>
   </component>
@@ -82,11 +74,12 @@
   <component name="ProjectId" id="1OaPHa7tXg6PqTm6K9fpsp1Nqdr" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="PropertiesComponent">
+    <property name="Constants" value="true" />
     <property name="DefaultHtmlFileTemplate" value="HTML File" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="javascript.nodejs.core.library.configured.version" value="10.15.2" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/server/chat.js" />
+    <property name="javascript.nodejs.core.library.configured.version" value="12.10.0" />
+    <property name="last_opened_file_path" value="$USER_HOME$/Загрузки/Petridish-Ogar-master" />
     <property name="list.type.of.created.stylesheet" value="CSS" />
     <property name="nodejs_interpreter_path" value="node" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
@@ -95,14 +88,40 @@
     <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors.Language Defaults" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$" />
-      <recent name="$PROJECT_DIR$/src/js" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/view" />
       <recent name="$PROJECT_DIR$/src/js" />
     </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/src/js" />
+    </key>
+  </component>
+  <component name="RestClientSettings">
+    <option name="REQUEST_HISTORY">
+      <list>
+        <RestClientRequest>
+          <option name="httpMethod" value="GET" />
+          <option name="urlBase" value="http://game.pw" />
+          <option name="urlPath" value="" />
+          <option name="headers">
+            <list>
+              <KeyValuePair>
+                <option name="key" value="Accept" />
+                <option name="value" value="*/*" />
+              </KeyValuePair>
+              <KeyValuePair>
+                <option name="key" value="Cache-Control" />
+                <option name="value" value="no-cache" />
+              </KeyValuePair>
+            </list>
+          </option>
+          <option name="parametersEnabled" value="true" />
+          <option name="textToSend" value="" />
+          <option name="filesToSend" value="" />
+        </RestClientRequest>
+      </list>
+    </option>
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -223,7 +242,39 @@
       <workItem from="1567735026823" duration="10379000" />
       <workItem from="1567838298555" duration="3904000" />
       <workItem from="1567907843938" duration="20513000" />
-      <workItem from="1567995454467" duration="21641000" />
+      <workItem from="1567995454467" duration="21805000" />
+      <workItem from="1568073092527" duration="11450000" />
+      <workItem from="1568176118012" duration="9811000" />
+      <workItem from="1568249038961" duration="1833000" />
+      <workItem from="1568260319468" duration="12912000" />
+      <workItem from="1568333638233" duration="4658000" />
+      <workItem from="1568356688711" duration="6968000" />
+      <workItem from="1568424681147" duration="995000" />
+      <workItem from="1568437780005" duration="6838000" />
+      <workItem from="1568505877523" duration="7868000" />
+      <workItem from="1568533156726" duration="3751000" />
+      <workItem from="1568600319031" duration="7434000" />
+      <workItem from="1568625361038" duration="756000" />
+      <workItem from="1568682000524" duration="4870000" />
+      <workItem from="1568696012015" duration="6786000" />
+      <workItem from="1568854362074" duration="13043000" />
+      <workItem from="1568938601262" duration="13203000" />
+      <workItem from="1569029050920" duration="17546000" />
+      <workItem from="1569131351820" duration="15568000" />
+      <workItem from="1569155292242" duration="342000" />
+      <workItem from="1569156006991" duration="1336000" />
+      <workItem from="1569197471421" duration="7783000" />
+      <workItem from="1569223787224" duration="2826000" />
+      <workItem from="1569289573303" duration="1537000" />
+      <workItem from="1569296779645" duration="758000" />
+      <workItem from="1569308209339" duration="3574000" />
+      <workItem from="1569317706608" duration="2751000" />
+      <workItem from="1569370129538" duration="772000" />
+      <workItem from="1569391928187" duration="12390000" />
+      <workItem from="1569458327853" duration="6932000" />
+      <workItem from="1569472726286" duration="7457000" />
+      <workItem from="1569550638961" duration="4947000" />
+      <workItem from="1569567730484" duration="6010000" />
     </task>
     <task id="LOCAL-00001" summary="add viruses">
       <created>1567508394746</created>
@@ -232,7 +283,14 @@
       <option name="project" value="LOCAL" />
       <updated>1567508394746</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="add chat, fix multiplayer">
+      <created>1568955257063</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1568955257063</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -253,6 +311,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="add viruses" />
-    <option name="LAST_COMMIT_MESSAGE" value="add viruses" />
+    <MESSAGE value="add chat, fix multiplayer" />
+    <option name="LAST_COMMIT_MESSAGE" value="add chat, fix multiplayer" />
   </component>
 </project>
