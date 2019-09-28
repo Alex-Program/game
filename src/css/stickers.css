@@ -68,10 +68,21 @@ canvas {
     font-weight: bold;
 }
 
+.sticker_set span, #price_of_sticker{
+    font-weight: bold;
+    background: red;
+    border-radius: 5px;
+    padding-right: 5px;
+    color: gold;
+    padding-left: 5px;
+}
+#price_of_sticker{
+    padding: 5px;
+}
+
 #stickers_in_group {
     margin-left: 20px;
     padding: 15px;
-    display: none;
     border-left: solid 2px black;
     white-space: nowrap;
 }

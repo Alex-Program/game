@@ -224,6 +224,15 @@ webSocketServer.on('connection', function (ws, req) {
             delete data.command;
             command.sendCommand(id, cmd, data);
         }
+
+        if (data.action === "select_sticker_set") {
+            if (!data.id) return true;
+
+            Functions.sendRequest("game.pw/api/admin", {action: "get_sticker_set", id: data.id})
+                .then(data => {
+                    wsMessage({action: "select_sticker_set", id, stickers: data.data.stickers});
+                });
+        }
     });
 
     setInterval(() => {

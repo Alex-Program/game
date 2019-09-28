@@ -17,7 +17,7 @@ class Message {
         if (+data.pm) cl += " pm";
         if (hiddenUsersId.includes(+data.id) && !isAdmin) cl += " hidden";
         if (highlightedUsersId.includes(+data.id) && !isAdmin) cl += " highlighted";
-        if(Number(data.isSecondary)) cl += " small_message";
+        if (Number(data.isSecondary)) cl += " small_message";
 
 
         $("#all_messages").append("<div class='div_message " + cl + "' data-pid='" + data.id + "' data-nick='" + data.nick + "' data-admin='" + isAdmin + "'><span class='pm_icon'>ЛС</span><div class='icon'></div><span class='nick_name' style='color: " + data.color + "'>" + data.nick + ":</span><span class='message'> " + data.message + "</span></div>");
@@ -94,6 +94,57 @@ class Command {
 }
 
 function onOpen() {
+    class User{
+
+        name = null;
+        img = null;
+        balance = null;
+
+        constructor(){
+            this.getUserInfo();
+        }
+
+        getUserInfo(){
+            sendRequest("api/user", {action: "get_user_info"})
+                .then(data => {
+                    if(data.result !== "true") return true;
+
+                    data = data.data;
+                    this.name = data.name;
+                    this.balance = data.balance;
+                    this.img = data.img;
+                    this.fillUserInfo();
+                });
+        }
+
+        fillUserInfo(){
+            let accountDiv = $("#account_div");
+            accountDiv.find("img").attr("src", this.img);
+            accountDiv.find(".user_name").text(this.name);
+            accountDiv.find(".user_balance").text(this.balance + " snl");
+            $("#login").hide();
+            $("#account_div").show();
+
+        }
+    }
+
+    let user = null;
+    let userId = getCookie("User-Id");
+    let token = getCookie("Token");
+    if (!isEmpty(userId) && !isEmpty(token)) {
+        sendRequest("api/registration", {action: "auth_by_token", token, user_id: userId})
+            .then(data => {
+                if (data.result !== "true") return true;
+
+                $.ajaxSetup({
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader("Token", getCookie("Token"));
+                        xhr.setRequestHeader("User-Id", getCookie("User-Id"));
+                    }
+                });
+                user = new User();
+            });
+    }
 
 
     let resizeChat = false;

@@ -127,6 +127,13 @@ function getObjByInput(selector){
     return obj;
 }
 
+function escapeHtml(text) {
+    'use strict';
+    return text.replace(/[\"&<>]/g, function (a) {
+        return { '"': '&quot;', '&': '&amp;', '<': '&lt;', '>': '&gt;' }[a];
+    });
+}
+
 class Preloader {
     static start() {
         $("#preloader").removeClass("active closed").addClass("active");

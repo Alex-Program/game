@@ -64,26 +64,28 @@ class Auth extends Model
         return $row;
     }
 
-    public function updateUserInfo($col, $val, $userId){
+    public function updateUserInfo($col, $val, $userId)
+    {
         $col = $this->mysqli->real_escape_string($col);
         $val = $this->mysqli->real_escape_string($val);
         $userId = $this->mysqli->real_escape_string($userId);
 
-        $sql = "UPDATE `users` SET `".$col."`='".$val."' WHERE `id`=".$userId;
-        if($this->mysqli->query($sql)) return true;
+        $sql = "UPDATE `users` SET `" . $col . "`='" . $val . "' WHERE `id`=" . $userId;
+        if ($this->mysqli->query($sql)) return true;
 
         return false;
     }
 
-    public function getByUserName($name, $isAdmin = false){
+    public function getByUserName($name, $isAdmin = false)
+    {
         $name = $this->mysqli->real_escape_string($name);
 
-        $sql = "SELECT * FROM `users` WHERE `name` LIKE '".$name."'";
-        $result =$this->mysqli->query($sql);
-        if($result->num_rows === 0) return false;
+        $sql = "SELECT * FROM `users` WHERE `name` LIKE '" . $name . "'";
+        $result = $this->mysqli->query($sql);
+        if ($result->num_rows === 0) return false;
 
         $row = $result->fetch_assoc();
-        if(!$isAdmin){
+        if (!$isAdmin) {
             unset($row['password']);
             unset($row['token']);
         }
@@ -91,4 +93,28 @@ class Auth extends Model
         return $row;
     }
 
+    public function getUserStickers($userId)
+    {
+        $userId = $this->mysqli->real_escape_string($userId);
+
+        $sql = "SELECT `stickers` FROM `users` WHERE `id`=" . $userId;
+        $result = $this->mysqli->query($sql);
+        if ($result->num_rows === 0) return false;
+
+        $row = $result->fetch_assoc();
+        $stickers = $row['stickers'];
+        try {
+            $stickers = json_decode($stickers, true);
+        } catch (Throwable $e) {
+            return [];
+        }
+
+        $s = new Sticker();
+
+        foreach ($stickers as $key => $stickerId) {
+            $stickers[$key] = $s->getStickerSet($stickerId);
+        }
+
+        return $stickers;
+    }
 }

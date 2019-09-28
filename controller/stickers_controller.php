@@ -7,7 +7,7 @@ if ($request['action'] == "get_all_groups") {
 }
 
 if ($request['action'] == "add_stickers") {
-    if (empty($request['name']) || empty($request['stickers']) || empty($request['group_id'])) {
+    if (empty($request['name']) || empty($request['stickers']) || empty($request['group_id']) || empty($request['price'])) {
         echo json_encode(["result" => "false", "data" => "invalid_request"], 256);
         exit;
     }
@@ -35,7 +35,7 @@ if ($request['action'] == "add_stickers") {
     }
 
     $stickers = new Sticker();
-    $stickerId = $stickers->addStickers($request['name'], USER_ID, $request['group_id'], $request['stickers'], 0);
+    $stickerId = $stickers->addStickers($request['name'], USER_ID, $request['group_id'], $request['stickers'], $request['price'], 0);
     if (!$stickerId) {
         echo json_encode(["result" => "false", "data" => "error"], 256);
         exit;
@@ -45,8 +45,8 @@ if ($request['action'] == "add_stickers") {
     exit;
 }
 
-if($request['action'] == "get_group_stickers"){
-    if(empty($request['group_id'])) $request['group_id'] = 0;
+if ($request['action'] == "get_group_stickers") {
+    if (empty($request['group_id'])) $request['group_id'] = 0;
 
     $stickers = new Sticker();
     echo json_encode(["result" => "true", "data" => $stickers->getStickersInGroup($request['group_id'])], 256);

@@ -63,6 +63,14 @@
                 <button class="button button_primary">Войти</button>
             </div>
         </div>
+        <div id="account_div" style="display: none;">
+            <img src="">
+            <div class="user_name"></div>
+            <div id="add_balance_div">
+                <div class="user_balance"></div>
+                <div id="add_balance">+</div>
+            </div>
+        </div>
     </div>
     <div style="position: relative; display: flex; flex-direction: row;">
         <div style="flex: 1 1 auto;">

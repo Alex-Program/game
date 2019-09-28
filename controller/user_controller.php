@@ -162,3 +162,11 @@ if ($_POST['action'] == "change_user_img") {
     echo json_encode(["result" => "true", "data" => "/src/users_img/" . $name]);
     exit;
 }
+
+if($request['action'] == "get_user_stickers"){
+    $auth = new Auth();
+    $arr = $auth->getUserStickers(USER_ID);
+
+    echo json_encode(["result" => "true", "data" => $arr], 256);
+    exit;
+}

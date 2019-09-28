@@ -323,14 +323,16 @@ button, button:active, button:focus, input {
 }
 
 #main_menu {
-    display: none;
+    display: block;
     position: absolute;
     min-width: 100%;
     min-height: 100%;
+    top: 0;
     background: url("/src/images/logo.png") no-repeat fixed center,
     url("/src/images/background.jpg") no-repeat fixed center;
     background-size: 30%, 100% 100%;
     overflow: hidden;
+    z-index: 10;
 }
 
 #login > div:first-child {
@@ -451,3 +453,53 @@ button, button:active, button:focus, input {
 .user_actions > div:not(:first-child):hover {
     background: red;
 }
+
+#account_div {
+    display: flex;
+    background: ghostwhite;
+    font: bold 12pt/12pt sans-serif;
+    padding: 5px;
+    border: solid 1px red;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+#account_div > img {
+    border-radius: 20px;
+    width: 30px;
+    border: solid 1px gold;
+}
+
+#account_div > div, #add_balance_div > div {
+    display: flex;
+    align-items: center;
+    padding: 5px;
+}
+
+#account_div > .user_name {
+    margin-left: 10px;
+}
+
+#add_balance_div .user_balance {
+    transition: background 0.5s;
+    border-radius: 5px 0 0 5px;
+    background: gold;
+    margin-left: 5px;
+}
+
+#add_balance_div #add_balance {
+    transition: background 0.5s;
+    background: lightseagreen;
+    border-radius: 0 5px 5px 0;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+}
+
+#add_balance_div:hover .user_balance {
+    background: #cdaa00;
+}
+
+#add_balance_div:hover #add_balance {
+    background: #1c8078;
+}
+

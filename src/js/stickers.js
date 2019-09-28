@@ -1,4 +1,5 @@
 (function () {
+    let isAddSticker = false;
 
     class Canvas {
         image = null;
@@ -7,7 +8,7 @@
             this.canvas = canvas;
             this.context = canvas.getContext("2d");
 
-            this.defaultText();
+            this.selectImageText();
         }
 
         defaultText() {
@@ -39,6 +40,17 @@
             let image = new Image();
             image.onload = () => this.loadImage(image);
             image.src = src;
+        }
+
+        selectImageText() {
+            this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            this.context.fillStyle = "#000000";
+            this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            this.context.fillStyle = "#FFFFFF";
+            this.context.textAlign = "center";
+            this.context.textBaseline = "middle";
+            this.context.font = "10 Verdana";
+            this.context.fillText("Выберите набор стикеров", this.canvas.width / 2, this.canvas.height / 2);
         }
 
         drawImage() {
@@ -76,6 +88,11 @@
         canvasArr.push(new Canvas($(element)[0]));
     });
 
+    let userStickersId = [];
+    sendRequest("api/user", {action: "get_user_stickers"})
+        .then(data => {
+            for (let sticker of data.data) userStickersId.push(+sticker.id);
+        });
 
     function getAllGroups() {
         sendRequest("api/stickers", {action: "get_all_groups"})
@@ -97,7 +114,7 @@
         sendRequest("/api/stickers", {action: "get_group_stickers", group_id: groupId})
             .then(data => {
                 for (let stickerSet of data.data) {
-                    let html = "<div class='sticker_set' data-id='" + stickerSet.id + "' data-info='" + JSON.stringify(stickerSet) + "'><img src='" + stickerSet.stickers[0].src + "'><div>" + stickerSet.name + "</div></div>";
+                    let html = "<div class='sticker_set' data-id='" + stickerSet.id + "' data-info='" + JSON.stringify(stickerSet) + "'><img src='" + stickerSet.stickers[0].src + "'><div>" + stickerSet.name + "</div><span>" + stickerSet.price + "</span></div>";
                     $("#all_stickers").append(html);
                 }
 
@@ -105,9 +122,10 @@
 
     }
 
-    getStickersInGroup(0);
+    // getStickersInGroup(0);
 
     $("body").on("click", "canvas", function () {
+        if (!isAddSticker) return true;
         $(this).prev("input").click();
     })
 
@@ -130,25 +148,35 @@
 
             $(".sticker_group.selected").not(this).removeClass("selected");
             $(this).addClass("selected");
-            $("#stickers_in_group").show();
+
+            isAddSticker = false;
+            $("#add_stickers_div").hide();
+            $("#buy_sticker_div").hide();
 
             let groupId = $(".sticker_group.selected:eq(0)").attr("data-id");
             getStickersInGroup(groupId);
+            for (let canvas of canvasArr) canvas.selectImageText();
         })
 
         .on("click", "#add_sticker", function () {
-            for(let canvas of canvasArr) canvas.defaultText();
-            $("#main_canvas").show();
+            isAddSticker = true;
+            $("#add_stickers_div").show();
+            $("#buy_sticker_div").hide();
+
+            for (let canvas of canvasArr) canvas.defaultText();
+            $(".sticker_set.selected").removeClass("selected");
         })
 
         .on("click", "#add_sticker_button", function () {
-            let groupId = $(".sticker_group.selected:eq(0)").attr("data-id");
+            let groupId = +$(".sticker_group.selected:eq(0)").attr("data-id");
             let name = $("#sticker_name").val().trim();
-            if (!+groupId || !name) return true;
+            let stickerPrice = +$("#sticker_price").val().trim();
+            if (!groupId || !name || !stickerPrice) return true;
 
             let obj = {
                 action: "add_stickers",
                 group_id: groupId,
+                price: stickerPrice,
                 stickers: [],
                 name
             };
@@ -164,14 +192,26 @@
                 });
         })
 
-        .on("click", ".sticker_set", function(){
+        .on("click", ".sticker_set", function () {
+            if ($(this).hasClass("selected")) return true;
+
+
+            $(".sticker_set.selected").not(this).removeClass("selected");
+            $(this).addClass("selected");
             let dataInfo = JSON.parse($(this).attr("data-info"));
+
+            $("#price_of_sticker #price").text(dataInfo.price);
+            isAddSticker = false;
+            $("#add_stickers_div").hide();
+            if (!userStickersId.includes(+dataInfo.id)) {
+                $("#buy_sticker_div").css("display", "block");
+            }
+
             let stickers = dataInfo.stickers;
-            $("#main_canvas").show();
-            for(let [i, canvas] of Object.entries(canvasArr)){
+            for (let [i, canvas] of Object.entries(canvasArr)) {
                 canvas.loadImageBySrc(stickers[i].src);
             }
         });
 
-
+    $(".sticker_group:eq(0)").click();
 })();

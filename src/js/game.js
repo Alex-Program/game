@@ -43,7 +43,13 @@
 
             let name = this.constructor.name.toLowerCase();
             if (name === "cell" && imagesArr[this.owner.skinId]) {
-                this.drawImage(imagesArr[this.owner.skinId], drawableX, drawableY);
+                let stickerI = this.owner.stickerI;
+                let stickerSet = this.owner.stickersSet;
+                if (!isEmpty(stickerI) && stickerSet && imagesArr[stickerSet[stickerI].image_id]) {
+                    this.drawImage(imagesArr[stickerSet[stickerI].image_id], drawableX, drawableY);
+                } else {
+                    this.drawImage(imagesArr[this.owner.skinId], drawableX, drawableY);
+                }
             }
 
             if (!["food", "bullet"].includes(name)) {
@@ -593,6 +599,8 @@
         ids = [];
         totalMass = 0;
         mass = 0;
+        stickersSet = null;
+        stickerI = null;
 
         constructor(x, y, mass, color = "#000000", current = false, id, nick, skin = "", skinId = "") {
             this.skin = skin;
@@ -733,6 +741,14 @@
             return {cell, count: i};
         }
 
+        loadStickers(stickers) {
+            this.stickersSet = stickers;
+            for (let i = 0; i < this.stickersSet.length; i++) {
+                loadImage(this.stickersSet[i].image_id, this.stickersSet[i].src);
+            }
+
+        }
+
     }
 
     ///////////////////
@@ -818,7 +834,7 @@
     let renderVar = null;
 
     function render() {
-        return true;
+        // return true;
         new Promise(() => {
             // let time = performance.now();
             while (performance.now() - gameInfo.updateTime >= gameInfo.perSecond) {
@@ -953,6 +969,7 @@
                 playersArr[0].update(delta);
                 render();
                 updateHtml();
+                ws.sendJson({action: "select_sticker_set", id: 1});
                 ws.sendJson({action: "get_all_units"});
                 setTimeout(function () {
                     ws.sendJson({
@@ -1032,6 +1049,7 @@
     });
 
     window.addEventListener("keypress", event => {
+        let code = event.code.toLowerCase();
         if (event.code.toLowerCase() === "space") {
             if (typeof ws !== "undefined") {
                 ws.sendJson({
@@ -1055,6 +1073,11 @@
             return true;
         }
 
+        if (["digit1", "digit2", "digit3", "digit4", "digit5", "digit6", "digit7", "digit8", "digit9"].includes(code)) {
+            let stickerNumber = +code.substr(-1) - 1;
+            playersArr[0].stickerI = stickerNumber;
+            return true;
+        }
     });
 
     {
@@ -1203,13 +1226,19 @@
             return true;
         }
 
-        if(data.action === "game_message"){
+        if (data.action === "game_message") {
             Message.gameMessage(data.message);
             return true;
         }
 
-        if(data.action === "secondary_message"){
+        if (data.action === "secondary_message") {
             Message.smallMessage(data.message);
+            return true;
+        }
+
+        if (data.action === "select_sticker_set") {
+            let player = findPlayer(data.id);
+            player.loadStickers(data.stickers);
             return true;
         }
 

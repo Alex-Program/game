@@ -14,6 +14,7 @@ class Sticker extends Model
 `group_id` int(11) NOT NULL,
 `account_id` int(11) NOT NULL,
 `stickers` text NOT NULL,
+`price` int(11) NOT NULL,
 `is_valid` tinyint(1) DEFAULT 0
 )";
         $this->mysqli->query($sql);
@@ -38,15 +39,16 @@ class Sticker extends Model
         return $arr;
     }
 
-    public function addStickers($name, $accountId, $groupId, $stickers, $isValid = 0)
+    public function addStickers($name, $accountId, $groupId, $stickers, $price, $isValid = 0)
     {
         $name = $this->mysqli->real_escape_string($name);
         $accountId = $this->mysqli->real_escape_string($accountId);
         $groupId = $this->mysqli->real_escape_string($groupId);
         $stickers = json_encode($stickers, 256);
         $isValid = $this->mysqli->real_escape_string($isValid);
+        $price = $this->mysqli->real_escape_string($price);
 
-        $sql = "INSERT INTO `stickers` (`time`, `name`, `group_id`, `account_id`, `stickers`, `is_valid`) VALUES (" . time() . ", '" . $name . "', " . $groupId . ", " . $accountId . ", '" . $stickers . "', " . $isValid . ")";
+        $sql = "INSERT INTO `stickers` (`time`, `name`, `group_id`, `account_id`, `stickers`, `price`, `is_valid`) VALUES (" . time() . ", '" . $name . "', " . $groupId . ", " . $accountId . ", '" . $stickers . "', " . $price . ", " . $isValid . ")";
         if ($this->mysqli->query($sql)) return $this->mysqli->insert_id;
 
         return false;
@@ -56,9 +58,9 @@ class Sticker extends Model
     {
         $groupId = $this->mysqli->real_escape_string($groupId);
 
-        $sql = "SELECT * FROM `stickers`";
+        $sql = "SELECT * FROM `stickers` WHERE `is_valid`=1";
         if ($groupId == 0) $sql .= " ORDER BY `id` DESC LIMIT 10";
-        else $sql .= " WHERE `group_id`=" . $groupId;
+        else $sql .= " AND `group_id`=" . $groupId;
 
         $result = $this->mysqli->query($sql);
         if ($result->num_rows === 0) return [];
@@ -68,7 +70,7 @@ class Sticker extends Model
         while ($row = $result->fetch_assoc()) {
             $stickers = json_decode($row['stickers'], true);
 
-            foreach ($stickers as $key => $image_id){
+            foreach ($stickers as $key => $image_id) {
                 $stickers[$key] = ["src" => $image->getPath($image_id), "image_id" => $image_id];
             }
             $row['stickers'] = $stickers;
@@ -76,6 +78,24 @@ class Sticker extends Model
         }
 
         return $arr;
+    }
+
+    public function getStickerSet($stickerSetId)
+    {
+        $stickerSetId = $this->mysqli->real_escape_string($stickerSetId);
+
+        $sql = "SELECT * FROM `stickers` WHERE `id`=" . $stickerSetId;
+        $result = $this->mysqli->query($sql);
+        if ($result->num_rows === 0) return false;
+
+        $row = $result->fetch_assoc();
+        $stickers = json_decode($row['stickers'], true);
+        $image = new Image();
+        foreach ($stickers as $key => $image_id) {
+            $stickers[$key] = ["src" => $image->getPath($image_id), "image_id" => $image_id];
+        }
+        $row['stickers'] = $stickers;
+        return $row;
     }
 
 }

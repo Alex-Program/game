@@ -23,7 +23,29 @@ if ($request['action'] == "auth") {
             "user_id" => $userInfo['id'],
             "token" => $token
         ]
-    ]);
+    ], 256);
 
+    exit;
+}
+
+if ($request['action'] == "auth_by_token") {
+    if (empty($request['token']) || empty($request['user_id'])) {
+        echo json_encode(["result" => "false", "data" => "invalid_request"], 256);
+        exit;
+    }
+
+    $auth = new Auth();
+    $userInfo = $auth->authByToken($request['user_id'], $request['token']);
+    if (!$userInfo) {
+        echo json_encode(["result" => "false", "data" => "invalid_data"], 256);
+        exit;
+    }
+
+    echo json_encode(["result" => "true", "data" =>
+        [
+            "user_id" => $userInfo['id'],
+            "token" => $userInfo['token']
+        ]
+    ], 256);
     exit;
 }

@@ -67,7 +67,7 @@
 
         </div>
     </div>
-    <div id="main_canvas" style="display: none;">
+    <div id="main_canvas">
         <div>
             <div>
                 <input type="file" style="display: none;" class="sticker_image">
@@ -110,8 +110,13 @@
                 <canvas width="150" height="150"></canvas>
             </div>
         </div>
-        <div id="add_stickers_div">
+        <div id="buy_sticker_div" style="display: none;">
+            <span id="price_of_sticker"><span id="price"></span> <span>snl</span></span>
+            <button id="buy_sticker_set" class="button_green button">Купить</button>
+        </div>
+        <div id="add_stickers_div" style="display: none;">
             <input type="text" placeholder="Наименование" id="sticker_name" required>
+            <input type="text" placeholder="Стоимость" id="sticker_price" style="margin-left: 10px;" required>
             <button class="button_primary button" id="add_sticker_button" style="margin-left: 10px;">Добавить</button>
         </div>
     </div>
