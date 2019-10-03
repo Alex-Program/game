@@ -112,16 +112,15 @@ function isEmpty(val) {
     return true;
 }
 
-function getObjByInput(selector){
+function getObjByInput(selector) {
     let obj = {};
-    $(selector).each(function(index, element){
+    $(selector).each(function (index, element) {
         let name = $(element).attr("data-name") || $(element).attr("name");
         let type = $(element).attr("type") || "text";
 
-        if(type === "checkbox" || type === "radio"){
+        if (type === "checkbox" || type === "radio") {
             obj[name] = +$(element).prop("checked");
-        }
-        else obj[name] = $(element).val();
+        } else obj[name] = $(element).val();
     });
 
     return obj;
@@ -130,8 +129,25 @@ function getObjByInput(selector){
 function escapeHtml(text) {
     'use strict';
     return text.replace(/[\"&<>]/g, function (a) {
-        return { '"': '&quot;', '&': '&amp;', '<': '&lt;', '>': '&gt;' }[a];
+        return {'"': '&quot;', '&': '&amp;', '<': '&lt;', '>': '&gt;'}[a];
     });
+}
+
+
+/**
+ * @param hex String
+ * @return {{r: Number, b: Number, brightness: Boolean, g: Number}|null}
+ */
+function hexToRgb(hex) {
+    let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    if (!result) return null;
+    let r = parseInt(result[1], 16);
+    let g = parseInt(result[2], 16);
+    let b = parseInt(result[3], 16);
+
+    let brightness = (r >= 200 || g >= 200 || b >= 200);
+
+    return {r, g, b, brightness};
 }
 
 class Preloader {

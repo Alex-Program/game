@@ -9,6 +9,15 @@ html, body {
     height: 100%;
 }
 
+::-webkit-scrollbar {
+    background: lightseagreen;
+    width: 7px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: gold;
+    border-radius: 10px;
+}
 
 canvas {
     display: block;
@@ -26,6 +35,41 @@ button {
 button, button:active, button:focus, input {
     outline: none;
     cursor: pointer;
+}
+
+.flex_row {
+    display: flex;
+    flex: 1 1 auto;
+    justify-content: center;
+    align-items: center;
+}
+
+.gold_input {
+    background: gold;
+    border: solid 2px red;
+    border-radius: 5px;
+    color: black;
+    padding: 5px;
+    font: bold 15pt sans-serif;
+}
+
+.gold_input.required {
+    animation-name: gold_input;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-duration: 3s;
+}
+
+@keyframes gold_input {
+    0% {
+        background: gold;
+    }
+    50% {
+        background: #9b8300;
+    }
+    100% {
+        background: gold;
+    }
 }
 
 .button {
@@ -322,7 +366,52 @@ button, button:active, button:focus, input {
     border-radius: 20px;
 }
 
+#online_players {
+    transition: opacity 0.5s, visibility 0.5s;
+    opacity: 0.7;
+    visibility: visible;
+    background: black;
+    position: fixed;
+    max-height: 80%;
+    left: 50%;
+    top: 10%;
+    transform: translate(-50%, 0);
+    overflow: auto;
+    color: white;
+    border-radius: 5px;
+}
+
+#online_players.closed {
+    opacity: 0;
+    visibility: hidden;
+}
+
+#online_players .total_players {
+    background: red;
+    color: gold;
+    margin-left: 10px;
+    padding-left: 5px;
+    padding-right: 5px;
+    border-radius: 5px;
+}
+
+.player_online {
+    transition: background 0.5s, color 0.5s;
+    text-align: center;
+    padding: 10px;
+    cursor: pointer;
+    background: black;
+    font: bold 13pt/15pt sans-serif;
+    border-bottom: solid 1px black;
+}
+
+.player_online:hover {
+    background: red;
+    color: white !important;
+}
+
 #main_menu {
+    transition: visibility 0.5s, opacity 0.5s;
     display: block;
     position: absolute;
     min-width: 100%;
@@ -333,6 +422,13 @@ button, button:active, button:focus, input {
     background-size: 30%, 100% 100%;
     overflow: hidden;
     z-index: 10;
+    opacity: 1;
+    visibility: visible;
+}
+
+#main_menu.closed {
+    opacity: 0;
+    visibility: hidden;
 }
 
 #login > div:first-child {
@@ -354,35 +450,75 @@ button, button:active, button:focus, input {
 }
 
 .red_input:focus {
-    border: solid 2px red;
+    border: solid 2px red !important;
 }
+
 
 .triangle {
     position: relative;
     cursor: pointer;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    background: lightseagreen;
+    border-radius: 5px;
+    border: solid 1px gold;
+    padding: 5px;
 }
 
-.triangle img {
-    width: 150px;
+/*.triangle img {*/
+/*    !*width: 150px;*!*/
+/*    width: 0;*/
+/*    height: 0;*/
+/*    border-left: solid 50px transparent;*/
+/*    border-right: solid 50px transparent;*/
+/*    border-bottom: solid 100px red;*/
+/*}*/
+
+.triangle svg {
+    /*width: 150px;*/
 }
 
-.triangle > div {
+.triangle svg polygon {
+    animation-name: triangle;
+    animation-duration: 3s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
+
+@keyframes triangle {
+    0% {
+        stroke: rgba(0, 0, 0, 0.5);
+    }
+    50% {
+        stroke: rgba(255, 215, 0, 0.5);
+    }
+    100% {
+        stroke: rgba(0, 0, 0, 0.5);
+    }
+}
+
+.triangle > .button_label {
     transition: visibility 0.5s, opacity 0.5s;
-    visibility: hidden;
-    opacity: 0;
-    position: absolute;
-    top: 35%;
-    transform: translate(0, -50%);
+    /*visibility: hidden;*/
+    /*opacity: 0;*/
+    /*position: absolute;*/
+    /*top: 35%;*/
+    /*transform: translate(0, -50%);*/
     font: bold 20pt/20pt sans-serif;
-    color: white;
+    background: red;
+    padding: 5px;
+    border-radius: 5px;
+    color: gold;
+    border: solid 2px gold;
 }
 
 .triangle.left > div {
-    left: 100%;
+    /*left: 100%;*/
 }
 
 .triangle.right > div {
-    right: 100%;
+    /*right: 100%;*/
 }
 
 .triangle:hover > div {
@@ -391,12 +527,32 @@ button, button:active, button:focus, input {
 }
 
 #play_button {
+    color: red;
+    font: bold 80pt/90pt 'Special Elite';
+    -webkit-text-stroke: 3px black;
+
     position: absolute;
     bottom: 0;
-    width: 300px;
     left: 50%;
     transform: translate(-50%, 0);
     cursor: pointer;
+    letter-spacing: 10px;
+    animation-name: play_button;
+    animation-iteration-count: infinite;
+    animation-duration: 2s;
+    animation-timing-function: linear;
+}
+
+@keyframes play_button {
+    0% {
+        text-shadow: 0 0 13px red;
+    }
+    50% {
+        text-shadow: 0 0 13px gold;
+    }
+    100% {
+        text-shadow: 0 0 13px red;
+    }
 }
 
 #servers_list {
@@ -405,7 +561,7 @@ button, button:active, button:focus, input {
     left: 50%;
     bottom: -100%;
     border-radius: 15px;
-    background: aliceblue;
+    background: black;
     transform: translate(-50%, 0);
     height: 70%;
     padding: 20px;
@@ -415,6 +571,131 @@ button, button:active, button:focus, input {
 #servers_list.show {
     bottom: 10px;
     opacity: 1;
+}
+
+#servers_list input {
+    width: 200px;
+}
+
+#skin_preview {
+    display: block;
+    height: 150px;
+    border-radius: 75px;
+    border: solid 1px gold;
+}
+
+#skin_preview.closed {
+    display: none;
+}
+
+#color_preview {
+    margin-left: 10px;
+    border-radius: 5px;
+    font: bold 12pt/12pt sans-serif;
+    padding: 5px;
+    cursor: pointer;
+    border: solid 1px gold;
+}
+
+#user_account {
+    transition: opacity 0.5s, visibility 0.5s;
+    opacity: 1;
+    visibility: visible;
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    background: black;
+    z-index: 10;
+    border-radius: 5px;
+    overflow: auto;
+    display: flex;
+    flex-direction: row;
+    color: gold;
+    white-space: nowrap;
+    text-align: center;
+    cursor: default;
+    max-height: 500px;
+}
+
+#user_account.closed {
+    opacity: 0;
+    visibility: hidden;;
+}
+
+#user_account h3 {
+    background: red;
+    border-bottom: solid 1px black;
+    box-shadow: inset 0 0 5px black;
+}
+
+#exit_button {
+    transition: top 0.5s;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    display: block !important;
+    width: 100%;
+    padding: 10px !important;
+    background: red;
+    color: gold;
+    font: bold 15pt/15pt sans-serif;
+    text-align: center;
+    border-radius: 5px;
+    border: solid 2px #cd0000;
+    cursor: pointer;
+    z-index: 1;
+}
+
+#exit_button.closed {
+    top: 0;
+}
+
+#all_skins .user_skin, .user_sticker {
+    transition: background 0.5s;
+    background: black;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 10px;
+    box-shadow: inset 0px 0px 5px black;
+    cursor: pointer;
+}
+
+#all_skins .user_skin.selected, .user_sticker.selected {
+    background: lightseagreen;
+}
+
+#all_skins .user_skin:not(.selected):hover, .user_sticker:hover {
+    background: red;
+}
+
+#all_skins .user_skin:not(.selected):hover span, .user_sticker:hover span {
+    background: #cd0000;
+}
+
+#all_skins .user_skin img, .user_sticker img {
+    width: 50px;
+    border-radius: 25px;
+    border: solid 1px gold;
+}
+
+#all_skins .user_skin span, .user_sticker span {
+    transition: background 0.5s;
+    flex: 1 1 auto;
+    text-align: center;
+    font-size: 15pt;
+    font-weight: bold;
+    color: gold;
+    padding: 5px;
+    margin-left: 10px;
+    background: red;
+    border-radius: 5px;
+    border: dashed 1px gold;
+}
+
+#all_skins .user_skin .skin, .user_sticker .skin {
+    border: solid 1px white;
+    border-radius: 5px;
 }
 
 .user_actions {
@@ -454,29 +735,29 @@ button, button:active, button:focus, input {
     background: red;
 }
 
-#account_div {
-    display: flex;
+#account_div .flex_row {
     background: ghostwhite;
     font: bold 12pt/12pt sans-serif;
     padding: 5px;
     border: solid 1px red;
     cursor: pointer;
     border-radius: 5px;
+    position: relative;
 }
 
-#account_div > img {
+#account_div img {
     border-radius: 20px;
     width: 30px;
     border: solid 1px gold;
 }
 
-#account_div > div, #add_balance_div > div {
+#account_div .flex_row > div, #add_balance_div > div {
     display: flex;
     align-items: center;
     padding: 5px;
 }
 
-#account_div > .user_name {
+#account_div .user_name {
     margin-left: 10px;
 }
 
@@ -503,3 +784,102 @@ button, button:active, button:focus, input {
     background: #1c8078;
 }
 
+
+#select_nick {
+    transition: opacity 0.5s, visibility 0.5s;
+    background: black;
+    position: absolute;
+    top: 100%;
+    width: 100%;
+    color: gold;
+    opacity: 1;
+    visibility: visible;
+    max-height: 200px;
+    overflow: auto;
+    border-radius: 5px;
+}
+
+#select_nick.closed {
+    opacity: 0;
+    visibility: hidden;
+}
+
+#select_nick .user_skin {
+    transition: background 0.5s;
+    background: black;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 5px;
+    cursor: pointer;
+    font-size: 12pt;
+}
+
+#select_nick .user_skin:hover {
+    background: red;
+}
+
+#select_nick .user_skin img {
+    width: 25px;
+    border-radius: 20px;
+    border: solid 1px gold;
+}
+
+#select_nick .user_skin span {
+    margin-left: 5px;
+    flex: 1 1 auto;
+    text-align: center;
+}
+
+.h2 {
+    text-align: center;
+    padding: 10px;
+    margin: 10px 0;
+    background: #9b0000;
+    border-radius: 5px;
+    color: ghostwhite;
+}
+
+.server {
+    transition: background-color 0.5s, border 0.5s;
+    background: red;
+    border-radius: 5px;
+    padding: 10px;
+    color: gold;
+    font-size: 14pt;
+    font-weight: bold;
+    border: solid 3px gold;
+    cursor: pointer;
+}
+
+.server.selected {
+    background: lightseagreen;
+    border: solid 3px #1b8078;
+}
+
+#nick_for_game, #password_for_game {
+    margin-left: 10px;
+}
+
+.label_input {
+    background: red;
+    color: gold;
+    font: bold 12pt/12pt Sans-serif;
+    text-align: center;
+    border-radius: 5px;
+    border: solid 2px gold;
+    padding: 5px;
+}
+
+#into_game_button {
+    transition: text-shadow 0.5s;
+    color: red;
+    -webkit-text-stroke: 3px black;
+    text-shadow: 0 0 20px red;
+    font: bold 40pt/50pt 'Special Elite';
+    cursor: pointer;
+}
+
+#into_game_button:hover {
+    text-shadow: 0 0 20px gold;
+}

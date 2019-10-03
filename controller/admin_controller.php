@@ -8,7 +8,7 @@ if($request['action'] == "get_nick"){
     }
 
     $skin = new Skin();
-    $nick = $skin->getByNick($request['nick']);
+    $nick = $skin->getByNick($request['nick'], true);
     if(!$nick){
         echo json_encode(["result" => "false", "data" => "invalid_data"], 256);
         exit;

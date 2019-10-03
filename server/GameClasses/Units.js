@@ -39,7 +39,7 @@ class Arc {
     }
 
     get speed() {
-        return 25 / this.drawableRadius;
+        return 15 / this.drawableRadius;
     }
 
     get mouseDist() {
@@ -60,7 +60,7 @@ class Arc {
         return (x <= 0 || x >= gameInfo.width || y <= 0 || y >= gameInfo.height);
     }
 
-};
+}
 
 
 let Food = exports.Food = class Food extends Arc {
@@ -369,7 +369,6 @@ class Cell extends Arc {
 
         for (let p = 0; p < game.playersArr.length; p++) {
             for (let i = 0; i < game.playersArr[p].cells.length; i++) {
-                if (i === this.owner.updateI) continue;
 
                 let cell = game.playersArr[p].cells[i];
                 if (cell.id === this.id && this.owner.wsId === game.playersArr[p].wsId) continue;
@@ -421,7 +420,9 @@ class Cell extends Arc {
                 if (game.playersArr[p].updateI >= i) {
                     game.playersArr[p].updateI--;
                 }
-                if (game.playersArr[p].cells.length === 0) continue;
+                if (game.playersArr[p].cells.length === 0) {
+                    continue;
+                }
                 if (cell.main) game.playersArr[p].cells[0].main = true;
 
             }
@@ -561,24 +562,34 @@ class Player {
     }
 
     async main() {
-        let nickInfo = await this.authNick();
-        let skin = "";
-        if (nickInfo) {
-            this.nick = nickInfo.nick;
-            this.skin = nickInfo.skin;
-            this.skindId = +nickInfo.skin_id;
-            this.isAdmin = +nickInfo.is_admin;
-            this.isModer = +nickInfo.is_moder;
-        }
+        await this.authNick();
 
         this.cells[0].updateDirection();
         game.onSpawnUnit(this);
     }
 
-    async authNick() {
+    async getNickInfo(){
         let data = await Functions.sendRequest("api/admin", {action: "get_nick", nick: this.nick});
         if (data.result === "true") return data.data;
         if (data.data === "invalid_data") return false;
+    }
+
+    async authNick() {
+        let nickInfo = await this.getNickInfo();
+        let skin = "";
+        if (nickInfo) {
+            this.nick = nickInfo.nick;
+            this.skin = nickInfo.skin;
+            this.skinId = +nickInfo.skin_id;
+            this.isAdmin = +nickInfo.is_admin;
+            this.isModer = +nickInfo.is_moder;
+        }
+
+    }
+
+    async changeNick(nick) {
+        this.nick = nick;
+        await this.authNick();
     }
 
     update(delta = 1) {
@@ -920,6 +931,14 @@ class Game {
         if (!player) return false;
 
         this.playersArr[player.count].isBreak = true;
+    }
+
+    async changeNick(wsId, nick) {
+        let player = this.findPlayer(wsId);
+        if (!player) return true;
+
+        player = player.player;
+        await player.changeNick(nick);
     }
 
 }

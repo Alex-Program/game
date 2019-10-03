@@ -1,4 +1,7 @@
-let ws = new Ws("ws://127.0.0.1:8081");
+/**
+ * @type {Ws|null}
+ */
+let ws = undefined;
 
 let hiddenUsersId = [];
 let highlightedUsersId = [];
@@ -64,6 +67,12 @@ class Message {
         $("#all_messages").append(html);
     }
 
+    static selectPM(nick, id) {
+        $("#chat_service").text("ЛС для " + nick).removeClass("closed");
+        $("#pm_id").val(id);
+        $("#message_text").focus();
+    }
+
 }
 
 class Command {
@@ -94,20 +103,28 @@ class Command {
 }
 
 function onOpen() {
-    class User{
+    class User {
 
         name = null;
         img = null;
         balance = null;
 
-        constructor(){
+        constructor() {
+            $.ajaxSetup({
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader("Token", getCookie("Token"));
+                    xhr.setRequestHeader("User-Id", getCookie("User-Id"));
+                }
+            });
             this.getUserInfo();
+            this.getAllSkins();
+            this.getAllStickers();
         }
 
-        getUserInfo(){
+        getUserInfo() {
             sendRequest("api/user", {action: "get_user_info"})
                 .then(data => {
-                    if(data.result !== "true") return true;
+                    if (data.result !== "true") return true;
 
                     data = data.data;
                     this.name = data.name;
@@ -117,7 +134,7 @@ function onOpen() {
                 });
         }
 
-        fillUserInfo(){
+        fillUserInfo() {
             let accountDiv = $("#account_div");
             accountDiv.find("img").attr("src", this.img);
             accountDiv.find(".user_name").text(this.name);
@@ -126,6 +143,30 @@ function onOpen() {
             $("#account_div").show();
 
         }
+
+        getAllSkins() {
+            sendRequest("api/user", {action: "get_user_skins"})
+                .then(data => {
+                    let html = "";
+                    for (let skin of data.data) {
+                        html += "<div class='user_skin' data-password='" + skin.password + "' data-nick='" + skin.nick + "'><div class='skin'><img src='" + skin.skin + "'></div><span>" + skin.nick + "</span></div>";
+                    }
+                    $("#all_skins .html").html(html);
+                    $("#select_nick").html(html);
+                });
+        }
+
+        getAllStickers() {
+            sendRequest("api/user", {action: "get_user_stickers"})
+                .then(data => {
+                    let html = "";
+                    for (let sticker of data.data) {
+                        html += "<div class='user_sticker' data-id='" + sticker.id + "'><div class='skin'><img src='" + sticker.stickers[0].src + "'></div><span>" + sticker.name + "</span></div>"
+                    }
+                    $("#all_stickers .html").html(html);
+                });
+        }
+
     }
 
     let user = null;
@@ -135,29 +176,14 @@ function onOpen() {
         sendRequest("api/registration", {action: "auth_by_token", token, user_id: userId})
             .then(data => {
                 if (data.result !== "true") return true;
-
-                $.ajaxSetup({
-                    beforeSend: function (xhr) {
-                        xhr.setRequestHeader("Token", getCookie("Token"));
-                        xhr.setRequestHeader("User-Id", getCookie("User-Id"));
-                    }
-                });
                 user = new User();
             });
     }
 
 
     let resizeChat = false;
-    let isCtrl = false;
 
-    window.addEventListener("keydown", function (event) {
-        let code = event.code.toLowerCase();
-        if (["controlleft", "controlright"].includes(code)) isCtrl = true;
-    });
-    window.addEventListener("keyup", function (event) {
-        let code = event.code.toLowerCase();
-        if (["controlleft", "controlright"].includes(code)) isCtrl = false;
-    });
+
     document.getElementById("chat_service").addEventListener("transitionend", function () {
         if (+$("#chat_service").css("opacity")) {
             let allMessagesDiv = $("#all_messages");
@@ -168,6 +194,29 @@ function onOpen() {
         $("#chat_service").html("");
         $("#pm_id").val("");
     });
+
+
+    function getNick(nick) {
+        sendRequest("api/registration", {action: "get_nick", nick})
+            .then(data => {
+                try {
+                    if (data.result !== "true") throw("");
+                    if (!+data.data.is_password) throw("");
+
+                    if (+data.data.is_password) $("#password_for_game").addClass("required");
+                    if (!isEmpty(data.data.skin)) {
+                        $("#skin_preview").attr("src", data.data.skin).removeClass("closed");
+                    } else $("#skin_preview").addClass("closed");
+                    return true;
+                } catch {
+                }
+
+                $("#skin_preview").addClass("closed");
+                $("#password_for_game").removeClass("required");
+            })
+    }
+
+    let getNickTimeOut = null;
 
     $("#resize_chat").mousedown(() => resizeChat = true);
     $("body").mouseup(() => resizeChat = false)
@@ -181,12 +230,11 @@ function onOpen() {
 
         .on("click", "#play_button", () => $("#servers_list").addClass("show"))
 
-        .on("click", "#all_messages .nick_name", function () {
+        .on("click", "#all_messages .nick_name", function (event) {
             let parent = $(this).closest(".div_message");
 
-            if (isCtrl) {
-                $("#chat_service").text("ЛС для " + parent.attr("data-nick")).removeClass("closed");
-                $("#pm_id").val(parent.attr("data-pid"));
+            if (event.ctrlKey) {
+                Message.selectPM(parent.attr("data-nick"), parent.attr("data-pid"));
             } else {
                 let input = $("#message_text");
                 input.val(input.val() + " " + parent.attr("data-nick"));
@@ -220,12 +268,34 @@ function onOpen() {
             userActionsDiv.find("div:eq(0)").text(parent.attr("data-nick") + " (" + parent.attr("data-pid") + ")");
             userActionsDiv.css({top: event.clientY + 10, left: event.clientX + 10}).removeClass("closed");
             $("#selected_chat_user").val(parent.attr("data-pid"));
+            $("#selected_chat_nick").val(parent.attr("data-nick"));
         })
 
         .on("click", ".user_actions div:eq(0)", event => event.stopPropagation())
 
         .on("click", ".user_actions.user div:eq(1)", Message.hiddenUserMessage)
         .on("click", ".user_actions.user div:eq(2)", Message.highlightUser)
+        .on("click", ".user_actions.user div:eq(3)", function () {
+            let nick = $("#selected_chat_nick").val().trim();
+            let id = $("#selected_chat_user").val().trim();
+            if (!id || !nick) return true;
+
+            Message.selectPM(nick, id);
+        })
+        .on("click", ".user_actions.user div:eq(4)", function () {
+            let nick = $("#selected_chat_nick").val().trim();
+            if (!nick) return true;
+
+            $("#message_text").val(nick + ", ").focus();
+        })
+        .on("click", ".user_actions.user div:eq(5)", function () {
+            let nick = $("#selected_chat_nick").val().trim();
+            if (!nick) return true;
+
+            navigator.clipboard.writeText(nick);
+        })
+
+
         .on("click", ".user_actions.admin div:eq(3)", function () {
             let id = $("#selected_chat_user").val().trim();
             if (isEmpty(id)) return true;
@@ -235,8 +305,111 @@ function onOpen() {
 
         .on("click", function () {
             $(".user_actions").addClass("closed");
-        });
+            $("#select_nick").addClass("closed");
+        })
 
+
+        .on("click", ".player_online", function () {
+            let nick = $(this).attr("data-nick");
+            let id = $(this).attr("data-pid");
+
+            $("#online_players").addClass("closed");
+            Message.selectPM(nick, id);
+        })
+
+        .on("input", "#nick_for_game", function () {
+            try {
+                clearTimeout(getNickTimeOut);
+            } catch {
+            }
+            let nick = $(this).val().trim();
+            if (!nick) {
+                $("#password_for_game").removeClass("required");
+                return true;
+            }
+
+            getNickTimeOut = setTimeout(() => getNick(nick), 500);
+        })
+
+        .on("click", "#nick_for_game", event => {
+            event.stopPropagation();
+            $("#select_nick").removeClass("closed")
+        })
+
+        .on("click", "#select_nick .user_skin", function () {
+            let parent = $(this).closest(".user_skin");
+            let password = parent.attr("data-password") || "";
+            let nick = parent.attr("data-nick");
+            $("#nick_for_game").val(nick).trigger("input");
+            $("#password_for_game").val(password);
+        })
+
+        .on("click", ".server", function () {
+            $(".server.selected").not(this).removeClass("selected");
+            $(this).addClass("selected");
+        })
+
+        .on("click", "#color_preview", () => $("#select_color").click())
+
+        .on("change", "#select_color", function () {
+            let color = $(this).val();
+            let rgb = hexToRgb(color);
+            let textColor = "white";
+            if (rgb.brightness) textColor = "black";
+            $("#color_preview").css({background: color, color: textColor}).text(color);
+        })
+
+        .on("click", "#personal_account", () => $("#user_account").toggleClass("closed"))
+
+        .on("click", "#account_div", () => $("#exit_button").toggleClass("closed"))
+
+        .on("click", "#all_skins .user_skin", function () {
+            if (!ws || $(this).hasClass("selected")) return true;
+
+            $("#all_skins .user_skin.selected").not(this).removeClass("selected");
+            $(this).addClass("selected");
+            ws.sendJson({
+                action: "change_nick",
+                nick: $(this).attr("data-nick"),
+                password: $(this).attr("data-password") || ""
+            });
+        })
+
+        .on("click", "#all_stickers .user_sticker", function () {
+            if (!ws || $(this).hasClass("selected")) return true;
+
+            $("#all_stickers .user_sticker").not(this).removeClass("selected");
+            $(this).addClass("selected");
+            let id = $(this).attr("data-id");
+            ws.sendJson({
+                action: "select_sticker_set",
+                id
+            })
+        })
+
+        .on("click", "#user_account", function () {
+            $(this).addClass("closed");
+        })
+
+        .on("click", "#exit_button", function () {
+            deleteCookie("Token");
+            deleteCookie("User-Id");
+        })
+
+        .on("click", "#sign_in_button", function(){
+            let userId = $("#login_sign_in").val().trim();
+            let password = $("#password_sign_in").val().trim();
+            if(isEmpty(userId) || isEmpty(password)) return true;
+
+            sendRequest("api/registration", {action: "auth", "user_id":userId, password})
+                .then(data => {
+                    if(data.result === "true"){
+                        setCookie("User-Id", data.data.user_id, {"max-age": 30 * 24 * 60 * 60});
+                        setCookie("Token", data.data.token, {"max-age": 30 * 24 * 60 * 60});
+                        user = new User();
+                    }
+                });
+        });
 
 }
 

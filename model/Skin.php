@@ -55,7 +55,7 @@ class Skin extends Model
         return false;
     }
 
-    public function getByNick($nick)
+    public function getByNick($nick, $forAdmin = false)
     {
         $nick = $this->mysqli->real_escape_string($nick);
 
@@ -68,6 +68,14 @@ class Skin extends Model
             $image = new Image();
             $path = $image->getPath($row['skin_id']);
             $row['skin'] = $path;
+        }
+        if (!empty($row['password'])) $row['is_password'] = 1;
+        else $row['is_password'] = 0;
+        if (!$forAdmin) {
+            unset($row['password']);
+            unset($row['is_admin']);
+            unset($row['is_moder']);
+            unset($row['user_id']);
         }
         return $row;
     }

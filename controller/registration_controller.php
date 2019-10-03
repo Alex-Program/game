@@ -49,3 +49,20 @@ if ($request['action'] == "auth_by_token") {
     ], 256);
     exit;
 }
+
+if ($request['action'] == "get_nick") {
+    if (empty($request['nick'])) {
+        echo json_encode(["result" => "false", "data" => "invalid_request"], 256);
+        exit;
+    }
+
+    $skins = new Skin();
+    $nick = $skins->getByNick($request['nick']);
+    if (!$nick) {
+        echo json_encode(["result" => "false", "data" => "invalid_data"], 256);
+        exit;
+    }
+
+    echo json_encode(["result" => "true", "data" => $nick], 256);
+    exit;
+}

@@ -1,26 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="011e9982-741d-4222-841e-091d212022f0" name="Default Changelist" comment="add stickers, auth nick in server">
+    <list default="true" id="011e9982-741d-4222-841e-091d212022f0" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.htaccess" beforeDir="false" afterPath="$PROJECT_DIR$/.htaccess" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/controller/admin_controller.php" beforeDir="false" afterPath="$PROJECT_DIR$/controller/admin_controller.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/controller/registration_controller.php" beforeDir="false" afterPath="$PROJECT_DIR$/controller/registration_controller.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controller/stickers_controller.php" beforeDir="false" afterPath="$PROJECT_DIR$/controller/stickers_controller.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controller/user_controller.php" beforeDir="false" afterPath="$PROJECT_DIR$/controller/user_controller.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/model/Auth.php" beforeDir="false" afterPath="$PROJECT_DIR$/model/Auth.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/model/Sticker.php" beforeDir="false" afterPath="$PROJECT_DIR$/model/Sticker.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/Skin.php" beforeDir="false" afterPath="$PROJECT_DIR$/model/Skin.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/GameClasses/Units.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/GameClasses/Units.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/server.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/css/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/css/index.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/css/stickers.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/css/stickers.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/images/color_picker.png" beforeDir="false" afterPath="$PROJECT_DIR$/src/images/color_picker.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/images/virus_arrow.png" beforeDir="false" afterPath="$PROJECT_DIR$/src/images/virus_arrow.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/images/virus_arrow1.png" beforeDir="false" afterPath="$PROJECT_DIR$/src/images/virus_arrow1.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/js/functions.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/functions.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/js/game.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/game.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/js/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/js/stickers.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/stickers.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/view/index.php" beforeDir="false" afterPath="$PROJECT_DIR$/view/index.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/view/stickers.php" beforeDir="false" afterPath="$PROJECT_DIR$/view/stickers.php" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -265,7 +258,13 @@
       <workItem from="1569550638961" duration="4947000" />
       <workItem from="1569567730484" duration="8117000" />
       <workItem from="1569630440535" duration="2001000" />
-      <workItem from="1569636717136" duration="16226000" />
+      <workItem from="1569636717136" duration="16873000" />
+      <workItem from="1569716897185" duration="8497000" />
+      <workItem from="1569732699381" duration="9693000" />
+      <workItem from="1569802780131" duration="6455000" />
+      <workItem from="1569892498588" duration="9282000" />
+      <workItem from="1569986059661" duration="10001000" />
+      <workItem from="1570073202660" duration="17441000" />
     </task>
     <task id="LOCAL-00001" summary="add viruses">
       <created>1567508394746</created>
@@ -288,7 +287,14 @@
       <option name="project" value="LOCAL" />
       <updated>1569577681011</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="add stickers">
+      <created>1569670220225</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1569670220225</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -308,9 +314,12 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
+    <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
+    <option name="CHECK_NEW_TODO" value="false" />
     <MESSAGE value="add viruses" />
     <MESSAGE value="add chat, fix multiplayer" />
     <MESSAGE value="add stickers, auth nick in server" />
-    <option name="LAST_COMMIT_MESSAGE" value="add stickers, auth nick in server" />
+    <MESSAGE value="add stickers" />
+    <option name="LAST_COMMIT_MESSAGE" value="add stickers" />
   </component>
 </project>

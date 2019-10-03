@@ -2,6 +2,7 @@
 <script src="/src/js/functions.js"></script>
 <script src="/src/js/Notify.js"></script>
 <script src="/src/js/Ws.js"></script>
+<link href="https://fonts.googleapis.com/css?family=Special+Elite&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../src/css/index.css">
 
 <canvas id="canvas">
@@ -35,6 +36,7 @@
 </div>
 
 <input type="hidden" id="selected_chat_user" value="">
+<input type="hidden" id="selected_chat_nick" value="">
 <div class="user_actions admin closed">
     <div></div>
     <div>Забанить IP</div>
@@ -46,6 +48,17 @@
     <div></div>
     <div>Не показывать сообщения</div>
     <div>Выделять сообщения</div>
+    <div>Написать ЛС</div>
+    <div>Обратиться</div>
+    <div>Скопировать ник</div>
+</div>
+
+<div id="online_players" class="closed">
+    <h2 style="padding: 10px; display: flex; flex-direction: row;">Игроки онлайн <span class="total_players"></span>
+    </h2>
+    <div>
+
+    </div>
 </div>
 
 <div id="main_menu">
@@ -53,55 +66,120 @@
         <div id="login">
             <div>
                 <div>
-                    <input type="text" class="red_input">
+                    <input type="text" class="red_input" id="login_sign_in" placeholder="ИД">
                 </div>
                 <div>
-                    <input type="text" class="red_input">
+                    <input type="text" class="red_input" id="password_sign_in" placeholder="Пароль">
                 </div>
             </div>
             <div style="display: flex; justify-content: center;">
-                <button class="button button_primary">Войти</button>
+                <button class="button button_primary" id="sign_in_button">Войти</button>
             </div>
         </div>
-        <div id="account_div" style="display: none;">
-            <img src="">
-            <div class="user_name"></div>
-            <div id="add_balance_div">
-                <div class="user_balance"></div>
-                <div id="add_balance">+</div>
+        <div id="account_div" style="display: none; position: relative;">
+            <div class="flex_row" style="z-index: 2;">
+                <img src="">
+                <div class="user_name"></div>
+                <div id="add_balance_div">
+                    <div class="user_balance"></div>
+                    <div id="add_balance">+</div>
+                </div>
             </div>
+            <div id="exit_button" class="closed">ВЫЙТИ</div>
         </div>
     </div>
-    <div style="position: relative; display: flex; flex-direction: row;">
+    <div style="position: relative; display: flex; flex-direction: row; margin-left:10px; margin-right: 10px;">
         <div style="flex: 1 1 auto;">
             <div class="triangle left" style="float: left;">
-                <img src="/src/images/triangle.png">
-                <div>Магазин</div>
+                <!--                <img src="/src/images/triangle.png">-->
+                <svg width="70" height="70">
+                    <polygon points="5,70 35,5 65,70"
+                             fill="red" stroke="red" stroke-width="5"/>
+                </svg>
+
+                <div class="button_label">Магазин</div>
             </div>
-            <div class="triangle left" style="float: left; clear: both;">
-                <img src="/src/images/triangle.png">
+            <div class="triangle left" style="float: left; clear: both; margin-top: 10px;">
+                <svg width="70" height="70">
+                    <polygon points="5,70 35,5 65,70"
+                             fill="red" stroke="red" stroke-width="5"/>
+                </svg>
             </div>
         </div>
         <div style="flex: 1 1 auto;">
-            <div class="triangle right" style="float: right;">
-                <img src="/src/images/triangle.png">
-                <div>Личный кабинет</div>
+            <div class="triangle right" style="float: right;" id="personal_account">
+                <div class="button_label">Личный<br> кабинет</div>
+                <svg width="70" height="70">
+                    <polygon points="5,70 35,5 65,70"
+                             fill="red" stroke="red" stroke-width="5"/>
+                </svg>
+
             </div>
-            <div class="triangle right" style="float: right; clear: both;">
-                <img src="/src/images/triangle.png">
+            <div class="triangle right" style="float: right; clear: both; margin-top: 10px;">
+                <svg width="70" height="70">
+                    <polygon points="5,70 35,5 65,70"
+                             fill="red" stroke="red" stroke-width="5"/>
+                </svg>
             </div>
         </div>
     </div>
 
-    <img id="play_button" src="/src/images/play_button.jpg">
+    <!--    <img id="play_button" src="/src/images/play_button.jpg">-->
+    <div id="play_button">PLAY</div>
 
 
     <div id="servers_list">
+        <div style="display: flex; flex-direction: row;">
+            <div style="position: relative;" class="flex_row">
+                <span class="label_input">Ник:</span>
+                <input type="text" class="gold_input" placeholder="Ник" id="nick_for_game">
+                <div id="select_nick" class="closed"></div>
+            </div>
+            <div style="margin-left: 10px;" class="flex_row">
+                <span class="label_input">Пароль:</span>
+                <input type="text" class="gold_input" placeholder="Пароль" id="password_for_game">
+            </div>
+        </div>
+        <div class="flex" style="margin-top: 10px;">
+            <input type="color" id="select_color" style="display: none;">
+            <span class="label_input">Цвет:</span>
+            <span id="color_preview" style="color: black; background: #FFD700;">#FFD700</span>
+        </div>
+        <div style="display: flex; justify-content: center;">
+            <img id="skin_preview" class="closed">
+        </div>
         <div>
-            wefwef
+            <h2 class="h2">Выберите сервер</h2>
+            <div style="display: flex; flex-direction: row;">
+                <div style="padding: 10px;">
+                    <div class="server" data-ip="127.0.0.1:8081">127.0.0.1:8081</div>
+                </div>
+
+                <div style="padding: 10px;">
+
+                    <div>
+                        <span id="into_game_button">PLAY</span>
+                    </div>
+
+                </div>
+
+            </div>
         </div>
     </div>
 </div>
+
+<div id="user_account" class="closed">
+    <div id="all_stickers">
+        <h3 style="padding: 10px;">Ваши стикеры</h3>
+        <div class="html"></div>
+    </div>
+    <div id="all_skins">
+        <h3 style="padding: 10px;">Ваши скины</h3>
+        <div class="html"></div>
+    </div>
+</div>
+
+
 <!--<script defer src="src/js/pixi.js"></script>-->
 <script defer src="../src/js/index.js"></script>
 <script defer src="../src/js/game.js"></script>

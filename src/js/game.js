@@ -42,12 +42,12 @@
             context.closePath();
 
             let name = this.constructor.name.toLowerCase();
-            if (name === "cell" && imagesArr[this.owner.skinId]) {
+            if (name === "cell") {
                 let stickerI = this.owner.stickerI;
                 let stickerSet = this.owner.stickersSet;
                 if (!isEmpty(stickerI) && stickerSet && imagesArr[stickerSet[stickerI].image_id]) {
                     this.drawImage(imagesArr[stickerSet[stickerI].image_id], drawableX, drawableY);
-                } else {
+                } else if (imagesArr[this.owner.skinId]) {
                     this.drawImage(imagesArr[this.owner.skinId], drawableX, drawableY);
                 }
             }
@@ -109,7 +109,7 @@
         }
 
         get speed() {
-            return 25 / this.drawableRadius;
+            return 15 / this.drawableRadius;
         }
 
         get mouseDist() {
@@ -127,10 +127,27 @@
         }
 
         static drawCompass() {
+            let tg = gameInfo.centerY / gameInfo.centerX;
+            let fY = tg * (x - gameInfo.centerX) + gameInfo.centerY;
+            y = 0;
+            x = 0;
+            let intersectionTop = {
+                y: 0,
+                x: -gameInfo.centerY / tg + gameInfo.centerX
+            };
+            let intersectionLeft = {
+                x: 0,
+                y: -gameInfo.centerX * tg + gameInfo.centerY
+            };
+            let borderLeftX = gameInfo.centerX - canvas.width * gameInfo.scale / 2;
 
+            let intersection = {
+                x: intersectionTop.x < borderLeftX ? 0 : intersectionTop.x,
+                y: intersectionLeft.y < 0 ? 0 : intersectionLeft.y
+            };
             context.beginPath();
             context.moveTo(canvas.width / 2, canvas.height / 2);
-            context.lineTo(drawableX1 / gameInfo.scale, drawableY1 / gameInfo.scale);
+            context.lineTo(intersection.x, intersection.y);
             context.lineWidth = 10;
             context.stroke();
             context.closePath();
@@ -618,6 +635,7 @@
             this.updateI = 0;
             this.id = id;
             this.nick = nick;
+            this.color = color;
 
             this.loadImage();
         }
@@ -625,6 +643,13 @@
         loadImage() {
             if (isEmpty(this.skin) || isEmpty(this.skinId)) return false;
             loadImage(this.skinId, this.skin);
+        }
+
+        setNick(nick, skin, skinId) {
+            this.nick = nick;
+            this.skin = skin;
+            this.skinId = skinId;
+            this.loadImage();
         }
 
         update(delta = 1) {
@@ -969,7 +994,6 @@
                 playersArr[0].update(delta);
                 render();
                 updateHtml();
-                ws.sendJson({action: "select_sticker_set", id: 1});
                 ws.sendJson({action: "get_all_units"});
                 setTimeout(function () {
                     ws.sendJson({
@@ -1014,6 +1038,17 @@
         }
 
         return player;
+    }
+
+    function showOnline() {
+        $("#online_players > div").empty();
+        for (let i = 0; i < playersArr.length; i++) {
+            let player = playersArr[i];
+            let html = "<div class='player_online' data-pid='" + player.id + "' data-nick='" + player.nick + "' style='color: " + player.color + "'>" + player.nick + "</div>";
+            $("#online_players > div").append(html);
+        }
+        $("#online_players .total_players").text(playersArr.length);
+        $("#online_players").removeClass("closed");
     }
 
 
@@ -1073,12 +1108,67 @@
             return true;
         }
 
-        if (["digit1", "digit2", "digit3", "digit4", "digit5", "digit6", "digit7", "digit8", "digit9"].includes(code)) {
-            let stickerNumber = +code.substr(-1) - 1;
-            playersArr[0].stickerI = stickerNumber;
+        if (code === "keyg") {
+            $("#user_account").toggleClass("closed");
             return true;
         }
     });
+
+    let preventDefault = ["tab"];
+    let keyPressed = [];
+    let isSticker = false;
+    window.addEventListener("keydown", function (event) {
+        let code = event.code.toLowerCase();
+        if (preventDefault.includes(code)) event.preventDefault();
+        if (keyPressed.includes(code)) return true;
+        keyPressed.push(code);
+        if (code === "tab") {
+            showOnline();
+            return true;
+        }
+        if (["digit1", "digit2", "digit3", "digit4", "digit5", "digit6", "digit7", "digit8", "digit9"].includes(code)) {
+            if (isSticker || !ws) return true;
+
+            isSticker = true;
+            let stickerNumber = +code.substr(-1) - 1;
+            playersArr[0].stickerI = stickerNumber;
+
+            ws.sendJson({
+                action: "select_sticker",
+                number: stickerNumber
+            });
+            return true;
+        }
+    });
+    window.addEventListener("keyup", function (event) {
+        let code = event.code.toLowerCase();
+        let i = keyPressed.indexOf(code);
+        if (i < 0) return true;
+        keyPressed.splice(i, 1);
+        if (code === "tab") {
+            $("#online_players").addClass("closed");
+            return true;
+        }
+        if (["digit1", "digit2", "digit3", "digit4", "digit5", "digit6", "digit7", "digit8", "digit9"].includes(code)) {
+            isSticker = false;
+            playersArr[0].stickerI = null;
+            ws.sendJson({
+                action: "select_sticker",
+                number: ""
+            });
+            return true;
+        }
+    });
+
+    document.getElementById("into_game_button").addEventListener("click", function () {
+        let selected = $(".server.selected");
+        if (selected.length !== 1) return true;
+
+        let ip = selected.attr("data-ip");
+        $("#main_menu").addClass("closed");
+        startGame(ip);
+    });
+
 
     {
         let wheel = 0;
@@ -1091,157 +1181,186 @@
         });
     }
 
-
-    ws.on("open", function () {
-
-        ws.sendJson({
-            action: "player_connect",
-            nick: "Мерлин"
-        });
-
-    });
-    ws.on("message", function (event) {
-        let data = "";
+    function clearAll() {
         try {
-            data = JSON.parse(event.data);
-            if (typeof (data) !== "object") throw("Error");
+            cancelAnimationFrame(renderVar);
         } catch {
-            return true;
         }
+        [playersArr, virusArr, foodsArr, bulletsArr, rendersArr] = [[], [], [], [], []];
+    }
 
-        if (data.action === "spawn_unit") {
-            delete data.action;
-            let unit = getUnit(data);
-            addUnit(unit, getTimeByDelta(Date.now() - data.time));
-        }
+    function startGame(ip) {
+        clearAll();
+        ws = new Ws("ws://" + ip);
 
-        if (data.action === "get_all_units") {
-            let arr = [...data.units.players, ...data.units.foods, ...data.units.virus, ...data.units.bullets];
-            let length = arr.length;
+        ws.on("open", function () {
+            ws.sendJson({
+                action: "player_connect",
+                nick: $("#nick_for_game").val().trim().substr(0, 15) || "SandL"
+            });
 
-            for (let i = 0; i < length; i++) {
-                let unit = getUnit(arr[i]);
-                addUnit(unit);
-            }
-            setTimeout(function () {
-                ws.sendJson({action: "update_units"});
-            }, 0);
-            return true;
-        }
-
-        if (data.action === "player_disconnect") {
-            let length = playersArr.length;
-
-            for (let i = 0; i < length; i++) {
-                if (+playersArr[i].id !== +data.id) continue;
-                playersArr.splice(i, 1);
-                break;
+        });
+        ws.on("message", function (event) {
+            let data = "";
+            try {
+                data = JSON.parse(event.data);
+                if (typeof (data) !== "object") throw("Error");
+            } catch {
+                return true;
             }
 
-            return true;
-        }
+            if (data.action === "spawn_unit") {
+                delete data.action;
+                let unit = getUnit(data);
+                addUnit(unit, getTimeByDelta(Date.now() - data.time));
+            }
 
-        if (data.action === "update_units") {
-            delete data.action;
-            let pArr = [];
-            let fArr = [];
-            let vArr = [];
-            let bArr = [];
+            if (data.action === "get_all_units") {
+                let arr = [...data.units.players, ...data.units.foods, ...data.units.virus, ...data.units.bullets];
+                let length = arr.length;
 
-            let length = data.units.players.length;
-            for (let i = 0; i < length; i++) {
-                let unit = getUnit(data.units.players[i]);
-                // if (name === "player") {
-                if (playersArr.length > 0 && +unit.id === playersArr[0].id) {
-                    // unit.current = true;
-                    // pArr.unshift(unit);
-                    // pArr[0].update(getTimeByDelta(Date.now() - data.time));
-                    // console.log(unit.cells[0].x + " " + playersArr[0].cells[0].x);
-                    // continue;
+                for (let i = 0; i < length; i++) {
+                    let unit = getUnit(arr[i]);
+                    addUnit(unit);
                 }
-                unit.update(getTimeByDelta(Date.now() - data.time));
-                let player = findPlayer(unit.id);
-                player.changePos(unit);
-                // pArr.push(unit);
-                // let player = findPlayer(unit.id);
-                // let delta = getTimeByDelta(Date.now() - data.time);
-                // player.updateByDelta(unit.cells, delta);
-                // continue;
-                // }
-                // if (name === "food") {
-                //     fArr.push(unit);
-                //     continue;
-                // }
-                // if (name === "virus") {
-                //     vArr.push(unit);
-                //     continue;
-                // }
-                // if (name === "bullet") {
-                //     bArr.push(unit);
-                //     continue;
-                // }
+                setTimeout(function () {
+                    ws.sendJson({action: "update_units"});
+                }, 0);
+                return true;
             }
 
-            // cancelAnimationFrame(renderVar);
-            // playersArr = pArr;
-            // virusArr = vArr;
-            // bulletsArr = bArr;
-            // foodsArr = fArr;
-            // gameInfo.updateTime -= Date.now() - data.time;
-            // renderVar = requestAnimationFrame(render);
-            setTimeout(function () {
-                ws.sendJson({action: "update_units"});
-            }, 0);
-        }
+            if (data.action === "player_disconnect") {
+                let length = playersArr.length;
 
-        // if (data.action === "player_split") {
-        //     let player = findPlayer(data.id);
-        //     if (!player) return true;
-        //     //
-        //     player.split();
-        //     // playersArr[0].split(1);
-        //     return true;
-        // }
+                for (let i = 0; i < length; i++) {
+                    if (+playersArr[i].id !== +data.id) continue;
+                    playersArr.splice(i, 1);
+                    break;
+                }
 
-        if (data.action === "mouse_move") {
-            let player = findPlayer(data.id);
-            if (!player) return true;
+                return true;
+            }
 
-            player.mouseMove(data.x, data.y);
-            return true;
-        }
+            if (data.action === "update_units") {
+                delete data.action;
+                let pArr = [];
+                let fArr = [];
+                let vArr = [];
+                let bArr = [];
 
-        if (data.action === "chat_message") {
-            Message.getNewMessage(data);
-            return true;
-        }
+                let length = data.units.players.length;
+                for (let i = 0; i < length; i++) {
+                    let unit = getUnit(data.units.players[i]);
+                    // if (name === "player") {
+                    if (playersArr.length > 0 && +unit.id === playersArr[0].id) {
+                        // unit.current = true;
+                        // pArr.unshift(unit);
+                        // pArr[0].update(getTimeByDelta(Date.now() - data.time));
+                        // console.log(unit.cells[0].x + " " + playersArr[0].cells[0].x);
+                        // continue;
+                    }
+                    unit.update(getTimeByDelta(Date.now() - data.time));
+                    let player = findPlayer(unit.id);
+                    if (player !== null) {
+                        player.changePos(unit);
+                    }
+                    // pArr.push(unit);
+                    // let player = findPlayer(unit.id);
+                    // let delta = getTimeByDelta(Date.now() - data.time);
+                    // player.updateByDelta(unit.cells, delta);
+                    // continue;
+                    // }
+                    // if (name === "food") {
+                    //     fArr.push(unit);
+                    //     continue;
+                    // }
+                    // if (name === "virus") {
+                    //     vArr.push(unit);
+                    //     continue;
+                    // }
+                    // if (name === "bullet") {
+                    //     bArr.push(unit);
+                    //     continue;
+                    // }
+                }
 
-        let ping = $("#ping");
-        if (data.action === "ping") {
-            let delta = Date.now() - data.time;
-            ping.text(delta);
-        }
+                // cancelAnimationFrame(renderVar);
+                // playersArr = pArr;
+                // virusArr = vArr;
+                // bulletsArr = bArr;
+                // foodsArr = fArr;
+                // gameInfo.updateTime -= Date.now() - data.time;
+                // renderVar = requestAnimationFrame(render);
+                setTimeout(function () {
+                    ws.sendJson({action: "update_units"});
+                }, 0);
+            }
 
-        if (data.action === "nick_info") {
-            return true;
-        }
+            // if (data.action === "player_split") {
+            //     let player = findPlayer(data.id);
+            //     if (!player) return true;
+            //     //
+            //     player.split();
+            //     // playersArr[0].split(1);
+            //     return true;
+            // }
 
-        if (data.action === "game_message") {
-            Message.gameMessage(data.message);
-            return true;
-        }
+            if (data.action === "mouse_move") {
+                let player = findPlayer(data.id);
+                if (!player) return true;
 
-        if (data.action === "secondary_message") {
-            Message.smallMessage(data.message);
-            return true;
-        }
+                player.mouseMove(data.x, data.y);
+                return true;
+            }
 
-        if (data.action === "select_sticker_set") {
-            let player = findPlayer(data.id);
-            player.loadStickers(data.stickers);
-            return true;
-        }
+            if (data.action === "chat_message") {
+                Message.getNewMessage(data);
+                return true;
+            }
 
-    });
+            let ping = $("#ping");
+            if (data.action === "ping") {
+                let delta = Date.now() - data.time;
+                ping.text(delta);
+            }
+
+            if (data.action === "nick_info") {
+                return true;
+            }
+
+            if (data.action === "game_message") {
+                Message.gameMessage(data.message);
+                return true;
+            }
+
+            if (data.action === "secondary_message") {
+                Message.smallMessage(data.message);
+                return true;
+            }
+
+            if (data.action === "select_sticker_set") {
+                let player = findPlayer(data.id);
+                if (!player) return true;
+
+                player.loadStickers(data.stickers);
+                return true;
+            }
+
+            if (data.action === "change_nick") {
+                let player = findPlayer(data.id);
+                if (!player) return true;
+
+                player.setNick(data.nick, data.skin, data.skinId);
+            }
+
+            if (data.action === "select_sticker") {
+                let player = findPlayer(data.id);
+                if (!player) return true;
+
+                if (isEmpty(data.number)) data.number = null;
+                player.stickerI = data.number;
+            }
+        });
+    }
 
 })();

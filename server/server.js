@@ -153,7 +153,7 @@ webSocketServer.on('connection', function (ws, req) {
     clients[id].isMute = false;
     clients[id].IPAddress = req.connection.remoteAddress || ws._socket.remoteAddress;
 
-    ws.on('message', function (data) {
+    ws.on('message', async function (data) {
         try {
             data = JSON.parse(data);
         } catch (e) {
@@ -226,12 +226,37 @@ webSocketServer.on('connection', function (ws, req) {
         }
 
         if (data.action === "select_sticker_set") {
-            if (!data.id) return true;
+            if (Functions.isEmpty(data.id)) return true;
 
             Functions.sendRequest("game.pw/api/admin", {action: "get_sticker_set", id: data.id})
                 .then(data => {
                     wsMessage({action: "select_sticker_set", id, stickers: data.data.stickers});
                 });
+        }
+
+        if(data.action === "change_nick"){
+            if(Functions.isEmpty(data.nick)) data.nick = "SandL";
+            await Units.game.changeNick(id, data.nick);
+            let player = Units.game.findPlayer(id);
+            if(!player) return true;
+
+            player = player.player;
+            wsMessage({
+                action: "change_nick",
+                id: player.wsId,
+                nick: player.nick,
+                skin: player.skin,
+                skinId: player.skinId
+            })
+        }
+        if(data.action === "select_sticker"){
+            if(Functions.isEmpty(data.number)) data.number = "";
+
+            wsMessage({
+                action: "select_sticker",
+                id,
+                number: data.number
+            })
         }
     });
 
