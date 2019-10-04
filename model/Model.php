@@ -7,7 +7,8 @@ class Model
 
     public function __construct()
     {
-        $this->mysqli = new mysqli("localhost", "root", "7LQUA!fa3596Bq", "game");
+
+        $this->mysqli = new mysqli("localhost", "root", DB_PASS, "game");
         if ($this->mysqli->connect_errno) exit("DB ERROR");
         $this->mysqli->set_charset("utf8");
         $sql = "set global sql_mode=''";

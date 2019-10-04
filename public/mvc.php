@@ -30,6 +30,7 @@ if (empty($page)) $page = "index";
 
 $isAuth = false;
 
+require('../model/db.php');
 require('../controller/auth_controller.php');
 
 if ($api) {
