@@ -102,12 +102,93 @@ class Command {
     }
 }
 
+function changeColor(color){
+    if(!ws) return true;
+    ws.sendJson({
+        action: "change_color",
+        color
+    });
+}
+
+function changeNick(nick, password = "") {
+    if(!ws) return true;
+    ws.sendJson({
+        action: "change_nick",
+        nick,
+        password
+    });
+
+    addLocalNick(nick, password);
+}
+
+function addLocalNick(nick, password) {
+    let nicks = getLocalNicks() || [];
+    for (let [key, n] of Object.entries(nicks)) {
+        if (n.nick.toLowerCase() === nick.toLowerCase()) {
+            nicks[key].password = password;
+            localStorage.setItem("nicks", JSON.stringify(nicks));
+            return true;
+        }
+    }
+    nicks.push({nick, password});
+    localStorage.setItem("nicks", JSON.stringify(nicks));
+}
+
+function getLocalNicks() {
+    let nicks = localStorage.getItem("nicks");
+    if (isEmpty(nicks)) return null;
+    let returned = "";
+    try {
+        returned = JSON.parse(nicks);
+    } catch {
+        return null;
+    }
+
+    return returned;
+}
+
+function getNickInfo(nick) {
+    return sendRequest("api/registration", {action: "get_nick", nick})
+        .then(data => {
+            try {
+                if (data.result !== "true") throw("");
+
+                return data.data;
+            } catch {
+            }
+
+            return null;
+        })
+}
+
+function deleteLocalNick(nick) {
+    let nicks = getLocalNicks() || [];
+    for (let [key, n] of Object.entries(nicks)) {
+        if (n.nick.toLowerCase() === nick.toLowerCase()) {
+            nicks.splice(key, 1);
+            localStorage.setItem("nicks", JSON.stringify(nicks));
+            break;
+        }
+    }
+}
+
+function onDeleteLocalNick(nick) {
+    deleteLocalNick(nick);
+    $(".user_skin").each(function (i, element) {
+        let n = $(element).attr("data-nick");
+        if (n.toLowerCase() === nick.toLowerCase()) $(element).remove();
+    });
+}
+
 function onOpen() {
+    let localNicks = [];
+
     class User {
 
         name = null;
         img = null;
         balance = null;
+        userNicks = [];
 
         constructor() {
             $.ajaxSetup({
@@ -116,9 +197,24 @@ function onOpen() {
                     xhr.setRequestHeader("User-Id", getCookie("User-Id"));
                 }
             });
+            $(".for_user.closed").removeClass("closed");
             this.getUserInfo();
             this.getAllSkins();
             this.getAllStickers();
+        }
+
+        onLogOut() {
+            $(".for_user").addClass("closed");
+            $("#account_div").hide();
+            $("#login").show();
+            $("#select_nick .html:not(.local)").empty();
+            $("#all_skins .html:not(.local), #all_stickers .html").empty();
+            $.ajaxSetup({
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader("Token", null);
+                    xhr.setRequestHeader("User-Id", null);
+                }
+            });
         }
 
         getUserInfo() {
@@ -149,10 +245,17 @@ function onOpen() {
                 .then(data => {
                     let html = "";
                     for (let skin of data.data) {
+                        this.userNicks.push(skin.nick.toLowerCase());
+                        let index = localNicks.indexOf(skin.nick.toLowerCase());
+                        if (index > -1) {
+                            $("#all_skins .html.local .user_skin:eq(" + index + ")").remove();
+                            $("#select_nick .html.local .user_skin:eq(" + index + ")").remove();
+                            localNicks.splice(index, 1);
+                        }
                         html += "<div class='user_skin' data-password='" + skin.password + "' data-nick='" + skin.nick + "'><div class='skin'><img src='" + skin.skin + "'></div><span>" + skin.nick + "</span></div>";
                     }
-                    $("#all_skins .html").html(html);
-                    $("#select_nick").html(html);
+                    $("#all_skins .html:not(.local)").html(html);
+                    $("#select_nick .html:not(.local)").html(html);
                 });
         }
 
@@ -167,6 +270,20 @@ function onOpen() {
                 });
         }
 
+        static async getLocalSkins() {
+            let nicks = getLocalNicks() || [];
+            let html = "";
+            for (let skin of nicks) {
+                if (user && user.userNicks.includes(skin.nick.toLowerCase())) continue;
+                localNicks.push(skin.nick.toLowerCase());
+                let info = await getNickInfo(skin.nick);
+                if (!info) continue;
+                html += "<div class='user_skin' data-password='" + skin.password + "' data-nick='" + skin.nick + "'><div class='skin'><img src='" + info.skin + "'></div><span>" + skin.nick + "</span><span class='delete'>x</span></div>";
+            }
+            $("#all_skins .html.local").html(html);
+            $("#select_nick .html.local").html(html);
+        }
+
     }
 
     let user = null;
@@ -179,6 +296,7 @@ function onOpen() {
                 user = new User();
             });
     }
+    User.getLocalSkins();
 
 
     let resizeChat = false;
@@ -229,6 +347,7 @@ function onOpen() {
         })
 
         .on("click", "#play_button", () => $("#servers_list").addClass("show"))
+        .on("click", "#collapse_servers", () => $("#servers_list").removeClass("show"))
 
         .on("click", "#all_messages .nick_name", function (event) {
             let parent = $(this).closest(".div_message");
@@ -324,6 +443,7 @@ function onOpen() {
             }
             let nick = $(this).val().trim();
             if (!nick) {
+                $("#skin_preview").addClass("closed");
                 $("#password_for_game").removeClass("required");
                 return true;
             }
@@ -368,11 +488,7 @@ function onOpen() {
 
             $("#all_skins .user_skin.selected").not(this).removeClass("selected");
             $(this).addClass("selected");
-            ws.sendJson({
-                action: "change_nick",
-                nick: $(this).attr("data-nick"),
-                password: $(this).attr("data-password") || ""
-            });
+            changeNick($(this).attr("data-nick"), $(this).attr("data-password"));
         })
 
         .on("click", "#all_stickers .user_sticker", function () {
@@ -394,21 +510,30 @@ function onOpen() {
         .on("click", "#exit_button", function () {
             deleteCookie("Token");
             deleteCookie("User-Id");
+            user.onLogOut();
+            user = null;
+            User.getLocalSkins();
         })
 
-        .on("click", "#sign_in_button", function(){
+        .on("click", "#sign_in_button", function () {
             let userId = $("#login_sign_in").val().trim();
             let password = $("#password_sign_in").val().trim();
-            if(isEmpty(userId) || isEmpty(password)) return true;
+            if (isEmpty(userId) || isEmpty(password)) return true;
 
-            sendRequest("api/registration", {action: "auth", "user_id":userId, password})
+            sendRequest("api/registration", {action: "auth", "user_id": userId, password})
                 .then(data => {
-                    if(data.result === "true"){
+                    if (data.result === "true") {
                         setCookie("User-Id", data.data.user_id, {"max-age": 30 * 24 * 60 * 60});
                         setCookie("Token", data.data.token, {"max-age": 30 * 24 * 60 * 60});
                         user = new User();
                     }
                 });
+        })
+
+        .on("click", ".user_skin .delete", function (event) {
+            event.stopPropagation();
+            let nick = $(this).closest(".user_skin").attr("data-nick");
+            onDeleteLocalNick(nick);
         });
 
 }

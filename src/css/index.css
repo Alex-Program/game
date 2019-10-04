@@ -12,6 +12,7 @@ html, body {
 ::-webkit-scrollbar {
     background: lightseagreen;
     width: 7px;
+    height: 7px;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -563,9 +564,10 @@ button, button:active, button:focus, input {
     border-radius: 15px;
     background: black;
     transform: translate(-50%, 0);
-    height: 70%;
-    padding: 20px;
+    /*height: 70%;*/
+    padding: 35px 20px 20px;
     opacity: 0;
+    overflow: hidden;
 }
 
 #servers_list.show {
@@ -575,6 +577,33 @@ button, button:active, button:focus, input {
 
 #servers_list input {
     width: 200px;
+}
+
+#collapse_servers {
+    transition: background 0.5s, color 0.5s;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translate(0, -50%);
+    font: bold 20pt/20pt sans-serif;
+    border-radius: 15px;
+    color: gold;
+    cursor: pointer;
+    background: red;
+}
+
+#collapse_servers:hover {
+    background: #cd0000;
+    color: #cdaf00;
+}
+
+#servers_header {
+    position: absolute;
+    background: goldenrod;
+    height: 30px;
+    width: 100%;
+    top: 0;
+    left: 0;
 }
 
 #skin_preview {
@@ -667,6 +696,14 @@ button, button:active, button:focus, input {
 
 #all_skins .user_skin:not(.selected):hover, .user_sticker:hover {
     background: red;
+}
+
+#all_skins .user_skin:not(.selected):hover .delete {
+    background: #9b0000;
+}
+
+#all_skins .html:not(.local):not(:empty) {
+    border-bottom: solid 2px gold;
 }
 
 #all_skins .user_skin:not(.selected):hover span, .user_sticker:hover span {
@@ -806,7 +843,8 @@ button, button:active, button:focus, input {
 
 #select_nick .user_skin {
     transition: background 0.5s;
-    background: black;
+    background: darkmagenta;
+    border-bottom: solid 1px black;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -819,16 +857,28 @@ button, button:active, button:focus, input {
     background: red;
 }
 
+#select_nick .user_skin:hover .delete {
+    background: #9b0000;
+}
+
 #select_nick .user_skin img {
     width: 25px;
     border-radius: 20px;
     border: solid 1px gold;
 }
 
-#select_nick .user_skin span {
+#select_nick .user_skin span:not(.delete) {
     margin-left: 5px;
     flex: 1 1 auto;
     text-align: center;
+}
+
+#all_skins span.delete, #select_nick span.delete {
+    transition: background 0.5s;
+    background: red;
+    color: white;
+    padding: 5px;
+    border-radius: 10px;
 }
 
 .h2 {
@@ -857,7 +907,7 @@ button, button:active, button:focus, input {
     border: solid 3px #1b8078;
 }
 
-#nick_for_game, #password_for_game {
+#password_for_game {
     margin-left: 10px;
 }
 
@@ -882,4 +932,15 @@ button, button:active, button:focus, input {
 
 #into_game_button:hover {
     text-shadow: 0 0 20px gold;
+}
+
+.for_user {
+    transition: visibility 0.5s, opacity 0.5s;
+    opacity: 1;
+    visibility: visible;
+}
+
+.for_user.closed {
+    opacity: 0;
+    visibility: hidden;
 }

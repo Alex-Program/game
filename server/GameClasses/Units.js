@@ -497,7 +497,7 @@ class Cell extends Arc {
         if (this.mass + this.toMass < 250) return true;
 
         game.bulletsArr.push(
-            new Bullet(this.x + (this.radius + 5) * this.cos, this.y + (this.radius + 5) * this.sin, this.sin, this.cos, gameInfo.bulletMass, 200)
+            new Bullet(this.x + (this.radius + 5) * this.cos, this.y + (this.radius + 5) * this.sin, this.sin, this.cos, gameInfo.bulletMass, 100)
         );
         this.toMass -= 10;
     }
@@ -590,6 +590,10 @@ class Player {
     async changeNick(nick) {
         this.nick = nick;
         await this.authNick();
+    }
+
+    changeColor(color){
+        this.color = color;
     }
 
     update(delta = 1) {
@@ -939,6 +943,14 @@ class Game {
 
         player = player.player;
         await player.changeNick(nick);
+    }
+
+    changeColor(wsId, color){
+        let player = this.findPlayer(wsId);
+        if(!player) return true;
+
+        player = player.player;
+        player.changeColor(color);
     }
 
 }

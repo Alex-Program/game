@@ -2,15 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="011e9982-741d-4222-841e-091d212022f0" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.htaccess" beforeDir="false" afterPath="$PROJECT_DIR$/.htaccess" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controller/admin_controller.php" beforeDir="false" afterPath="$PROJECT_DIR$/controller/admin_controller.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controller/registration_controller.php" beforeDir="false" afterPath="$PROJECT_DIR$/controller/registration_controller.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/model/Skin.php" beforeDir="false" afterPath="$PROJECT_DIR$/model/Skin.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/auth_controller.php" beforeDir="false" afterPath="$PROJECT_DIR$/controller/auth_controller.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/Model.php" beforeDir="false" afterPath="$PROJECT_DIR$/model/Model.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/GameClasses/Units.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/GameClasses/Units.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/functions.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/functions.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/server.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/css/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/css/index.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/js/functions.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/functions.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/js/Ws.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/Ws.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/js/game.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/game.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/js/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/index.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/view/index.php" beforeDir="false" afterPath="$PROJECT_DIR$/view/index.php" afterDir="false" />
@@ -264,7 +263,8 @@
       <workItem from="1569802780131" duration="6455000" />
       <workItem from="1569892498588" duration="9282000" />
       <workItem from="1569986059661" duration="10001000" />
-      <workItem from="1570073202660" duration="17441000" />
+      <workItem from="1570073202660" duration="17479000" />
+      <workItem from="1570149659406" duration="20487000" />
     </task>
     <task id="LOCAL-00001" summary="add viruses">
       <created>1567508394746</created>
@@ -294,7 +294,14 @@
       <option name="project" value="LOCAL" />
       <updated>1569670220225</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="add main page">
+      <created>1570102571067</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1570102571067</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -320,6 +327,7 @@
     <MESSAGE value="add chat, fix multiplayer" />
     <MESSAGE value="add stickers, auth nick in server" />
     <MESSAGE value="add stickers" />
-    <option name="LAST_COMMIT_MESSAGE" value="add stickers" />
+    <MESSAGE value="add main page" />
+    <option name="LAST_COMMIT_MESSAGE" value="add main page" />
   </component>
 </project>

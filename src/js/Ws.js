@@ -1,5 +1,6 @@
 class Ws {
     isConnect = false;
+    address = null;
 
     constructor(address) {
         this.address = address;
@@ -22,9 +23,13 @@ class Ws {
         };
         this.ws.onclose = () => {
             this.isConnect = false;
-            this.connection();
-            this.setListeners();
+            // this.connection();
+            // this.setListeners();
         }
+    }
+
+    close(){
+        this.ws.close();
     }
 
     on(event, listener) {

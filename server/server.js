@@ -228,7 +228,7 @@ webSocketServer.on('connection', function (ws, req) {
         if (data.action === "select_sticker_set") {
             if (Functions.isEmpty(data.id)) return true;
 
-            Functions.sendRequest("game.pw/api/admin", {action: "get_sticker_set", id: data.id})
+            Functions.sendRequest("api/admin", {action: "get_sticker_set", id: data.id})
                 .then(data => {
                     wsMessage({action: "select_sticker_set", id, stickers: data.data.stickers});
                 });
@@ -257,6 +257,17 @@ webSocketServer.on('connection', function (ws, req) {
                 id,
                 number: data.number
             })
+        }
+
+        if(data.action === "change_color"){
+            if(Functions.isEmpty(data.color)) return true;
+
+            Units.game.changeColor(id, data.color);
+            wsMessage({
+                action: "change_color",
+                id,
+                color: data.color
+            });
         }
     });
 

@@ -3,6 +3,7 @@
 <script src="/src/js/Notify.js"></script>
 <script src="/src/js/Ws.js"></script>
 <link href="https://fonts.googleapis.com/css?family=Special+Elite&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Caveat&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../src/css/index.css">
 
 <canvas id="canvas">
@@ -90,7 +91,7 @@
     </div>
     <div style="position: relative; display: flex; flex-direction: row; margin-left:10px; margin-right: 10px;">
         <div style="flex: 1 1 auto;">
-            <div class="triangle left" style="float: left;">
+            <div class="triangle left for_user closed" style="float: left;">
                 <!--                <img src="/src/images/triangle.png">-->
                 <svg width="70" height="70">
                     <polygon points="5,70 35,5 65,70"
@@ -99,7 +100,7 @@
 
                 <div class="button_label">Магазин</div>
             </div>
-            <div class="triangle left" style="float: left; clear: both; margin-top: 10px;">
+            <div class="triangle left for_user closed" style="float: left; clear: both; margin-top: 10px;">
                 <svg width="70" height="70">
                     <polygon points="5,70 35,5 65,70"
                              fill="red" stroke="red" stroke-width="5"/>
@@ -115,7 +116,7 @@
                 </svg>
 
             </div>
-            <div class="triangle right" style="float: right; clear: both; margin-top: 10px;">
+            <div class="triangle right for_user closed" style="float: right; clear: both; margin-top: 10px;">
                 <svg width="70" height="70">
                     <polygon points="5,70 35,5 65,70"
                              fill="red" stroke="red" stroke-width="5"/>
@@ -129,19 +130,29 @@
 
 
     <div id="servers_list">
-        <div style="display: flex; flex-direction: row;">
+        <div id="servers_header">
+            <div style="position: relative; width: 100%; height: 100%;">
+                <div id="collapse_servers">▼</div>
+            </div>
+        </div>
+        <div style="display: flex; flex-direction: row; border: dashed 3px gold; padding: 5px; background: lightseagreen; border-radius: 5px;">
             <div style="position: relative;" class="flex_row">
                 <span class="label_input">Ник:</span>
-                <input type="text" class="gold_input" placeholder="Ник" id="nick_for_game">
-                <div id="select_nick" class="closed"></div>
+                <div style="position: relative; margin-left: 10px;">
+                    <input type="text" class="gold_input" placeholder="Ник" id="nick_for_game">
+                    <div id="select_nick" class="closed">
+                        <div class="html"></div>
+                        <div class="html local"></div>
+                    </div>
+                </div>
             </div>
             <div style="margin-left: 10px;" class="flex_row">
                 <span class="label_input">Пароль:</span>
                 <input type="text" class="gold_input" placeholder="Пароль" id="password_for_game">
             </div>
         </div>
-        <div class="flex" style="margin-top: 10px;">
-            <input type="color" id="select_color" style="display: none;">
+        <div class="flex" style="margin-top: 10px; padding-top: 5px;">
+            <input type="color" id="select_color" style="display: none;" value="#FFD700">
             <span class="label_input">Цвет:</span>
             <span id="color_preview" style="color: black; background: #FFD700;">#FFD700</span>
         </div>
@@ -152,7 +163,7 @@
             <h2 class="h2">Выберите сервер</h2>
             <div style="display: flex; flex-direction: row;">
                 <div style="padding: 10px;">
-                    <div class="server" data-ip="127.0.0.1:8081">127.0.0.1:8081</div>
+                    <div class="server" data-ip="178.21.8.10:8081">178.21.8.10:8081</div>
                 </div>
 
                 <div style="padding: 10px;">
@@ -176,6 +187,7 @@
     <div id="all_skins">
         <h3 style="padding: 10px;">Ваши скины</h3>
         <div class="html"></div>
+        <div class="html local"></div>
     </div>
 </div>
 

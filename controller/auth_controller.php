@@ -8,8 +8,14 @@ if ($headers['Token'] == "elrjglkejrglkjekjwlkejflkwjelkfjwkleg" && $headers['Us
     define("ADMIN", true);
     return;
 }
-$token = $headers['Token'] ? $headers['Token'] : $_COOKIE['Token'];
-$userId = $headers['User-Id'] ? $headers['User-Id'] : $_COOKIE['User-Id'];
+$token = null;
+$userId = null;
+if (!empty($headers['Token'])) $token = $headers['Token'];
+elseif (!empty($_COOKIE['Token'])) $token = $_COOKIE['Token'];
+
+if (!empty($headers['User-Id'])) $userId = $headers['User-Id'];
+elseif (!empty($_COOKIE['User-Id'])) $userId = $_COOKIE['User-Id'];
+
 if (!$token || !$userId) return;
 
 $userInfo = $auth->authByToken($userId, $token);

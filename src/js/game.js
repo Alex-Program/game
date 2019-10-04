@@ -24,6 +24,7 @@
 
 ///////////////
 
+
     class Arc {
 
         constructor() {
@@ -35,11 +36,19 @@
 
             if (drawableX < 0 || drawableX > canvas.width || drawableY < 0 || drawableY > canvas.height) return true;
 
+            context.save();
+
+            context.shadowColor = "gold";
+            context.shadowBlur = 10;
+            context.shadowOffsetX = 0;
+            context.shadowOffsetY = 0;
+
             context.beginPath();
             context.fillStyle = this.color;
             context.arc(drawableX, drawableY, this.drawableRadius / gameInfo.scale, 0, 2 * Math.PI, false);
             context.fill();
             context.closePath();
+            context.restore();
 
             let name = this.constructor.name.toLowerCase();
             if (name === "cell") {
@@ -54,7 +63,7 @@
 
             if (!["food", "bullet"].includes(name)) {
                 if (name === "cell") {
-                    this.drawText(drawableX, drawableY, this.drawableRadius / (3 * gameInfo.scale), this.owner.nick);
+                    this.drawText(drawableX, drawableY, this.drawableRadius / (2 * gameInfo.scale), this.owner.nick, true);
                     drawableY += this.drawableRadius / (2 * gameInfo.scale);
                 }
                 if (name === "virus" && imagesArr['virus_arrow'] && imagesArr['virus']) {
@@ -87,12 +96,18 @@
             context.restore();
         }
 
-        drawText(x, y, size, value) {
+        drawText(x, y, size, value, isStroke = false) {
+            size *= 1.2;
             context.fillStyle = "#FFFFFF";
             context.textAlign = "center";
             context.textBaseline = "middle";
-            context.font = String(size) + "px Verdana";
+            context.font = "bold " + String(size) + "px 'Caveat'";
             context.fillText(String(value), x, y);
+            if (isStroke) {
+                context.lineWidth = size / 50;
+                context.strokeStyle = "#000000";
+                context.strokeText(String(value), x, y);
+            }
         }
 
         get drawableRadius() {
@@ -168,6 +183,27 @@
             }
 
         };
+
+
+        static drawCenter() {
+            if (!imagesArr["center"]) return true;
+
+            let drawableX = canvas.width / 2 + (gameInfo.width / 2 - gameInfo.centerX) / gameInfo.scale;
+            let drawableY = canvas.height / 2 + (gameInfo.height / 2 - gameInfo.centerY) / gameInfo.scale;
+            if (drawableY < 0 || drawableY > canvas.height || drawableX < 0 || drawableX > canvas.width) return true;
+
+            context.globalAlpha = 0;
+            context.beginPath();
+            context.arc(drawableX, drawableY, gameInfo.centerImageRadius / gameInfo.scale, 0, Math.PI * 2, true);
+            context.fill();
+            context.closePath();
+            context.globalAlpha = 1;
+            context.save();
+            context.clip();
+            context.globalCompositeOperation = "source-atop";
+            context.drawImage(imagesArr["center"], drawableX - gameInfo.centerImageRadius / gameInfo.scale, drawableY - gameInfo.centerImageRadius / gameInfo.scale, gameInfo.centerImageRadius * 2 / gameInfo.scale, gameInfo.centerImageRadius * 2 / gameInfo.scale);
+            context.restore();
+        }
 
     }
 
@@ -348,6 +384,9 @@
             this.updateDirection();
         }
 
+        setColor(color) {
+            this.color = color;
+        }
 
         update(delta = 1) {
             this.updateDirection();
@@ -414,27 +453,27 @@
                 let c = Math.sqrt((this.x - virus.x) ** 2 + (this.y - virus.y) ** 2);
                 if (c > this.drawableRadius - 0.5 * virus.drawableRadius) continue;
 
-                let count = Math.min(Math.floor((this.mass / 2) / 50), 64 - this.owner.cells.length);
-                let mass = Math.floor((this.mass / 2) / count);
-                let angleStep = 180 / count;
-                let angle = getAngle(this.sin, this.cos);
+                // let count = Math.min(Math.floor((this.mass / 2) / 50), 64 - this.owner.cells.length);
+                // let mass = Math.floor((this.mass / 2) / count);
+                // let angleStep = 180 / count;
+                // let angle = getAngle(this.sin, this.cos);
 
                 this.isCollising = true;
 
-                let currentAngle = angle.degree - 90;
-
-                while (count > 0) {
-                    let sin = Math.sin(degreeToRadians(currentAngle));
-                    let cos = Math.cos(degreeToRadians(currentAngle));
-
-                    let distance = this.radius + mass / 10 + 5;
-                    this.owner.cells.push(
-                        new Cell(this.x + distance * cos, this.y + distance * sin, mass, sin, cos, false, this.color, this.owner, ++this.owner.cellId, 50, true)
-                    );
-                    currentAngle += angleStep;
-                    count--;
-                    // if (this.owner.current) gameInfo.byScale += 0.05;
-                }
+                // let currentAngle = angle.degree - 90;
+                //
+                // while (count > 0) {
+                //     let sin = Math.sin(degreeToRadians(currentAngle));
+                //     let cos = Math.cos(degreeToRadians(currentAngle));
+                //
+                //     let distance = this.radius + mass / 10 + 5;
+                //     this.owner.cells.push(
+                //         new Cell(this.x + distance * cos, this.y + distance * sin, mass, sin, cos, false, this.color, this.owner, ++this.owner.cellId, 50, true)
+                //     );
+                //     currentAngle += angleStep;
+                //     count--;
+                //     // if (this.owner.current) gameInfo.byScale += 0.05;
+                // }
 
                 this.toMass -= this.mass / 2;
                 virusArr.splice(i, 1);
@@ -640,6 +679,13 @@
             this.loadImage();
         }
 
+        setColor(color) {
+            this.color = color;
+            for (let i = 0; i < this.cells.length; i++) {
+                this.cells[i].setColor(color);
+            }
+        }
+
         loadImage() {
             if (isEmpty(this.skin) || isEmpty(this.skinId)) return false;
             loadImage(this.skinId, this.skin);
@@ -780,6 +826,7 @@
 
 
     let canvas = document.getElementById("canvas");
+    canvas.style.letterSpacing = "2px";
     let context = canvas.getContext("2d");
 
     function resize() {
@@ -817,6 +864,7 @@
 
 
     let gameInfo = {
+        centerImageRadius: 100,
         centerX: 0,
         centerY: 0,
         width: 1000,
@@ -847,6 +895,7 @@
     // loadImage("virus", "/src/images/virus_arrow.png");
     loadImage("virus_arrow", "/src/images/virus_arrow1.png");
     loadImage("virus", "https://avatars.mds.yandex.net/get-pdb/939186/3e8700ba-511c-45e1-b9fb-dc3f02e88ca4/s1200");
+    loadImage("center", "/src/images/logo.png");
     // loadImage("virus", "https://avatars.mds.yandex.net/get-pdb/939186/3e8700ba-511c-45e1-b9fb-dc3f02e88ca4/s1200");
 
 
@@ -867,7 +916,8 @@
                 gameInfo.updateTime = performance.now();
 
                 context.clearRect(0, 0, canvas.width, canvas.height);
-
+                context.fillStyle = "#000000";
+                context.fillRect(0, 0, canvas.width, canvas.height);
 
                 if (Math.abs(gameInfo.byScale) > 0) {
                     let speed = gameInfo.byScale * (gameInfo.deltaTime / gameInfo.perSecond) / 10;
@@ -895,6 +945,9 @@
                 for (let i = 0; i < foodsArr.length; i++) {
                     foodsArr[i].update();
                 }
+
+                Arc.drawCenter();
+
 
                 let renderLength = rendersArr.length;
                 rendersArr = rendersArr.sort((a, b) => a.drawableRadius - b.drawableRadius);
@@ -1085,7 +1138,7 @@
 
     window.addEventListener("keypress", event => {
         let code = event.code.toLowerCase();
-        if (event.code.toLowerCase() === "space") {
+        if (code === "space") {
             if (typeof ws !== "undefined") {
                 ws.sendJson({
                     action: "player_split"
@@ -1123,6 +1176,7 @@
         if (keyPressed.includes(code)) return true;
         keyPressed.push(code);
         if (code === "tab") {
+            if (!ws) return true;
             showOnline();
             return true;
         }
@@ -1151,6 +1205,8 @@
         }
         if (["digit1", "digit2", "digit3", "digit4", "digit5", "digit6", "digit7", "digit8", "digit9"].includes(code)) {
             isSticker = false;
+            if (!ws) return true;
+
             playersArr[0].stickerI = null;
             ws.sendJson({
                 action: "select_sticker",
@@ -1158,14 +1214,27 @@
             });
             return true;
         }
+
+        if (code === "escape") {
+            if (!ws) return true;
+            $("#main_menu").toggleClass("closed");
+            return true;
+        }
+
     });
 
     document.getElementById("into_game_button").addEventListener("click", function () {
+
         let selected = $(".server.selected");
         if (selected.length !== 1) return true;
 
         let ip = selected.attr("data-ip");
         $("#main_menu").addClass("closed");
+        if (ws && ws.address === "ws://" + ip) {
+            changeNick($("#nick_for_game").val().trim(), $("#password_for_game").val().trim());
+            changeColor($("#select_color").val());
+            return true;
+        }
         startGame(ip);
     });
 
@@ -1191,12 +1260,18 @@
 
     function startGame(ip) {
         clearAll();
+        try {
+            ws.close();
+        } catch {
+        }
+        ws = null;
         ws = new Ws("ws://" + ip);
 
         ws.on("open", function () {
             ws.sendJson({
                 action: "player_connect",
-                nick: $("#nick_for_game").val().trim().substr(0, 15) || "SandL"
+                nick: $("#nick_for_game").val().trim().substr(0, 15) || "SandL",
+                color: $("#select_color").val()
             });
 
         });
@@ -1359,6 +1434,13 @@
 
                 if (isEmpty(data.number)) data.number = null;
                 player.stickerI = data.number;
+            }
+
+            if (data.action === "change_color") {
+                let player = findPlayer(data.id);
+                if (!player) return true;
+
+                player.setColor(data.color);
             }
         });
     }
