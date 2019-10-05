@@ -594,6 +594,9 @@ class Player {
 
     changeColor(color) {
         this.color = color;
+        for (let i = 0; i < this.cells.length; i++) {
+            this.cells[i].color = color;
+        }
     }
 
     update(delta = 1) {
@@ -797,7 +800,7 @@ class Game {
         let players = this.playersArr.map(unit => {
             return this.getUnit(unit);
         });
-        if(all) {
+        if (all) {
             let foods = this.foodsArr.map(unit => {
                 return this.getUnit(unit);
             });
