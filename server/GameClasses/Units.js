@@ -568,7 +568,7 @@ class Player {
         game.onSpawnUnit(this);
     }
 
-    async getNickInfo(){
+    async getNickInfo() {
         let data = await Functions.sendRequest("api/admin", {action: "get_nick", nick: this.nick});
         if (data.result === "true") return data.data;
         if (data.data === "invalid_data") return false;
@@ -592,7 +592,7 @@ class Player {
         await this.authNick();
     }
 
-    changeColor(color){
+    changeColor(color) {
         this.color = color;
     }
 
@@ -797,17 +797,18 @@ class Game {
         let players = this.playersArr.map(unit => {
             return this.getUnit(unit);
         });
-        let foods = this.foodsArr.map(unit => {
-            return this.getUnit(unit);
-        });
-        let virus = this.virusArr.map(unit => {
-            return this.getUnit(unit);
-        });
-        let bullets = this.bulletsArr.map(unit => {
-            return this.getUnit(unit);
-        });
+        // let foods = this.foodsArr.map(unit => {
+        //     return this.getUnit(unit);
+        // });
+        // let virus = this.virusArr.map(unit => {
+        //     return this.getUnit(unit);
+        // });
+        // let bullets = this.bulletsArr.map(unit => {
+        //     return this.getUnit(unit);
+        // });
 
-        return {players, foods, virus, bullets};
+        // return {players, foods, virus, bullets};
+        return {players};
     }
 
     getUnit(unit) {
@@ -902,7 +903,7 @@ class Game {
         // let playerState = this.getPlayerInGameState(time, wsId);
         let playerNow = this.findPlayer(wsId);
         // if (!playerState || !playerNow) return true;
-        if(!playerNow) return true;
+        if (!playerNow) return true;
         // this.playersArr[playerNow.count] = playerState;
         this.playersArr[playerNow.count].split();
         // this.playersArr[playerNow.count].update(this.getTimeByDelta(Date.now() - time));
@@ -948,9 +949,9 @@ class Game {
         await player.changeNick(nick);
     }
 
-    changeColor(wsId, color){
+    changeColor(wsId, color) {
         let player = this.findPlayer(wsId);
-        if(!player) return true;
+        if (!player) return true;
 
         player = player.player;
         player.changeColor(color);
