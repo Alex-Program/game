@@ -141,6 +141,20 @@ function chatMessage(id, message, pm, pmId, isSecondary = false) {
     } else wsMessage(json);
 }
 
+function updateUnits(){
+    let time = Date.now();
+    let arr = Units.game.getAllUnits();
+    wsMessage({
+        action: "update_units",
+        units: arr,
+        time
+    });
+
+    setTimeout(updateUnits, 0);
+}
+setTimeout(updateUnits, 0);
+
+
 webSocketServer.on('connection', function (ws, req) {
     console.log("player connect");
     let id = clientsSize;
@@ -194,15 +208,15 @@ webSocketServer.on('connection', function (ws, req) {
             });
             return true;
         }
-        if (data.action === "update_units") {
-            let time = Date.now();
-            let arr = Units.game.getAllUnits();
-            wsMessage({
-                action: "update_units",
-                units: arr,
-                time
-            }, id);
-        }
+        // if (data.action === "update_units") {
+        //     let time = Date.now();
+        //     let arr = Units.game.getAllUnits();
+        //     wsMessage({
+        //         action: "update_units",
+        //         units: arr,
+        //         time
+        //     }, id);
+        // }
 
         if (data.action === "chat_message") {
             if (clients[id].isMute) return true;

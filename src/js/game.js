@@ -1259,6 +1259,7 @@
     }
 
     function startGame(ip) {
+        let isGame = false;
         clearAll();
         try {
             ws.close();
@@ -1298,9 +1299,10 @@
                     let unit = getUnit(arr[i]);
                     addUnit(unit);
                 }
-                setTimeout(function () {
-                    ws.sendJson({action: "update_units"});
-                }, 0);
+                isGame = true;
+                // setTimeout(function () {
+                //     ws.sendJson({action: "update_units"});
+                // }, 0);
                 return true;
             }
 
@@ -1317,6 +1319,7 @@
             }
 
             if (data.action === "update_units") {
+                if(!isGame) return true;
                 delete data.action;
                 let pArr = [];
                 let fArr = [];
@@ -1366,9 +1369,9 @@
                 // foodsArr = fArr;
                 // gameInfo.updateTime -= Date.now() - data.time;
                 // renderVar = requestAnimationFrame(render);
-                setTimeout(function () {
-                    ws.sendJson({action: "update_units"});
-                }, 0);
+                // setTimeout(function () {
+                //     ws.sendJson({action: "update_units"});
+                // }, 0);
             }
 
             // if (data.action === "player_split") {
