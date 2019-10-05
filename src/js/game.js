@@ -1319,7 +1319,7 @@
             }
 
             if (data.action === "update_units") {
-                if(!isGame) return true;
+                if (!isGame) return true;
                 delete data.action;
                 let pArr = [];
                 let fArr = [];
@@ -1399,6 +1399,9 @@
             let ping = $("#ping");
             if (data.action === "ping") {
                 let delta = Date.now() - data.time;
+                if (delta < 0) {
+                    console.log("now " + Date.now() + " time " + data.time);
+                }
                 ping.text(delta);
             }
 
