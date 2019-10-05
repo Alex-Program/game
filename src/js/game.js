@@ -496,8 +496,10 @@
             if (this.y < 0) this.y = 0;
             else if (this.y > gameInfo.height) this.y = gameInfo.height;
 
-            this.engineSin = 0;
-            this.engineCos = 0;
+            if(this.engineDistance <= 0) {
+                this.engineSin = 0;
+                this.engineCos = 0;
+            }
             if (this.x <= 0 || this.x >= gameInfo.width) {
                 this.engineCos = -this.cos;
                 this.engineDistance = this.x <= 0 ? -this.x : this.x - gameInfo.width;
@@ -764,8 +766,8 @@
                     // this.cells[cell.count].mass = player.cells[i].mass;
                     // continue;
                     // this.cells[i].toMass = player.cells[i].toMass;
-                    let dX = player.cells[i].x - this.cells[cell.count].x;
-                    let dY = player.cells[i].y - this.cells[cell.count].y;
+                    let dX = pCell.x - this.cells[cell.count].x;
+                    let dY = pCell.y - this.cells[cell.count].y;
                     let c = Math.sqrt(dX ** 2 + dY ** 2);
                     // if(c < 10) continue;
                     let sin = dY / c;
@@ -1074,7 +1076,7 @@
             return true;
         }
         if (name === "bullet") {
-            unit.update(delta);
+            // unit.update(delta);
             bulletsArr.push(unit);
             return true;
         }
@@ -1152,7 +1154,7 @@
                     action: "player_split"
                 });
             }
-            // playersArr[0].split();
+            playersArr[0].split();
             return true;
         }
 
@@ -1266,6 +1268,7 @@
         [playersArr, virusArr, foodsArr, bulletsArr, rendersArr] = [[], [], [], [], []];
     }
 
+
     function startGame(ip) {
         let isGame = false;
         clearAll();
@@ -1345,7 +1348,7 @@
                         // console.log(unit.cells[0].x + " " + playersArr[0].cells[0].x);
                         // continue;
                     }
-                    unit.update(getTimeByDelta(Date.now() - data.time));
+                    // unit.update(getTimeByDelta(Date.now() - data.time));
                     let player = findPlayer(unit.id);
                     if (player !== null) {
                         player.changePos(unit);
