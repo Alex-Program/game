@@ -793,21 +793,23 @@ class Game {
         }
     }
 
-    getAllUnits() {
+    getAllUnits(all = true) {
         let players = this.playersArr.map(unit => {
             return this.getUnit(unit);
         });
-        // let foods = this.foodsArr.map(unit => {
-        //     return this.getUnit(unit);
-        // });
-        // let virus = this.virusArr.map(unit => {
-        //     return this.getUnit(unit);
-        // });
-        // let bullets = this.bulletsArr.map(unit => {
-        //     return this.getUnit(unit);
-        // });
+        if(all) {
+            let foods = this.foodsArr.map(unit => {
+                return this.getUnit(unit);
+            });
+            let virus = this.virusArr.map(unit => {
+                return this.getUnit(unit);
+            });
+            let bullets = this.bulletsArr.map(unit => {
+                return this.getUnit(unit);
+            });
 
-        // return {players, foods, virus, bullets};
+            return {players, foods, virus, bullets};
+        }
         return {players};
     }
 

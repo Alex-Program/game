@@ -214,10 +214,10 @@ webSocketServer.on('connection', function (ws, req) {
         }
         if (data.action === "update_units") {
             let time = Date.now();
-            let arr = Units.game.getAllUnits();
+            let arr = Units.game.getAllUnits(false);
             wsMessage({
                 action: "update_units",
-                units: {players: arr.players},
+                units: arr,
                 time
             }, id);
         }
