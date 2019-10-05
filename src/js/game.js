@@ -98,6 +98,14 @@
 
         drawText(x, y, size, value, isStroke = false) {
             size *= 1.2;
+
+            context.save();
+
+            context.shadowColor = "red";
+            context.shadowBlur = 10;
+            context.shadowOffsetX = 0;
+            context.shadowOffsetY = 0;
+
             context.fillStyle = "#FFFFFF";
             context.textAlign = "center";
             context.textBaseline = "middle";
@@ -108,6 +116,7 @@
                 context.strokeStyle = "#000000";
                 context.strokeText(String(value), x, y);
             }
+            context.restore();
         }
 
         get drawableRadius() {

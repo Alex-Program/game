@@ -497,7 +497,7 @@ class Cell extends Arc {
         if (this.mass + this.toMass < 250) return true;
 
         game.bulletsArr.push(
-            new Bullet(this.x + (this.radius + 5) * this.cos, this.y + (this.radius + 5) * this.sin, this.sin, this.cos, gameInfo.bulletMass, 100)
+            new Bullet(this.x + (this.radius + 5) * this.cos, this.y + (this.radius + 5) * this.sin, this.sin, this.cos, gameInfo.bulletMass, 100, this.color)
         );
         this.toMass -= 10;
     }
