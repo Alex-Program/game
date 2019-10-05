@@ -770,7 +770,7 @@ class Game {
 
             this.spawnUnit();
             this.updateUnit();
-            this.addGameState();
+            // this.addGameState();
 
             // console.log(performance.now() - time);
         }
