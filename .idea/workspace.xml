@@ -4,7 +4,7 @@
     <list default="true" id="011e9982-741d-4222-841e-091d212022f0" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/GameClasses/Units.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/GameClasses/Units.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/js/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/view/index.php" beforeDir="false" afterPath="$PROJECT_DIR$/view/index.php" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -257,7 +257,7 @@
       <workItem from="1569986059661" duration="10001000" />
       <workItem from="1570073202660" duration="17479000" />
       <workItem from="1570149659406" duration="23415000" />
-      <workItem from="1570235398579" duration="15080000" />
+      <workItem from="1570235398579" duration="15292000" />
     </task>
     <task id="LOCAL-00001" summary="add viruses">
       <created>1567508394746</created>
@@ -392,7 +392,14 @@
       <option name="project" value="LOCAL" />
       <updated>1570252403101</updated>
     </task>
-    <option name="localTasksCounter" value="20" />
+    <task id="LOCAL-00020" summary="fix bugs, for upload">
+      <created>1570256058307</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1570256058307</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
