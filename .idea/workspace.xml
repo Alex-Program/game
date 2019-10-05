@@ -256,7 +256,7 @@
       <workItem from="1569986059661" duration="10001000" />
       <workItem from="1570073202660" duration="17479000" />
       <workItem from="1570149659406" duration="23415000" />
-      <workItem from="1570235398579" duration="7280000" />
+      <workItem from="1570235398579" duration="7364000" />
     </task>
     <task id="LOCAL-00001" summary="add viruses">
       <created>1567508394746</created>
@@ -335,7 +335,14 @@
       <option name="project" value="LOCAL" />
       <updated>1570242887131</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="fix bugs, for upload">
+      <created>1570243015669</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1570243015669</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

@@ -899,13 +899,13 @@ class Game {
     }
 
     split(wsId, time) {
-        let playerState = this.getPlayerInGameState(time, wsId);
+        // let playerState = this.getPlayerInGameState(time, wsId);
         let playerNow = this.findPlayer(wsId);
-        if (!playerState || !playerNow) return true;
-
-        this.playersArr[playerNow.count] = playerState;
+        // if (!playerState || !playerNow) return true;
+        if(!playerNow) return true;
+        // this.playersArr[playerNow.count] = playerState;
         this.playersArr[playerNow.count].split();
-        this.playersArr[playerNow.count].update(this.getTimeByDelta(Date.now() - time));
+        // this.playersArr[playerNow.count].update(this.getTimeByDelta(Date.now() - time));
     }
 
     mouseMove(wsId, x, y, time) {
