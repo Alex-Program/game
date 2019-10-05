@@ -163,7 +163,8 @@
             <h2 class="h2">Выберите сервер</h2>
             <div style="display: flex; flex-direction: row;">
                 <div style="padding: 10px;">
-                    <div class="server" data-ip="178.21.8.10:8081">178.21.8.10:8081</div>
+<!--                    <div class="server" data-ip="178.21.8.10:8081">178.21.8.10:8081</div>-->
+                    <div class="server" data-ip="127.0.0.1:8081">178.21.8.10:8081</div>
                 </div>
 
                 <div style="padding: 10px;">

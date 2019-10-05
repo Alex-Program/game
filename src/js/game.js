@@ -852,13 +852,15 @@
         //     playersArr[0].mouse.x = mouseCoords.x;
         //     playersArr[0].mouse.y = mouseCoords.y;
         // }
-        if (typeof (ws) !== "undefined") {
-            ws.sendJson({
-                action: "mouse_move",
-                x: mouseCoords.x,
-                y: mouseCoords.y
-            });
-        }
+        if (!ws) return true;
+
+        ws.sendJson({
+            action: "mouse_move",
+            x: mouseCoords.x,
+            y: mouseCoords.y
+        });
+        playersArr[0].mouseMove(mouseCoords.x, mouseCoords.y);
+
     });
     ///////////////
 
@@ -1144,7 +1146,7 @@
                     action: "player_split"
                 });
             }
-            // playersArr[0].split();
+            playersArr[0].split();
             return true;
         }
 

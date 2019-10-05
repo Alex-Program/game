@@ -909,13 +909,16 @@ class Game {
     }
 
     mouseMove(wsId, x, y, time) {
-        let player = this.findPlayer(wsId);
-        if (!player) return true;
-        player = player.player;
+        let playerState = this.getPlayerInGameState(time, wsId);
+        let playerNow = this.findPlayer(wsId);
+        if (!playerNow || !playerState) return true;
 
-        setTimeout(() => {
-            player.mouseMove(x, y);
-        }, Date.now() - time);
+        this.playersArr[playerNow.count] = playerState;
+        this.playersArr[playerNow.count].mouseMove(x, y);
+        this.playersArr[playerNow.count].update(this.getTimeByDelta(Date.now() - time));
+        // setTimeout(() => {
+        //     player.mouseMove(x, y);
+        // }, Date.now() - time);
 
     }
 

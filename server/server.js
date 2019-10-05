@@ -150,7 +150,7 @@ function updateUnits(){
         time
     });
 
-    setTimeout(updateUnits, 0);
+    setTimeout(updateUnits, 1000);
 }
 setTimeout(updateUnits, 0);
 
