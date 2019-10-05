@@ -771,9 +771,13 @@
                     let sin = dY / c;
                     let cos = dX / c;
                     this.cells[cell.count].toMass = pCell.toMass + pCell.mass - this.cells[cell.count].mass;
-                    this.cells[cell.count].engineCos = cos;
-                    this.cells[cell.count].engineSin = sin;
-                    this.cells[cell.count].engineDistance = c;
+
+                    this.cells[cell.count].x = pCell.x;
+                    this.cells[cell.count].y = pCell.y;
+
+                    // this.cells[cell.count].engineCos = cos;
+                    // this.cells[cell.count].engineSin = sin;
+                    // this.cells[cell.count].engineDistance = c;
                     this.cells[cell.count].isCollising = pCell.isCollising;
                     this.cells[cell.count].main = pCell.main;
                 } catch (e) {
@@ -859,7 +863,9 @@
             x: mouseCoords.x,
             y: mouseCoords.y
         });
-        playersArr[0].mouseMove(mouseCoords.x, mouseCoords.y);
+        if (playersArr.length > 0 && playersArr[0].current) {
+            playersArr[0].mouseMove(mouseCoords.x, mouseCoords.y);
+        }
 
     });
     ///////////////
@@ -1146,7 +1152,7 @@
                     action: "player_split"
                 });
             }
-            playersArr[0].split();
+            // playersArr[0].split();
             return true;
         }
 
@@ -1279,9 +1285,9 @@
 
         });
         ws.on("message", function (event) {
-            let data = "";
+            let data = arrayBufferToString(event.data);
             try {
-                data = JSON.parse(event.data);
+                data = JSON.parse(data);
                 if (typeof (data) !== "object") throw("Error");
             } catch {
                 return true;
@@ -1302,9 +1308,9 @@
                     addUnit(unit);
                 }
                 isGame = true;
-                // setTimeout(function () {
-                //     ws.sendJson({action: "update_units"});
-                // }, 0);
+                setTimeout(function () {
+                    ws.sendJson({action: "update_units"});
+                }, 0);
                 return true;
             }
 
@@ -1371,9 +1377,9 @@
                 // foodsArr = fArr;
                 // gameInfo.updateTime -= Date.now() - data.time;
                 // renderVar = requestAnimationFrame(render);
-                // setTimeout(function () {
-                //     ws.sendJson({action: "update_units"});
-                // }, 0);
+                setTimeout(function () {
+                    ws.sendJson({action: "update_units"});
+                }, 0);
             }
 
             // if (data.action === "player_split") {

@@ -3,6 +3,7 @@
  */
 let ws = undefined;
 
+
 let hiddenUsersId = [];
 let highlightedUsersId = [];
 

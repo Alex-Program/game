@@ -15,6 +15,7 @@ const webSocketServer = new WebSocketServer.Server({
 function wsMessage(message, id = null, besidesId = null) {
     if (!message.time) message.time = Date.now();
     message = JSON.stringify(message);
+    message = Functions.stringToArrayBuffer(message);
     if (id !== null) {
         if (!clients.hasOwnProperty(id)) return false;
         return clients[id].ws.send(message);
@@ -141,18 +142,19 @@ function chatMessage(id, message, pm, pmId, isSecondary = false) {
     } else wsMessage(json);
 }
 
-function updateUnits(){
-    let time = Date.now();
-    let arr = Units.game.getAllUnits();
-    wsMessage({
-        action: "update_units",
-        units: arr,
-        time
-    });
-
-    setTimeout(updateUnits, 1000);
-}
-setTimeout(updateUnits, 0);
+// function updateUnits() {
+//     let time = Date.now();
+//     let arr = Units.game.getAllUnits();
+//     wsMessage({
+//         action: "update_units",
+//         units: arr,
+//         time
+//     });
+//
+//     setTimeout(updateUnits, 1000);
+// }
+//
+// setTimeout(updateUnits, 0);
 
 
 webSocketServer.on('connection', function (ws, req) {
@@ -168,9 +170,11 @@ webSocketServer.on('connection', function (ws, req) {
     clients[id].IPAddress = req.connection.remoteAddress || ws._socket.remoteAddress;
 
     ws.on('message', async function (data) {
+        data = Functions.arrayBufferToString(data).split("").filter(val => val !== String.fromCharCode(0)).join("");
         try {
             data = JSON.parse(data);
         } catch (e) {
+            console.log(data.charCodeAt(2));
             return true;
         }
 
@@ -208,15 +212,15 @@ webSocketServer.on('connection', function (ws, req) {
             });
             return true;
         }
-        // if (data.action === "update_units") {
-        //     let time = Date.now();
-        //     let arr = Units.game.getAllUnits();
-        //     wsMessage({
-        //         action: "update_units",
-        //         units: arr,
-        //         time
-        //     }, id);
-        // }
+        if (data.action === "update_units") {
+            let time = Date.now();
+            let arr = Units.game.getAllUnits();
+            wsMessage({
+                action: "update_units",
+                units: arr,
+                time
+            }, id);
+        }
 
         if (data.action === "chat_message") {
             if (clients[id].isMute) return true;
@@ -248,11 +252,11 @@ webSocketServer.on('connection', function (ws, req) {
                 });
         }
 
-        if(data.action === "change_nick"){
-            if(Functions.isEmpty(data.nick)) data.nick = "SandL";
+        if (data.action === "change_nick") {
+            if (Functions.isEmpty(data.nick)) data.nick = "SandL";
             await Units.game.changeNick(id, data.nick);
             let player = Units.game.findPlayer(id);
-            if(!player) return true;
+            if (!player) return true;
 
             player = player.player;
             wsMessage({
@@ -263,8 +267,8 @@ webSocketServer.on('connection', function (ws, req) {
                 skinId: player.skinId
             })
         }
-        if(data.action === "select_sticker"){
-            if(Functions.isEmpty(data.number)) data.number = "";
+        if (data.action === "select_sticker") {
+            if (Functions.isEmpty(data.number)) data.number = "";
 
             wsMessage({
                 action: "select_sticker",
@@ -273,8 +277,8 @@ webSocketServer.on('connection', function (ws, req) {
             })
         }
 
-        if(data.action === "change_color"){
-            if(Functions.isEmpty(data.color)) return true;
+        if (data.action === "change_color") {
+            if (Functions.isEmpty(data.color)) return true;
 
             Units.game.changeColor(id, data.color);
             wsMessage({

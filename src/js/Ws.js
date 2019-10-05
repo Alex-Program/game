@@ -13,6 +13,7 @@ class Ws {
 
     connection() {
         this.ws = new WebSocket(this.address);
+        this.ws.binaryType = "arraybuffer";
     }
 
     setListeners() {
@@ -47,6 +48,7 @@ class Ws {
         if(!this.isConnect) return true;
         message.time = Date.now();
         message = JSON.stringify(message);
+        message = stringToArrayBuffer(message);
         this.ws.send(message);
     }
 
