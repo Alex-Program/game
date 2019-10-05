@@ -772,12 +772,12 @@
                     let cos = dX / c;
                     this.cells[cell.count].toMass = pCell.toMass + pCell.mass - this.cells[cell.count].mass;
 
-                    this.cells[cell.count].x = pCell.x;
-                    this.cells[cell.count].y = pCell.y;
+                    // this.cells[cell.count].x = pCell.x;
+                    // this.cells[cell.count].y = pCell.y;
 
-                    // this.cells[cell.count].engineCos = cos;
-                    // this.cells[cell.count].engineSin = sin;
-                    // this.cells[cell.count].engineDistance = c;
+                    this.cells[cell.count].engineCos = cos;
+                    this.cells[cell.count].engineSin = sin;
+                    this.cells[cell.count].engineDistance = c;
                     this.cells[cell.count].isCollising = pCell.isCollising;
                     this.cells[cell.count].main = pCell.main;
                 } catch (e) {

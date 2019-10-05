@@ -217,7 +217,7 @@ webSocketServer.on('connection', function (ws, req) {
             let arr = Units.game.getAllUnits();
             wsMessage({
                 action: "update_units",
-                units: arr,
+                units: {players: arr.players},
                 time
             }, id);
         }
