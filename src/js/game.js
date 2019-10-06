@@ -43,6 +43,7 @@
             let isShadowColor = +gameSettings.isShadowColor;
             let isAllMass = +gameSettings.isAllMass;
             let isCellMass = +gameSettings.isCellMass;
+            let isHideNick = +gameInfo.isHideNick;
 
             if (name === "cell" && +gameSettings.isCellColor) {
                 if (isEmpty(gameSettings.cellColor)) color = "#000000";
@@ -82,7 +83,9 @@
                     this.drawImage(imagesArr[this.owner.skinId], drawableX, drawableY);
                 }
 
-                this.drawText(drawableX, drawableY, this.drawableRadius / (2 * gameInfo.scale), this.owner.nick, textColor, true, strokeTextColor);
+                if (!isHideNick) {
+                    this.drawText(drawableX, drawableY, this.drawableRadius / (2 * gameInfo.scale), this.owner.nick, textColor, true, strokeTextColor);
+                }
                 drawableY += this.drawableRadius / (2 * gameInfo.scale);
             }
 
@@ -92,7 +95,7 @@
                     this.drawImageByAngle(imagesArr['virus_arrow'], drawableX, drawableY, -225 + 270 * q);
                 }
 
-                if(name !== "cell" || isCellMass) {
+                if (name !== "cell" || isCellMass) {
                     this.drawText(drawableX, drawableY, this.drawableRadius / (3 * gameInfo.scale), Math.floor(this.mass), textColor);
                 }
             }

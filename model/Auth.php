@@ -10,6 +10,16 @@ class Auth extends Model
     {
         parent::__construct();
 
+        $sql = "CREATE TABLE IF NOT EXISTS `users` (
+    `id` int(11) AUTO_INCREMENT PRIMARY KEY,
+    `password` text NOT NULL,
+    `token` text NOT NULL,
+    `name` text NOT NULL,
+    `img` text NOT NULL,
+    `stickers` text NOT NULL,
+    `balance` int(11) default 0
+)";
+        $this->mysqli->query($sql);
     }
 
     public function authByToken($userId, $token)
@@ -22,7 +32,7 @@ class Auth extends Model
         if ($result->num_rows === 0) return false;
 
         $row = $result->fetch_assoc();
-        if(empty($row['stickers'])) $row['stickers'] = [];
+        if (empty($row['stickers'])) $row['stickers'] = [];
         else $row['stickers'] = json_decode($row['stickers'], true);
         return $row;
     }

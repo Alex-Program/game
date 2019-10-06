@@ -267,8 +267,8 @@
     </div>
     <div>
         <span class="label_settings">Отображать массу игрока</span>
-        <!--        <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
-        <!--        <span class="select_color_span" style="background: #000000; color: white;">#000000</span>-->
+<!--                <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
+                <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
         <div class="tumbler">
             <input type="checkbox" id="is_transparent" class="toggle_settings" data-name="isCellMass">
             <div>
@@ -279,9 +279,20 @@
     <div>
         <span class="label_settings">Отображать  везде массу (возможны лаги)</span>
 <!--        <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
-<!--        <span class="select_color_span" style="background: #000000; color: white;">#000000</span>-->
+        <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
         <div class="tumbler">
             <input type="checkbox" id="is_transparent" class="toggle_settings" data-name="isAllMass">
+            <div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <span class="label_settings">Не показывать ники</span>
+        <!--        <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
+        <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
+        <div class="tumbler">
+            <input type="checkbox" id="is_transparent" class="toggle_settings" data-name="isHideNick">
             <div>
                 <div></div>
             </div>

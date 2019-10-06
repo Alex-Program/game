@@ -1018,11 +1018,13 @@ button, button:active, button:focus, input {
     right: 0;
     padding: 20px;
     height: 100%;
-    background: aliceblue;
+    background: black;
+    color: gold;
     opacity: 1;
     z-index: 10;
     max-width: 400px;
     overflow: auto;
+    border-left: solid 3px gold;
 }
 
 #game_settings.closed {
@@ -1043,6 +1045,8 @@ button, button:active, button:focus, input {
     flex-direction: row;
     align-items: center;
     font: bold 12pt/12pt sans-serif;
+    padding: 5px 0;
+    border-bottom: solid 3px gold;
 }
 
 .label_settings {
