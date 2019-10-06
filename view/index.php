@@ -163,7 +163,7 @@
             <h2 class="h2">Выберите сервер</h2>
             <div style="display: flex; flex-direction: row;">
                 <div style="padding: 10px;">
-                    <div class="server" data-ip="178.21.8.10:8081">178.21.8.10:8081</div>
+                                        <div class="server" data-ip="178.21.8.10:8081">178.21.8.10:8081</div>
 <!--                    <div class="server" data-ip="127.0.0.1:8081">178.21.8.10:8081</div>-->
                 </div>
 
@@ -180,6 +180,7 @@
     </div>
 </div>
 
+
 <div id="user_account" class="closed">
     <div id="all_stickers">
         <h3 style="padding: 10px;">Ваши стикеры</h3>
@@ -190,6 +191,103 @@
         <div class="html"></div>
         <div class="html local"></div>
     </div>
+</div>
+
+<div id="settings_gear">
+    <img src="/src/images/gear.png">
+</div>
+
+<div id="game_settings" class="closed">
+    <h2 style="text-align: center;">Настройки</h2>
+    <div>
+        <span class="label_settings">Фон</span>
+        <input type="color" class="select_color_input" data-name="background" value="#000000">
+        <span class="select_color_span" style="background: #000000; color: white;">#000000</span>
+        <div class="tumbler">
+            <input type="checkbox" id="is_transparent" class="toggle_settings" data-name="isBackground">
+            <div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <span class="label_settings">Цвет шаров</span>
+        <input type="color" class="select_color_input" data-name="cellColor" value="#000000">
+        <span class="select_color_span" style="background: #000000; color: white;">#000000</span>
+        <div class="tumbler">
+            <input type="checkbox" id="is_transparent" class="toggle_settings" data-name="isCellColor">
+            <div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <span class="label_settings">Цвет еды</span>
+        <input type="color" class="select_color_input" data-name="foodColor" value="#000000">
+        <span class="select_color_span" style="background: #000000; color: white;">#000000</span>
+        <div class="tumbler">
+            <input type="checkbox" id="is_transparent" class="toggle_settings" data-name="isFoodColor">
+            <div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <span class="label_settings">Цвет вирусов</span>
+        <input type="color" class="select_color_input" data-name="virusColor" value="#000000">
+        <span class="select_color_span" style="background: #000000; color: white;">#000000</span>
+        <div class="tumbler">
+            <input type="checkbox" id="is_transparent" class="toggle_settings" data-name="isVirusColor">
+            <div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <span class="label_settings">Свечение</span>
+        <input type="color" class="select_color_input" data-name="shadowColor" value="#000000">
+        <span class="select_color_span" style="background: #000000; color: white;">#000000</span>
+        <div class="tumbler">
+            <input type="checkbox" id="is_transparent" class="toggle_settings" data-name="isShadowColor">
+            <div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <span class="label_settings">Сетка</span>
+        <input type="color" class="select_color_input" data-name="gridColor" value="#000000">
+        <span class="select_color_span" style="background: #000000; color: white;">#000000</span>
+        <div class="tumbler">
+            <input type="checkbox" id="is_transparent" class="toggle_settings" data-name="isGrid">
+            <div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <span class="label_settings">Отображать массу игрока</span>
+        <!--        <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
+        <!--        <span class="select_color_span" style="background: #000000; color: white;">#000000</span>-->
+        <div class="tumbler">
+            <input type="checkbox" id="is_transparent" class="toggle_settings" data-name="isCellMass">
+            <div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <span class="label_settings">Отображать  везде массу (возможны лаги)</span>
+<!--        <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
+<!--        <span class="select_color_span" style="background: #000000; color: white;">#000000</span>-->
+        <div class="tumbler">
+            <input type="checkbox" id="is_transparent" class="toggle_settings" data-name="isAllMass">
+            <div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 

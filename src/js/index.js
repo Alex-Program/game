@@ -2,7 +2,8 @@
  * @type {Ws|null}
  */
 let ws = undefined;
-
+let isGame = false;
+let gameSettings = {};
 
 let hiddenUsersId = [];
 let highlightedUsersId = [];
@@ -184,6 +185,59 @@ function onDeleteLocalNick(nick) {
     });
 }
 
+function getSettings() {
+    let settings = localStorage.getItem("settings");
+    if (!settings) return false;
+    try {
+        settings = JSON.parse(settings);
+    } catch {
+        return false;
+    }
+
+    return settings;
+}
+
+function loadGameSettings() {
+    let settings = getSettings() || {};
+
+    for (let [key, value] of Object.entries(settings)) {
+        if (!isNaN(+value)) gameSettings[key] = +value;
+        else gameSettings[key] = value;
+    }
+
+}
+
+function setGameSetting(name, value) {
+    let settings = getSettings() || {};
+    if (!isNaN(+value)) {
+        settings[name] = +value;
+        gameSettings[name] = +value;
+    } else {
+        settings[name] = value;
+        gameSettings[name] = value;
+    }
+
+    localStorage.setItem("settings", JSON.stringify(settings));
+}
+
+function fillGameSettings() {
+    let settings = getSettings() || {};
+
+    for (let [key, value] of Object.entries(settings)) {
+        let input = $("#game_settings input[data-name='" + key + "']");
+        if (input.length < 1) continue;
+
+        if (input.attr("type") === "checkbox") {
+            input.prop("checked", Boolean(+value));
+            continue;
+        }
+
+        input.val(value);
+        input.change();
+    }
+
+}
+
 let user = null;
 
 // function onOpen() {
@@ -211,9 +265,12 @@ class User {
             localSkinsPromise.then(() => this.getAllSkins());
         }
         this.getAllStickers();
+        this.changeAccount();
     }
 
     onLogOut() {
+        deleteCookie("Token");
+        deleteCookie("User-Id");
         $(".for_user").addClass("closed");
         $("#account_div").hide();
         $("#login").show();
@@ -225,6 +282,17 @@ class User {
                 xhr.setRequestHeader("User-Id", null);
             }
         });
+        this.changeAccount();
+    }
+
+    changeAccount() {
+        if (!ws) return true;
+
+        ws.sendJson({
+            action: "change_account",
+            token: getCookie("token") || "",
+            userId: getCookie("userId") || ""
+        })
     }
 
     getUserInfo() {
@@ -348,6 +416,8 @@ function getNick(nick) {
 }
 
 let getNickTimeOut = null;
+
+let changeSettings = false;
 
 $("#resize_chat").mousedown(() => resizeChat = true);
 $("body").mouseup(() => resizeChat = false)
@@ -521,8 +591,6 @@ $("body").mouseup(() => resizeChat = false)
     })
 
     .on("click", "#exit_button", function () {
-        deleteCookie("Token");
-        deleteCookie("User-Id");
         user.onLogOut();
         user = null;
         User.getLocalSkins();
@@ -547,7 +615,42 @@ $("body").mouseup(() => resizeChat = false)
         event.stopPropagation();
         let nick = $(this).closest(".user_skin").attr("data-nick");
         onDeleteLocalNick(nick);
+    })
+
+    .on("keypress, keyup, keydown", "input", e => e.stopPropagation())
+
+    .on("click", "#settings_gear", () => $("#game_settings").removeClass("closed"))
+
+    .on("mouseleave", "#game_settings", function () {
+        if (changeSettings) return true;
+        $(this).addClass("closed");
+    })
+
+    .on("mouseenter", "#game_settings", () => changeSettings = false)
+
+    .on("click", ".select_color_span", function () {
+        $(this).prev(".select_color_input").click();
+        changeSettings = true;
+    })
+
+    .on("change", ".select_color_input", function () {
+        let color = $(this).val();
+        let name = $(this).attr("data-name");
+        let rgb = hexToRgb(color);
+        let textColor = "white";
+        if (rgb.brightness) textColor = "black";
+        $(this).next(".select_color_span").css({background: color, color: textColor}).text(color);
+        setGameSetting(name, color);
+    })
+
+    .on("change", ".toggle_settings", function () {
+        let value = +$(this).prop("checked");
+        let name = $(this).attr("data-name");
+        setGameSetting(name, value);
     });
+
+loadGameSettings();
+fillGameSettings();
 
 // }
 

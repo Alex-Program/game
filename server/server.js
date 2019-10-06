@@ -1,3 +1,13 @@
+Array.prototype.includesByType = function (search) {
+    for (let i = 0; i < this.length; i++) {
+        if (typeof search === "string" && String(this[i]) === search) return true;
+        if (typeof search === "number" && +this[i] === search) return true;
+        if (typeof search === "boolean" && +this[i] === search) return true;
+    }
+
+    return false;
+};
+
 const WebSocketServer = require('ws');
 const Functions = require('./functions.js');
 const {isEmpty} = Functions;
@@ -174,13 +184,17 @@ webSocketServer.on('connection', function (ws, req) {
         try {
             data = JSON.parse(data);
         } catch (e) {
-            console.log(data.charCodeAt(2));
             return true;
         }
 
         if (data.action === "player_connect") {
             if (!data.color) data.color = Functions.rgbToHex(Functions.getRandomInt(0, 255), Functions.getRandomInt(0, 255), Functions.getRandomInt(0, 255));
-            Units.game.playerConnect(id, data.color, data.nick || "SandL");
+            let password = isEmpty(data.password) ? "" : data.password;
+            let token = isEmpty(data.token) ? "" : data.token;
+            let userId = isEmpty(data.userId) ? "" : data.userId;
+            let nick = isEmpty(data.nick) ? "SandL" : data.nick;
+            Units.game.playerConnect(id, data.color, nick, password, token, userId);
+            
             return true;
         }
         if (data.action === "get_all_units") {
@@ -189,6 +203,8 @@ webSocketServer.on('connection', function (ws, req) {
             let arr = Units.game.getAllUnits();
 
             wsMessage({units: arr, action: "get_all_units"}, id);
+
+            return true;
         }
         if (data.action === "mouse_move") {
             Units.game.mouseMove(id, data.x, data.y, data.time);
@@ -198,9 +214,12 @@ webSocketServer.on('connection', function (ws, req) {
                 y: data.y,
                 id
             });
+
+            return true;
         }
         if (data.action === "player_shoot") {
             Units.game.shoot(id, data.time);
+
             return true;
         }
         if (data.action === "player_split") {
@@ -210,6 +229,7 @@ webSocketServer.on('connection', function (ws, req) {
                 id,
                 time: data.time
             });
+
             return true;
         }
         if (data.action === "update_units") {
@@ -220,6 +240,8 @@ webSocketServer.on('connection', function (ws, req) {
                 units: arr,
                 time
             }, id);
+
+            return true;
         }
 
         if (data.action === "chat_message") {
@@ -241,20 +263,31 @@ webSocketServer.on('connection', function (ws, req) {
             let cmd = data.command;
             delete data.command;
             command.sendCommand(id, cmd, data);
+
+            return true;
         }
 
         if (data.action === "select_sticker_set") {
             if (Functions.isEmpty(data.id)) return true;
 
+            let player = Units.game.findPlayer(id);
+            if (!player) return true;
+            player = player.player;
+            if (!player.account) return true;
+            if (!player.account.stickers.includesByType(+data.id)) return true;
+
             Functions.sendRequest("api/admin", {action: "get_sticker_set", id: data.id})
                 .then(data => {
+                    Units.game.setStickers(id, data.data.stickers);
                     wsMessage({action: "select_sticker_set", id, stickers: data.data.stickers});
                 });
+
+            return true;
         }
 
         if (data.action === "change_nick") {
             if (Functions.isEmpty(data.nick)) data.nick = "SandL";
-            await Units.game.changeNick(id, data.nick);
+            await Units.game.changeNick(id, data.nick, data.password);
             let player = Units.game.findPlayer(id);
             if (!player) return true;
 
@@ -265,7 +298,9 @@ webSocketServer.on('connection', function (ws, req) {
                 nick: player.nick,
                 skin: player.skin,
                 skinId: player.skinId
-            })
+            });
+
+            return true;
         }
         if (data.action === "select_sticker") {
             if (Functions.isEmpty(data.number)) data.number = "";
@@ -274,7 +309,9 @@ webSocketServer.on('connection', function (ws, req) {
                 action: "select_sticker",
                 id,
                 number: data.number
-            })
+            });
+
+            return true;
         }
 
         if (data.action === "change_color") {
@@ -286,6 +323,17 @@ webSocketServer.on('connection', function (ws, req) {
                 id,
                 color: data.color
             });
+
+            return true;
+        }
+
+        if (data.action === "change_account") {
+            let token = Functions.isEmpty(data.token) ? null : data.token;
+            let userId = Functions.isEmpty(data.userId) ? null : data.userId;
+
+            Units.game.changeAccount(id, userId, token);
+
+            return true;
         }
     });
 

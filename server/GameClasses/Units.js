@@ -529,8 +529,9 @@ class Cell extends Arc {
 
 class Player {
 
-    constructor(wsId, x, y, mass, mouseX, mouseY, color = "#000000", nick) {
+    constructor(wsId, x, y, mass, mouseX, mouseY, color = "#000000", nick, password = "", token = "", userId = "") {
         this.nick = nick;
+        this.password = password;
         this.skin = "";
         this.skinId = 0;
         this.mouse = {
@@ -554,6 +555,11 @@ class Player {
         this.totalMass = 0;
         this.toMass = 0;
         this.isBreak = false;
+        this.token = token;
+        this.userId = userId;
+        this.account = null;
+        this.stickersSet = null;
+        this.stickerI = null;
 
         // clients[wsId].isConnect = true;
 
@@ -563,9 +569,31 @@ class Player {
 
     async main() {
         await this.authNick();
+        await this.authAccount();
 
         this.cells[0].updateDirection();
         game.onSpawnUnit(this);
+    }
+
+    async authAccount() {
+        if (Functions.isEmpty(this.token) || Functions.isEmpty(this.userId)) return false;
+        await Functions.sendRequest("api/admin", {action: "get_account_info", token: this.token, userId: this.userId})
+            .then(data => {
+                if (data.result !== "true") {
+                    this.account = null;
+                    return false;
+                }
+
+                this.account = data.data;
+                return true;
+            });
+    }
+
+    changeAccount(userId, token) {
+        this.account = null
+        this.userId = userId;
+        this.token = token;
+        this.authAccount();
     }
 
     async getNickInfo() {
@@ -578,17 +606,31 @@ class Player {
         let nickInfo = await this.getNickInfo();
         let skin = "";
         if (nickInfo) {
+            if (!Functions.isEmpty(nickInfo.password) && String(this.password) !== String(nickInfo.password)) {
+                this.nick = "Wrong password";
+                this.skin = "";
+                this.skinId = "";
+                this.isModer = 0;
+                this.isAdmin = 0;
+                return true;
+            }
             this.nick = nickInfo.nick;
             this.skin = nickInfo.skin;
             this.skinId = +nickInfo.skin_id;
             this.isAdmin = +nickInfo.is_admin;
             this.isModer = +nickInfo.is_moder;
+        } else {
+            this.skin = "";
+            this.skinId = "";
+            this.isAdmin = 0;
+            this.isModer = 0;
         }
 
     }
 
-    async changeNick(nick) {
+    async changeNick(nick, password = "") {
         this.nick = nick;
+        this.password = password;
         await this.authNick();
     }
 
@@ -645,7 +687,10 @@ class Player {
         this.mouse = {x, y};
     }
 
-
+    setStickers(stickers) {
+        this.stickersSet = stickers;
+        this.stickerI = null;
+    }
 }
 
 
@@ -779,9 +824,9 @@ class Game {
         setTimeout(() => this.loop(), 0);
     }
 
-    async playerConnect(wsId, color, nick = "SandL") {
+    async playerConnect(wsId, color, nick = "SandL", password = "", token = "", userId = "") {
         this.playersArr.push(
-            new Player(wsId, Functions.getRandomInt(10, gameInfo.width), Functions.getRandomInt(10, gameInfo.height), gameInfo.startMass, 0, 0, color, nick)
+            new Player(wsId, Functions.getRandomInt(10, gameInfo.width), Functions.getRandomInt(10, gameInfo.height), gameInfo.startMass, 0, 0, color, nick, password, token, userId)
         );
 
     }
@@ -946,12 +991,12 @@ class Game {
         this.playersArr[player.count].isBreak = true;
     }
 
-    async changeNick(wsId, nick) {
+    async changeNick(wsId, nick, password = "") {
         let player = this.findPlayer(wsId);
         if (!player) return true;
 
         player = player.player;
-        await player.changeNick(nick);
+        await player.changeNick(nick, password);
     }
 
     changeColor(wsId, color) {
@@ -960,6 +1005,20 @@ class Game {
 
         player = player.player;
         player.changeColor(color);
+    }
+
+    setStickers(wsId, stickers) {
+        let player = this.findPlayer(wsId);
+        if (!player) return false;
+
+        this.playersArr[player.count].setStickers(stickers);
+    }
+
+    changeAccount(wsId, userId, token) {
+        let player = this.findPlayer(wsId);
+        if (!player) return false;
+
+        this.playersArr[player.count].changeAccount(userId, token);
     }
 
 }

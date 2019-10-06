@@ -34,3 +34,19 @@ if($request['action'] == "get_sticker_set"){
     echo json_encode(["result" => "true", "data" => $arr], 256);
     exit;
 }
+
+if($request['action'] == "get_account_info"){
+    if(empty($request['token']) || empty($request['userId'])){
+        echo json_encode(["result" => "false", "data" => "invalid_request"], 256);
+        exit;
+    }
+
+    $userInfo = $auth->authByToken($request['userId'], $request['token']);
+    if(!$userInfo){
+        echo json_encode(["result" => "false", "data" => "invalid_data"], 256);
+        exit;
+    }
+
+    echo json_encode(["result" => "true", "data" => $userInfo], 256);
+    exit;
+}

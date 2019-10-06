@@ -71,14 +71,17 @@ exports.sendRequest = function (url, obj, method = "POST") {
 };
 
 exports.arrayBufferToString = function(buf) {
-    return String.fromCharCode.apply(null, new Uint16Array(buf));
-};
+    // return String.fromCharCode.apply(null, new Uint8Array(buf));
+    let textDecoder = new TextDecoder();
+    return textDecoder.decode(buf);};
 
 exports.stringToArrayBuffer = function(str) {
-    let buf = new ArrayBuffer(str.length * 2); // 2 bytes for each char
-    let bufView = new Uint16Array(buf);
-    for (let i = 0, strLen = str.length; i < strLen; i++) {
-        bufView[i] = str.charCodeAt(i);
-    }
-    return buf;
+    // let buf = new ArrayBuffer(str.length * 2); // 2 bytes for each char
+    // let bufView = new Uint8Array(buf);
+    // for (let i = 0, strLen = str.length; i < strLen; i++) {
+    //     bufView[i] = str.charCodeAt(i);
+    // }
+    // return buf;
+    let textEncode = new TextEncoder("utf-8");
+    return textEncode.encode(str);
 };

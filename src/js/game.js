@@ -36,21 +36,43 @@
 
             if (drawableX < 0 || drawableX > canvas.width || drawableY < 0 || drawableY > canvas.height) return true;
 
+            let name = this.constructor.name.toLowerCase();
+
+            let color = this.color;
+            let shadowColor = "#000000";
+            let isShadowColor = +gameSettings.isShadowColor;
+            let isAllMass = +gameSettings.isAllMass;
+            let isCellMass = +gameSettings.isCellMass;
+
+            if (name === "cell" && +gameSettings.isCellColor) {
+                if (isEmpty(gameSettings.cellColor)) color = "#000000";
+                else color = gameSettings.cellColor;
+            } else if (name === "food" && +gameSettings.isFoodColor) {
+                if (isEmpty(gameSettings.foodColor)) color = "#000000";
+                else color = gameSettings.foodColor;
+            } else if (name === "virus" && +gameSettings.isVirusColor) {
+                if (isEmpty(gameSettings.virusColor)) color = "#000000";
+                else color = gameSettings.isVirusColor;
+            }
+
+            let rgb = hexToRgb(color);
+            // let textColor = rgb.brightness ? "#000000" : "#FFFFFF";
+            // let strokeTextColor = rgb.brightness ? "#FFFFFF" : "#000000";
+
+            let textColor = "#FFFFFF";
+            let strokeTextColor = "#000000";
+
+            if (isShadowColor && !isEmpty(gameSettings.shadowColor)) shadowColor = gameSettings.shadowColor;
+
             context.save();
 
-            context.shadowColor = "gold";
-            context.shadowBlur = 10;
-            context.shadowOffsetX = 0;
-            context.shadowOffsetY = 0;
+            if (isShadowColor) {
+                this.setShadow(shadowColor);
+            }
+            this.drawArc(drawableX, drawableY, this.drawableRadius / gameInfo.scale, color);
 
-            context.beginPath();
-            context.fillStyle = this.color;
-            context.arc(drawableX, drawableY, this.drawableRadius / gameInfo.scale, 0, 2 * Math.PI, false);
-            context.fill();
-            context.closePath();
             context.restore();
 
-            let name = this.constructor.name.toLowerCase();
             if (name === "cell") {
                 let stickerI = this.owner.stickerI;
                 let stickerSet = this.owner.stickersSet;
@@ -59,21 +81,40 @@
                 } else if (imagesArr[this.owner.skinId]) {
                     this.drawImage(imagesArr[this.owner.skinId], drawableX, drawableY);
                 }
+
+                this.drawText(drawableX, drawableY, this.drawableRadius / (2 * gameInfo.scale), this.owner.nick, textColor, true, strokeTextColor);
+                drawableY += this.drawableRadius / (2 * gameInfo.scale);
             }
 
             if (!["food", "bullet"].includes(name)) {
-                if (name === "cell") {
-                    this.drawText(drawableX, drawableY, this.drawableRadius / (2 * gameInfo.scale), this.owner.nick, true);
-                    drawableY += this.drawableRadius / (2 * gameInfo.scale);
-                }
                 if (name === "virus" && imagesArr['virus_arrow'] && imagesArr['virus']) {
                     let q = (this.mass - 200) / 200;
                     this.drawImageByAngle(imagesArr['virus_arrow'], drawableX, drawableY, -225 + 270 * q);
                 }
 
-                this.drawText(drawableX, drawableY, this.drawableRadius / (3 * gameInfo.scale), Math.floor(this.mass));
+                if(name !== "cell" || isCellMass) {
+                    this.drawText(drawableX, drawableY, this.drawableRadius / (3 * gameInfo.scale), Math.floor(this.mass), textColor);
+                }
+            }
+            if ((name === "food" || name === "bullet") && isAllMass) {
+                this.drawText(drawableX, drawableY, this.drawableRadius / (2 * gameInfo.scale), Math.floor(this.mass), textColor);
             }
 
+        }
+
+        setShadow(color, blur = 10, x = 0, y = 0) {
+            context.shadowColor = color;
+            context.shadowBlur = blur;
+            context.shadowOffsetX = x;
+            context.shadowOffsetY = y;
+        }
+
+        drawArc(x, y, radius, color) {
+            context.beginPath();
+            context.fillStyle = color;
+            context.arc(x, y, radius, 0, 2 * Math.PI, false);
+            context.fill();
+            context.closePath();
         }
 
         drawImage(image, x, y) {
@@ -96,24 +137,23 @@
             context.restore();
         }
 
-        drawText(x, y, size, value, isStroke = false) {
+        drawText(x, y, size, value, color = "#FFFFFF", isStroke = false, strokeStyle = "#000000", isShadow = false, shadowColor = "red") {
             size *= 1.2;
 
             context.save();
 
-            context.shadowColor = "red";
-            context.shadowBlur = 10;
-            context.shadowOffsetX = 0;
-            context.shadowOffsetY = 0;
+            if (isShadow) {
+                this.setShadow(shadowColor);
+            }
 
-            context.fillStyle = "#FFFFFF";
+            context.fillStyle = color;
             context.textAlign = "center";
             context.textBaseline = "middle";
             context.font = "bold " + String(size) + "px 'Caveat'";
             context.fillText(String(value), x, y);
             if (isStroke) {
                 context.lineWidth = size / 50;
-                context.strokeStyle = "#000000";
+                context.strokeStyle = strokeStyle;
                 context.strokeText(String(value), x, y);
             }
             context.restore();
@@ -193,7 +233,6 @@
 
         };
 
-
         static drawCenter() {
             if (!imagesArr["center"]) return true;
 
@@ -212,6 +251,34 @@
             context.globalCompositeOperation = "source-atop";
             context.drawImage(imagesArr["center"], drawableX - gameInfo.centerImageRadius / gameInfo.scale, drawableY - gameInfo.centerImageRadius / gameInfo.scale, gameInfo.centerImageRadius * 2 / gameInfo.scale, gameInfo.centerImageRadius * 2 / gameInfo.scale);
             context.restore();
+        }
+
+        static drawGrid() {
+            let color = isEmpty(gameSettings.gridColor) ? "#000000" : gameSettings.gridColor;
+            context.globalAlpha = 0.3;
+            context.strokeStyle = color;
+            context.lineWidth = 1;
+
+            let dX = (gameInfo.centerX - canvas.width / 2) % 20;
+            for (let x = 20 - dX; x < canvas.width; x += 20) {
+                context.beginPath();
+                context.moveTo(x, 0);
+                context.lineTo(x, canvas.height);
+                context.stroke();
+                context.closePath();
+            }
+
+            let dY = (gameInfo.centerY - canvas.height) % 20;
+            for (let y = 20 - dY; y < canvas.height; y += 20) {
+                context.beginPath();
+                context.moveTo(0, y);
+                context.lineTo(canvas.width, y);
+                context.stroke();
+                context.closePath();
+            }
+
+            context.globalAlpha = 1;
+
         }
 
     }
@@ -505,7 +572,7 @@
             if (this.y < 0) this.y = 0;
             else if (this.y > gameInfo.height) this.y = gameInfo.height;
 
-            if(this.engineDistance <= 0) {
+            if (this.engineDistance <= 0) {
                 this.engineSin = 0;
                 this.engineCos = 0;
             }
@@ -935,7 +1002,8 @@
                 gameInfo.updateTime = performance.now();
 
                 context.clearRect(0, 0, canvas.width, canvas.height);
-                context.fillStyle = "#000000";
+                let backgroundColor = (!isEmpty(gameSettings.isBackground) && !isEmpty(gameSettings.background)) ? gameSettings.background : "#000000";
+                context.fillStyle = backgroundColor;
                 context.fillRect(0, 0, canvas.width, canvas.height);
 
                 if (Math.abs(gameInfo.byScale) > 0) {
@@ -965,6 +1033,9 @@
                     foodsArr[i].update();
                 }
 
+                if (gameSettings.isGrid) {
+                    Arc.drawGrid();
+                }
                 Arc.drawCenter();
 
 
@@ -1279,7 +1350,7 @@
 
 
     function startGame(ip) {
-        let isGame = false;
+        isGame = false;
         clearAll();
         try {
             ws.close();
@@ -1292,7 +1363,10 @@
             ws.sendJson({
                 action: "player_connect",
                 nick: $("#nick_for_game").val().trim().substr(0, 15) || "SandL",
-                color: $("#select_color").val()
+                password: $("#password_for_game").val().trim(),
+                color: $("#select_color").val(),
+                token: getCookie("Token") || "",
+                userId: getCookie("User-Id") || ""
             });
 
         });

@@ -21,7 +21,10 @@ class Auth extends Model
         $result = $this->mysqli->query($sql);
         if ($result->num_rows === 0) return false;
 
-        return $result->fetch_assoc();
+        $row = $result->fetch_assoc();
+        if(empty($row['stickers'])) $row['stickers'] = [];
+        else $row['stickers'] = json_decode($row['stickers'], true);
+        return $row;
     }
 
     public function authByPass($userId, $password)
