@@ -43,18 +43,26 @@
             let isShadowColor = +gameSettings.isShadowColor;
             let isAllMass = +gameSettings.isAllMass;
             let isCellMass = +gameSettings.isCellMass;
-            let isHideNick = +gameInfo.isHideNick;
+            let isHideNick = +gameSettings.isHideNick;
+            let isDrawCellBorder = +gameSettings.isDrawCellBorder;
 
             if (name === "cell" && +gameSettings.isCellColor) {
                 if (isEmpty(gameSettings.cellColor)) color = "#000000";
                 else color = gameSettings.cellColor;
+
             } else if (name === "food" && +gameSettings.isFoodColor) {
                 if (isEmpty(gameSettings.foodColor)) color = "#000000";
                 else color = gameSettings.foodColor;
+
             } else if (name === "virus" && +gameSettings.isVirusColor) {
                 if (isEmpty(gameSettings.virusColor)) color = "#000000";
-                else color = gameSettings.isVirusColor;
+                else color = gameSettings.virusColor;
+
+            } else if (name === "bullet" && +gameSettings.isBulletColor) {
+                if (isEmpty(gameSettings.bulletColor)) color = "#000000";
+                else color = gameSettings.bulletColor;
             }
+
 
             let rgb = hexToRgb(color);
             // let textColor = rgb.brightness ? "#000000" : "#FFFFFF";
@@ -70,7 +78,14 @@
             if (isShadowColor) {
                 this.setShadow(shadowColor);
             }
-            this.drawArc(drawableX, drawableY, this.drawableRadius / gameInfo.scale, color);
+
+            let radius = this.drawableRadius / gameInfo.scale;
+            if (isDrawCellBorder) {
+                this.drawArc(drawableX, drawableY, radius, toDarkColor(color));
+                radius = (this.drawableRadius - 5) / gameInfo.scale;
+                context.restore();
+            }
+            this.drawArc(drawableX, drawableY, radius, color);
 
             context.restore();
 
@@ -78,9 +93,9 @@
                 let stickerI = this.owner.stickerI;
                 let stickerSet = this.owner.stickersSet;
                 if (!isEmpty(stickerI) && stickerSet && imagesArr[stickerSet[stickerI].image_id]) {
-                    this.drawImage(imagesArr[stickerSet[stickerI].image_id], drawableX, drawableY);
+                    this.drawImage(imagesArr[stickerSet[stickerI].image_id], drawableX, drawableY, this.drawableRadius / gameInfo.scale);
                 } else if (imagesArr[this.owner.skinId]) {
-                    this.drawImage(imagesArr[this.owner.skinId], drawableX, drawableY);
+                    this.drawImage(imagesArr[this.owner.skinId], drawableX, drawableY, this.drawableRadius / gameInfo.scale);
                 }
 
                 if (!isHideNick) {
@@ -90,7 +105,7 @@
             }
 
             if (!["food", "bullet"].includes(name)) {
-                if (name === "virus" && imagesArr['virus_arrow'] && imagesArr['virus']) {
+                if (name === "virus" && imagesArr['virus_arrow']) {
                     let q = (this.mass - 200) / 200;
                     this.drawImageByAngle(imagesArr['virus_arrow'], drawableX, drawableY, -225 + 270 * q);
                 }
@@ -100,7 +115,7 @@
                 }
             }
             if ((name === "food" || name === "bullet") && isAllMass) {
-                this.drawText(drawableX, drawableY, this.drawableRadius / (2 * gameInfo.scale), Math.floor(this.mass), textColor);
+                this.drawText(drawableX, drawableY, this.drawableRadius / (1.5 * gameInfo.scale), Math.floor(this.mass), textColor);
             }
 
         }
@@ -120,11 +135,11 @@
             context.closePath();
         }
 
-        drawImage(image, x, y) {
+        drawImage(image, x, y, radius) {
             context.save();
             context.clip();
             context.globalCompositeOperation = "source-atop";
-            context.drawImage(image, x - this.drawableRadius / gameInfo.scale, y - this.drawableRadius / gameInfo.scale, this.drawableRadius * 2 / gameInfo.scale, this.drawableRadius * 2 / gameInfo.scale);
+            context.drawImage(image, x - radius, y - radius, radius * 2, radius * 2);
             context.restore();
         }
 
@@ -971,19 +986,8 @@
     };
 
 
-    function loadImage(imageName, src) {
-        if (imagesArr[imageName] || imagesArr[imageName] === null) return false;
-
-        imagesArr[imageName] = null;
-        let image = new Image();
-        image.onload = () => imagesArr[imageName] = image;
-        image.src = src;
-    }
-
-    let imagesArr = {};
     // loadImage("virus", "/src/images/virus_arrow.png");
     loadImage("virus_arrow", "/src/images/virus_arrow1.png");
-    loadImage("virus", "https://avatars.mds.yandex.net/get-pdb/939186/3e8700ba-511c-45e1-b9fb-dc3f02e88ca4/s1200");
     loadImage("center", "/src/images/logo.png");
     // loadImage("virus", "https://avatars.mds.yandex.net/get-pdb/939186/3e8700ba-511c-45e1-b9fb-dc3f02e88ca4/s1200");
 
@@ -1005,7 +1009,7 @@
                 gameInfo.updateTime = performance.now();
 
                 context.clearRect(0, 0, canvas.width, canvas.height);
-                let backgroundColor = (!isEmpty(gameSettings.isBackground) && !isEmpty(gameSettings.background)) ? gameSettings.background : "#000000";
+                let backgroundColor = (+gameSettings.isBackground && !isEmpty(gameSettings.background)) ? gameSettings.background : "#000000";
                 context.fillStyle = backgroundColor;
                 context.fillRect(0, 0, canvas.width, canvas.height);
 

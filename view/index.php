@@ -204,7 +204,7 @@
         <input type="color" class="select_color_input" data-name="background" value="#000000">
         <span class="select_color_span" style="background: #000000; color: white;">#000000</span>
         <div class="tumbler">
-            <input type="checkbox" id="is_transparent" class="toggle_settings" data-name="isBackground">
+            <input type="checkbox" class="toggle_settings" data-name="isBackground">
             <div>
                 <div></div>
             </div>
@@ -215,7 +215,7 @@
         <input type="color" class="select_color_input" data-name="cellColor" value="#000000">
         <span class="select_color_span" style="background: #000000; color: white;">#000000</span>
         <div class="tumbler">
-            <input type="checkbox" id="is_transparent" class="toggle_settings" data-name="isCellColor">
+            <input type="checkbox" class="toggle_settings" data-name="isCellColor">
             <div>
                 <div></div>
             </div>
@@ -226,7 +226,18 @@
         <input type="color" class="select_color_input" data-name="foodColor" value="#000000">
         <span class="select_color_span" style="background: #000000; color: white;">#000000</span>
         <div class="tumbler">
-            <input type="checkbox" id="is_transparent" class="toggle_settings" data-name="isFoodColor">
+            <input type="checkbox" class="toggle_settings" data-name="isFoodColor">
+            <div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <span class="label_settings">Цвет выброшенной массы</span>
+        <input type="color" class="select_color_input" data-name="bulletColor" value="#000000">
+        <span class="select_color_span" style="background: #000000; color: white;">#000000</span>
+        <div class="tumbler">
+            <input type="checkbox" class="toggle_settings" data-name="isBulletColor">
             <div>
                 <div></div>
             </div>
@@ -237,7 +248,7 @@
         <input type="color" class="select_color_input" data-name="virusColor" value="#000000">
         <span class="select_color_span" style="background: #000000; color: white;">#000000</span>
         <div class="tumbler">
-            <input type="checkbox" id="is_transparent" class="toggle_settings" data-name="isVirusColor">
+            <input type="checkbox" class="toggle_settings" data-name="isVirusColor">
             <div>
                 <div></div>
             </div>
@@ -248,7 +259,7 @@
         <input type="color" class="select_color_input" data-name="shadowColor" value="#000000">
         <span class="select_color_span" style="background: #000000; color: white;">#000000</span>
         <div class="tumbler">
-            <input type="checkbox" id="is_transparent" class="toggle_settings" data-name="isShadowColor">
+            <input type="checkbox" class="toggle_settings" data-name="isShadowColor">
             <div>
                 <div></div>
             </div>
@@ -259,7 +270,7 @@
         <input type="color" class="select_color_input" data-name="gridColor" value="#000000">
         <span class="select_color_span" style="background: #000000; color: white;">#000000</span>
         <div class="tumbler">
-            <input type="checkbox" id="is_transparent" class="toggle_settings" data-name="isGrid">
+            <input type="checkbox" class="toggle_settings" data-name="isGrid">
             <div>
                 <div></div>
             </div>
@@ -270,7 +281,7 @@
 <!--                <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
                 <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
         <div class="tumbler">
-            <input type="checkbox" id="is_transparent" class="toggle_settings" data-name="isCellMass">
+            <input type="checkbox" class="toggle_settings" data-name="isCellMass">
             <div>
                 <div></div>
             </div>
@@ -281,7 +292,7 @@
 <!--        <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
         <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
         <div class="tumbler">
-            <input type="checkbox" id="is_transparent" class="toggle_settings" data-name="isAllMass">
+            <input type="checkbox" class="toggle_settings" data-name="isAllMass">
             <div>
                 <div></div>
             </div>
@@ -292,12 +303,46 @@
         <!--        <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
         <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
         <div class="tumbler">
-            <input type="checkbox" id="is_transparent" class="toggle_settings" data-name="isHideNick">
+            <input type="checkbox" class="toggle_settings" data-name="isHideNick">
             <div>
                 <div></div>
             </div>
         </div>
     </div>
+    <div>
+        <span class="label_settings">Обводить границы</span>
+        <!--        <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
+        <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
+        <div class="tumbler">
+            <input type="checkbox" class="toggle_settings" data-name="isDrawCellBorder">
+            <div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <span class="label_settings">Не загружать картинки</span>
+        <!--        <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
+        <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
+        <div class="tumbler">
+            <input type="checkbox" class="toggle_settings" data-name="hideImage">
+            <div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <span class="label_settings">Уменьшить качество картинок</span>
+        <!--        <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
+        <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
+        <div class="tumbler">
+            <input type="checkbox" class="toggle_settings" data-name="isLowImage">
+            <div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+
 
 </div>
 

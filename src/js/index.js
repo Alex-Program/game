@@ -8,6 +8,53 @@ let gameSettings = {};
 let hiddenUsersId = [];
 let highlightedUsersId = [];
 
+
+function loadImage(imageName, src) {
+    if (imagesArr[imageName] || imagesArr[imageName] === null) return false;
+
+    imagesSrc[imageName] = src;
+    imagesArr[imageName] = null;
+
+    let hideImage = +gameSettings.hideImage;
+    if (hideImage) return true;
+
+    let image = new Image();
+
+    let isLowImage = +gameSettings.isLowImage;
+
+    if (isLowImage) {
+        let backgroundCanvas = document.createElement("canvas");
+        [backgroundCanvas.width, backgroundCanvas.height] = [128, 128];
+        let backgroundContext = backgroundCanvas.getContext("2d");
+        backgroundContext.clearRect(0, 0, backgroundCanvas.width, backgroundCanvas.height);
+        image.onload = () => {
+            backgroundContext.drawImage(image, 0, 0, backgroundCanvas.width, backgroundCanvas.height);
+
+            src = backgroundCanvas.toDataURL("image/png", 1);
+            let i = new Image();
+            i.onload = () => imagesArr[imageName] = i;
+            i.src = src;
+        };
+        image.src = "http://sandl.pw" + src;
+
+        return true;
+    }
+
+    image.onload = () => imagesArr[imageName] = image;
+    image.src = src;
+}
+
+function reloadImages() {
+    imagesArr = {};
+    for (let [name, src] of Object.entries(imagesSrc)) {
+        loadImage(name, src);
+    }
+}
+
+let imagesSrc = {};
+let imagesArr = {};
+
+
 class Message {
     static getNewMessage(data) {
         let isAdmin = Number(data.isAdmin);
@@ -644,10 +691,13 @@ $("body").mouseup(() => resizeChat = false)
     })
 
     .on("change", ".toggle_settings", function () {
+        $(this).blur();
         let value = +$(this).prop("checked");
         let name = $(this).attr("data-name");
         setGameSetting(name, value);
+        if (name === "isLowImage" || name === "hideImage") reloadImages();
     });
+
 
 loadGameSettings();
 fillGameSettings();

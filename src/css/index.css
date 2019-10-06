@@ -2,6 +2,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    outline: none;
 }
 
 html, body {
@@ -922,6 +923,7 @@ button, button:active, button:focus, input {
     color: white;
     padding: 5px;
     border-radius: 10px;
+    flex-grow: 0;
 }
 
 .h2 {
@@ -1018,7 +1020,7 @@ button, button:active, button:focus, input {
     right: 0;
     padding: 20px;
     height: 100%;
-    background: black;
+    background: rgba(0, 0, 0, 0.8);
     color: gold;
     opacity: 1;
     z-index: 10;
@@ -1051,7 +1053,7 @@ button, button:active, button:focus, input {
 
 .label_settings {
     flex-grow: 1;
-    max-width: 190px;
+    max-width: 185px;
 }
 
 .select_color_input{

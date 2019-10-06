@@ -150,6 +150,24 @@ function hexToRgb(hex) {
     return {r, g, b, brightness};
 }
 
+function toDarkColor(hex) {
+    let rgb = hexToRgb(hex);
+    rgb.r = (rgb.r - 50) > 0 ? (rgb.r - 50) : 0;
+    rgb.g = (rgb.g - 50) > 0 ? (rgb.g - 50) : 0;
+    rgb.b = (rgb.b - 50) > 0 ? (rgb.b - 50) : 0;
+    return rgbToHex(rgb.r, rgb.g, rgb.b);
+}
+
+function rgbToHex(...rgb) {
+    for (let i = 0; i < 3; i++) {
+        let hex = Number(rgb[i]).toString(16);
+        if (hex.length < 2) hex = "0" + hex;
+        rgb[i] = hex;
+    }
+
+    return "#" + rgb.join("");
+}
+
 function arrayBufferToString(buf) {
     // return String.fromCharCode.apply(null, new Uint8Array(buf));
     let textDecoder = new TextDecoder();

@@ -499,7 +499,7 @@ class Cell extends Arc {
         game.bulletsArr.push(
             new Bullet(this.x + (this.radius + 5) * this.cos, this.y + (this.radius + 5) * this.sin, this.sin, this.cos, gameInfo.bulletMass, 100, this.color)
         );
-        this.toMass -= 10;
+        this.toMass -= gameInfo.bulletMass;
     }
 
     breakCell() {
