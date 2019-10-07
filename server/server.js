@@ -128,6 +128,11 @@ Units.game.onSpawnUnit = function (unit) {
 
     wsMessage(message);
 };
+
+Units.game.onDestroyUnit = function (type, id) {
+    wsMessage({action: "destroy_unit", type, id});
+};
+
 Units.game.startGame();
 
 function chatMessage(id, message, pm, pmId, isSecondary = false) {
@@ -179,6 +184,11 @@ webSocketServer.on('connection', function (ws, req) {
     clients[id].isMute = false;
     clients[id].IPAddress = req.connection.remoteAddress || ws._socket.remoteAddress;
 
+    wsMessage({
+        action: "load_game_settings",
+        settings: Units.game.exportGameSettings()
+    }, id);
+
     ws.on('message', async function (data) {
         data = Functions.arrayBufferToString(data).split("").filter(val => val !== String.fromCharCode(0)).join("");
         try {
@@ -194,7 +204,7 @@ webSocketServer.on('connection', function (ws, req) {
             let userId = isEmpty(data.userId) ? "" : data.userId;
             let nick = isEmpty(data.nick) ? "SandL" : data.nick;
             Units.game.playerConnect(id, data.color, nick, password, token, userId);
-            
+
             return true;
         }
         if (data.action === "get_all_units") {

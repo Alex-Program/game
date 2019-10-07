@@ -552,9 +552,15 @@ $("body").mouseup(() => resizeChat = false)
         new Command("mute " + id);
     })
 
+    .on("click", ".user_actions.admin div:eq(4)", function () {
+        let id = $("#selected_chat_user").val().trim();
+        if (isEmpty(id)) return true;
+
+        new Command("break_player " + id);
+    })
+
     .on("click", function () {
-        $(".user_actions").addClass("closed");
-        $("#select_nick").addClass("closed");
+        $(".user_actions, #select_nick, #controller_view, #select_music").addClass("closed");
     })
 
 
@@ -664,7 +670,7 @@ $("body").mouseup(() => resizeChat = false)
         onDeleteLocalNick(nick);
     })
 
-    .on("keypress, keyup, keydown", "input", e => e.stopPropagation())
+    .on("keypress keyup keydown", "input", e => e.stopPropagation())
 
     .on("click", "#settings_gear", () => $("#game_settings").removeClass("closed"))
 
@@ -696,8 +702,33 @@ $("body").mouseup(() => resizeChat = false)
         let name = $(this).attr("data-name");
         setGameSetting(name, value);
         if (name === "isLowImage" || name === "hideImage") reloadImages();
-    });
+    })
 
+    .on("click", "#controller_settings", event => {
+        event.stopPropagation();
+        $("#controller_view").removeClass("closed")
+    })
+
+    .on("click", "#music_button", function (event) {
+        event.stopPropagation();
+        $("#select_music").toggleClass("closed");
+    })
+
+    .on("input", "#audio_href", function () {
+        let audio = $("#game_music")[0];
+        audio.pause();
+        audio.currentTime = 0.0;
+        let href = $(this).val().trim();
+        if (!href) {
+            $(audio).hide();
+            return true;
+        }
+
+        audio.src = href;
+        $(audio).show();
+    })
+
+    .on("click", "#select_music", e => e.stopPropagation());
 
 loadGameSettings();
 fillGameSettings();

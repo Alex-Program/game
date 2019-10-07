@@ -36,6 +36,10 @@
     </div>
 </div>
 
+<div id="top_players">
+
+</div>
+
 <input type="hidden" id="selected_chat_user" value="">
 <input type="hidden" id="selected_chat_nick" value="">
 <div class="user_actions admin closed">
@@ -43,6 +47,7 @@
     <div>Забанить IP</div>
     <div>Кикнуть</div>
     <div>Мут</div>
+    <div>Снизить массу</div>
 </div>
 
 <div class="user_actions user closed">
@@ -163,7 +168,7 @@
             <h2 class="h2">Выберите сервер</h2>
             <div style="display: flex; flex-direction: row;">
                 <div style="padding: 10px;">
-                                        <div class="server" data-ip="178.21.8.10:8081">178.21.8.10:8081</div>
+                                                            <div class="server" data-ip="178.21.8.10:8081">178.21.8.10:8081</div>
 <!--                    <div class="server" data-ip="127.0.0.1:8081">178.21.8.10:8081</div>-->
                 </div>
 
@@ -193,8 +198,47 @@
     </div>
 </div>
 
-<div id="settings_gear">
-    <img src="/src/images/gear.png">
+<div id="buttons_block">
+    <div id="settings_gear">
+        <img src="/src/images/gear.png">
+    </div>
+    <div id="controller_settings">
+        <img src="/src/images/gamepad.png">
+    </div>
+    <div id="music_button">
+        <img src="/src/images/music_button.png">
+    </div>
+</div>
+
+<div id="select_music" class="closed">
+    <h3 style="text-align: center;">Вставьте ссылку на mp3 файл</h3>
+    <input type="text" class="gold_input" placeholder="Ссылка" id="audio_href">
+    <audio src="" controls style="display: none;" id="game_music"></audio>
+</div>
+
+<div id="controller_view" class="closed">
+    <div>
+        <div class="flex_row">
+            <span class="controller_button">SPACE</span>
+            <span class="controller_description">Разделиться</span>
+        </div>
+        <div class="flex_row">
+            <span class="controller_button">W</span>
+            <span class="controller_description">Стрелять</span>
+        </div>
+        <div class="flex_row">
+            <span class="controller_button">C</span>
+            <span class="controller_description">Настройки</span>
+        </div>
+        <div class="flex_row">
+            <span class="controller_button">ESC</span>
+            <span class="controller_description">Меню</span>
+        </div>
+        <div class="flex_row">
+            <span class="controller_button">G</span>
+            <span class="controller_description">Личный кабинет</span>
+        </div>
+    </div>
 </div>
 
 <div id="game_settings" class="closed">
@@ -277,9 +321,9 @@
         </div>
     </div>
     <div>
-        <span class="label_settings">Отображать массу игрока</span>
-<!--                <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
-                <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
+        <span class="label_settings">Отображать массу игроков</span>
+        <!--                <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
+        <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
         <div class="tumbler">
             <input type="checkbox" class="toggle_settings" data-name="isCellMass">
             <div>
@@ -289,7 +333,7 @@
     </div>
     <div>
         <span class="label_settings">Отображать  везде массу (возможны лаги)</span>
-<!--        <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
+        <!--        <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
         <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
         <div class="tumbler">
             <input type="checkbox" class="toggle_settings" data-name="isAllMass">
@@ -337,6 +381,29 @@
         <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
         <div class="tumbler">
             <input type="checkbox" class="toggle_settings" data-name="isLowImage">
+            <div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <span class="label_settings">Не показывать еду</span>
+        <!--        <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
+        <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
+        <div class="tumbler">
+            <input type="checkbox" class="toggle_settings" data-name="isHideFood">
+            <div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <span class="label_settings">Увеличить текст</span>
+        <!--        <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
+        <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
+        <div class="tumbler">
+            <input type="checkbox" class="toggle_settings" data-name="isBigText">
             <div>
                 <div></div>
             </div>

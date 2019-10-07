@@ -2,15 +2,15 @@ const Functions = require('../functions.js');
 const {Performance: performance} = require("./Perfromance.js");
 
 let gameInfo = {
-    width: 1000,
-    height: 1000,
+    width: 2500,
+    height: 2500,
     startMass: 500,
     updateTime: 0,
     deltaTime: 0,
     perSecond: 1000 / 60,
-    food: 100,
-    foodMinMass: 50,
-    foodMaxMass: 100,
+    food: 2000,
+    foodMinMass: 5,
+    foodMaxMass: 50,
     virus: 10,
     bulletMass: 50
 };
@@ -60,6 +60,10 @@ class Arc {
         return (x <= 0 || x >= gameInfo.width || y <= 0 || y >= gameInfo.height);
     }
 
+    destroy() {
+        game.onDestroyUnit(this.constructor.name.toLowerCase(), this.id);
+    }
+
 }
 
 
@@ -68,6 +72,7 @@ let Food = exports.Food = class Food extends Arc {
     constructor(x, y, mass, color) {
         super();
 
+        this.id = ++game.foodId;
         this.x = x;
         this.y = y;
         this.mass = mass;
@@ -87,6 +92,7 @@ class Bullet extends Arc {
     constructor(x, y, sin, cos, mass, distance, color = "#ff0400") {
         super();
 
+        this.id = ++game.bulletId;
         this.x = x;
         this.y = y;
         this.sin = sin;
@@ -136,6 +142,7 @@ class Virus extends Arc {
     constructor(x, y, sin, cos, distance = 0, mass = 200, color = "#fff500") {
         super();
 
+        this.id = ++game.virusId;
         this.x = x;
         this.y = y;
         this.sin = sin;
@@ -199,6 +206,8 @@ class Virus extends Arc {
             if (c > this.drawableRadius + bullet.drawableRadius + 3) continue;
 
             this.toMass += bullet.mass;
+
+            bullet.destroy();
             game.bulletsArr.splice(i, 1);
             i--;
 
@@ -300,6 +309,8 @@ class Cell extends Arc {
             let c = Math.sqrt((this.x - bullet.x) ** 2 + (this.y - bullet.y) ** 2);
             if (this.drawableRadius >= c) {
                 this.toMass += bullet.mass;
+
+                bullet.destroy();
                 game.bulletsArr.splice(i, 1);
                 i--;
             }
@@ -335,6 +346,8 @@ class Cell extends Arc {
             }
 
             this.toMass -= this.mass / 2;
+
+            virus.destroy();
             game.virusArr.splice(i, 1);
             i--;
         }
@@ -345,6 +358,8 @@ class Cell extends Arc {
             if (c > this.drawableRadius + food.drawableRadius + 1) continue;
 
             this.toMass += food.mass;
+
+            food.destroy();
             game.foodsArr.splice(i, 1);
             i--;
         }
@@ -590,7 +605,7 @@ class Player {
     }
 
     changeAccount(userId, token) {
-        this.account = null
+        this.account = null;
         this.userId = userId;
         this.token = token;
         this.authAccount();
@@ -703,7 +718,11 @@ class Game {
         this.bulletsArr = [];
         this.playersArr = [];
         this.gameStates = [];
-        this.onSpawnUnit = (unit) => "";
+        this.foodId = 0;
+        this.virusId = 0;
+        this.bulletId = 0;
+        this.onSpawnUnit = unit => "";
+        this.onDestroyUnit = (type, id) => "";
 
     }
 
@@ -843,7 +862,7 @@ class Game {
 
     getAllUnits(all = true) {
         let players = this.playersArr.map(unit => {
-            return this.getUnit(unit);
+            return this.getUnit(unit, all);
         });
         if (all) {
             let foods = this.foodsArr.map(unit => {
@@ -861,7 +880,7 @@ class Game {
         return {players};
     }
 
-    getUnit(unit) {
+    getUnit(unit, all = true) {
         let name = unit.constructor.name.toLowerCase();
 
         if (name === "player") {
@@ -876,6 +895,13 @@ class Game {
                 skin: unit.skin,
                 skinId: unit.skinId
             };
+            if(!all){
+                delete obj.mouseY;
+                delete obj.mouseX;
+                delete obj.nick;
+                delete obj.skin;
+                delete obj.skinId;
+            }
             let length = unit.cells.length;
             for (let i = 0; i < length; i++) {
                 let cell = unit.cells[i];
@@ -893,6 +919,7 @@ class Game {
                     engineCos: cell.engineCos,
                     isConnect: true,
                     id: cell.id,
+                    color: cell.color,
                     isCollising: cell.isCollising,
                     main: cell.main
                 });
@@ -904,6 +931,7 @@ class Game {
 
         let obj = {
             name,
+            id: unit.id,
             x: unit.x,
             y: unit.y,
             mass: unit.mass,
@@ -1019,6 +1047,11 @@ class Game {
         if (!player) return false;
 
         this.playersArr[player.count].changeAccount(userId, token);
+    }
+
+
+    exportGameSettings(){
+        return gameInfo;
     }
 
 }

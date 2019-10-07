@@ -28,61 +28,67 @@
     class Arc {
 
         constructor() {
+            this.isShow = true;
+        }
+
+        getDrawable() {
+            return {
+                x: canvas.width / 2 + (this.x - gameInfo.centerX) / gameInfo.scale,
+                y: canvas.height / 2 + (this.y - gameInfo.centerY) / gameInfo.scale
+            }
         }
 
         render() {
+            if (!this.isShow) return true;
+            let name = this.constructor.name.toLowerCase();
+            if (name === "food" && gameSettings.isHideFood) return true;
+
             let drawableX = canvas.width / 2 + (this.x - gameInfo.centerX) / gameInfo.scale;
             let drawableY = canvas.height / 2 + (this.y - gameInfo.centerY) / gameInfo.scale;
 
             if (drawableX < 0 || drawableX > canvas.width || drawableY < 0 || drawableY > canvas.height) return true;
 
-            let name = this.constructor.name.toLowerCase();
 
             let color = this.color;
             let shadowColor = "#000000";
-            let isShadowColor = +gameSettings.isShadowColor;
-            let isAllMass = +gameSettings.isAllMass;
-            let isCellMass = +gameSettings.isCellMass;
-            let isHideNick = +gameSettings.isHideNick;
-            let isDrawCellBorder = +gameSettings.isDrawCellBorder;
 
-            if (name === "cell" && +gameSettings.isCellColor) {
-                if (isEmpty(gameSettings.cellColor)) color = "#000000";
+            if (name === "cell" && gameSettings.isCellColor) {
+                if (!gameSettings.cellColor) color = "#000000";
                 else color = gameSettings.cellColor;
 
-            } else if (name === "food" && +gameSettings.isFoodColor) {
-                if (isEmpty(gameSettings.foodColor)) color = "#000000";
+            } else if (name === "food" && gameSettings.isFoodColor) {
+                if (!gameSettings.foodColor) color = "#000000";
                 else color = gameSettings.foodColor;
 
-            } else if (name === "virus" && +gameSettings.isVirusColor) {
-                if (isEmpty(gameSettings.virusColor)) color = "#000000";
+            } else if (name === "virus" && gameSettings.isVirusColor) {
+                if (!gameSettings.virusColor) color = "#000000";
                 else color = gameSettings.virusColor;
 
-            } else if (name === "bullet" && +gameSettings.isBulletColor) {
-                if (isEmpty(gameSettings.bulletColor)) color = "#000000";
+            } else if (name === "bullet" && gameSettings.isBulletColor) {
+                if (!gameSettings.bulletColor) color = "#000000";
                 else color = gameSettings.bulletColor;
             }
 
 
-            let rgb = hexToRgb(color);
             // let textColor = rgb.brightness ? "#000000" : "#FFFFFF";
             // let strokeTextColor = rgb.brightness ? "#FFFFFF" : "#000000";
 
             let textColor = "#FFFFFF";
             let strokeTextColor = "#000000";
 
-            if (isShadowColor && !isEmpty(gameSettings.shadowColor)) shadowColor = gameSettings.shadowColor;
+            if (gameSettings.isShadowColor && gameSettings.shadowColor) shadowColor = gameSettings.shadowColor;
 
             context.save();
 
-            if (isShadowColor) {
+            if (gameSettings.isShadowColor) {
                 this.setShadow(shadowColor);
             }
 
             let radius = this.drawableRadius / gameInfo.scale;
-            if (isDrawCellBorder) {
+            if (gameSettings.isDrawCellBorder) {
                 this.drawArc(drawableX, drawableY, radius, toDarkColor(color));
                 radius = (this.drawableRadius - 5) / gameInfo.scale;
+                if (radius < 2) radius = 2;
                 context.restore();
             }
             this.drawArc(drawableX, drawableY, radius, color);
@@ -92,32 +98,40 @@
             if (name === "cell") {
                 let stickerI = this.owner.stickerI;
                 let stickerSet = this.owner.stickersSet;
-                if (!isEmpty(stickerI) && stickerSet && imagesArr[stickerSet[stickerI].image_id]) {
+                if (stickerI >= 0 && stickerSet && imagesArr[stickerSet[stickerI].image_id]) {
                     this.drawImage(imagesArr[stickerSet[stickerI].image_id], drawableX, drawableY, this.drawableRadius / gameInfo.scale);
                 } else if (imagesArr[this.owner.skinId]) {
                     this.drawImage(imagesArr[this.owner.skinId], drawableX, drawableY, this.drawableRadius / gameInfo.scale);
                 }
 
-                if (!isHideNick) {
+                if (!gameSettings.isHideNick) {
                     this.drawText(drawableX, drawableY, this.drawableRadius / (2 * gameInfo.scale), this.owner.nick, textColor, true, strokeTextColor);
                 }
                 drawableY += this.drawableRadius / (2 * gameInfo.scale);
+                if (gameSettings.isCellMass) {
+                    this.drawText(drawableX, drawableY, this.drawableRadius / (3 * gameInfo.scale), Math.floor(this.mass), textColor);
+                }
+                return true;
             }
 
-            if (!["food", "bullet"].includes(name)) {
-                if (name === "virus" && imagesArr['virus_arrow']) {
+            if (name === "virus") {
+                if (imagesArr['virus_arrow']) {
                     let q = (this.mass - 200) / 200;
                     this.drawImageByAngle(imagesArr['virus_arrow'], drawableX, drawableY, -225 + 270 * q);
                 }
-
-                if (name !== "cell" || isCellMass) {
-                    this.drawText(drawableX, drawableY, this.drawableRadius / (3 * gameInfo.scale), Math.floor(this.mass), textColor);
-                }
+                this.drawText(drawableX, drawableY, this.drawableRadius / (3 * gameInfo.scale), Math.floor(this.mass), textColor);
+                return true;
             }
-            if ((name === "food" || name === "bullet") && isAllMass) {
+
+            if ((name === "food" || name === "bullet") && gameSettings.isAllMass) {
                 this.drawText(drawableX, drawableY, this.drawableRadius / (1.5 * gameInfo.scale), Math.floor(this.mass), textColor);
             }
+        }
 
+        clear() {
+            let drawable = this.getDrawable();
+            if (drawable.x < 0 || drawable.x > canvas.width || drawable.y < 0 || drawable.y > canvas.height) return true;
+            this.isShow = false;
         }
 
         setShadow(color, blur = 10, x = 0, y = 0) {
@@ -156,7 +170,8 @@
         }
 
         drawText(x, y, size, value, color = "#FFFFFF", isStroke = false, strokeStyle = "#000000", isShadow = false, shadowColor = "red") {
-            size *= 1.2;
+            if (+gameSettings.isBigText) size *= 1.8;
+            else size *= 1.2;
 
             context.save();
 
@@ -208,48 +223,48 @@
             return (this.x <= 0 || this.x >= gameInfo.width || this.y <= 0 || this.y >= gameInfo.height);
         }
 
-        static drawCompass() {
-            let tg = gameInfo.centerY / gameInfo.centerX;
-            let fY = tg * (x - gameInfo.centerX) + gameInfo.centerY;
-            y = 0;
-            x = 0;
-            let intersectionTop = {
-                y: 0,
-                x: -gameInfo.centerY / tg + gameInfo.centerX
-            };
-            let intersectionLeft = {
-                x: 0,
-                y: -gameInfo.centerX * tg + gameInfo.centerY
-            };
-            let borderLeftX = gameInfo.centerX - canvas.width * gameInfo.scale / 2;
-
-            let intersection = {
-                x: intersectionTop.x < borderLeftX ? 0 : intersectionTop.x,
-                y: intersectionLeft.y < 0 ? 0 : intersectionLeft.y
-            };
-            context.beginPath();
-            context.moveTo(canvas.width / 2, canvas.height / 2);
-            context.lineTo(intersection.x, intersection.y);
-            context.lineWidth = 10;
-            context.stroke();
-            context.closePath();
-        }
-
-        static drawBorder() {
-            let arr = [
-                [0, 0],
-                [gameInfo.width, 0],
-                [gameInfo.width, gameInfo.height],
-                [0, gameInfo.height]
-            ];
-
-            context.beginPath();
-            for (let [x, y] of arr) {
-                let width = (x - gameInfo.centerX) / gameInfo.scale;
-                let height = (y - gameInfo.centerY) / gameInfo.scale;
-            }
-
-        };
+        // static drawCompass() {
+        //     let tg = gameInfo.centerY / gameInfo.centerX;
+        //     let fY = tg * (x - gameInfo.centerX) + gameInfo.centerY;
+        //     y = 0;
+        //     x = 0;
+        //     let intersectionTop = {
+        //         y: 0,
+        //         x: -gameInfo.centerY / tg + gameInfo.centerX
+        //     };
+        //     let intersectionLeft = {
+        //         x: 0,
+        //         y: -gameInfo.centerX * tg + gameInfo.centerY
+        //     };
+        //     let borderLeftX = gameInfo.centerX - canvas.width * gameInfo.scale / 2;
+        //
+        //     let intersection = {
+        //         x: intersectionTop.x < borderLeftX ? 0 : intersectionTop.x,
+        //         y: intersectionLeft.y < 0 ? 0 : intersectionLeft.y
+        //     };
+        //     context.beginPath();
+        //     context.moveTo(canvas.width / 2, canvas.height / 2);
+        //     context.lineTo(intersection.x, intersection.y);
+        //     context.lineWidth = 10;
+        //     context.stroke();
+        //     context.closePath();
+        // }
+        //
+        // static drawBorder() {
+        //     let arr = [
+        //         [0, 0],
+        //         [gameInfo.width, 0],
+        //         [gameInfo.width, gameInfo.height],
+        //         [0, gameInfo.height]
+        //     ];
+        //
+        //     context.beginPath();
+        //     for (let [x, y] of arr) {
+        //         let width = (x - gameInfo.centerX) / gameInfo.scale;
+        //         let height = (y - gameInfo.centerY) / gameInfo.scale;
+        //     }
+        //
+        // };
 
         static drawCenter() {
             if (!imagesArr["center"]) return true;
@@ -474,7 +489,6 @@
             this.isDraw = isDraw;
             setTimeout(() => this.isConnect = true, 1000);
 
-            if (this.isDraw && this.owner.current) gameInfo.byScale += 0.05;
             this.updateDirection();
         }
 
@@ -639,7 +653,6 @@
                             if (playersArr[p].updateI >= i) {
                                 playersArr[p].updateI--;
                             }
-                            if (playersArr[p].current) gameInfo.byScale -= 0.05;
                             // this.isConnect = false;
                             // setTimeout(() => this.isConnect = true, 100);
                         }
@@ -729,7 +742,6 @@
                 new Cell(roundFloor(this.x + width, 2), roundFloor(this.y + height, 2), mass / 2, this.sin, this.cos, false, this.color, this.owner, ++this.owner.cellId, distance)
             );
 
-            gameInfo.byScale += 0.05;
         }
 
 
@@ -737,9 +749,9 @@
             if (this.mass + this.toMass < 250) return true;
 
             bulletsArr.push(
-                new Bullet(this.x + (this.radius + 5) * this.cos, this.y + (this.radius + 5) * this.sin, this.sin, this.cos, 150, 200)
+                new Bullet(this.x + (this.radius + 5) * this.cos, this.y + (this.radius + 5) * this.sin, this.sin, this.cos, 50, 100, this.color)
             );
-            this.toMass -= 10;
+            this.toMass -= 50;
         }
 
     }
@@ -866,7 +878,8 @@
                     // if(c < 10) continue;
                     let sin = dY / c;
                     let cos = dX / c;
-                    this.cells[cell.count].toMass = pCell.toMass + pCell.mass - this.cells[cell.count].mass;
+                    this.cells[cell.count].toMass = pCell.toMass;
+                    this.cells[cell.count].mass = pCell.mass;
 
                     // this.cells[cell.count].x = pCell.x;
                     // this.cells[cell.count].y = pCell.y;
@@ -880,16 +893,15 @@
                 }
 
             }
-            // this.deletedCells();
+            this.deleteCells();
         }
 
-        deletedCells() {
+        deleteCells() {
             for (let i = 0; i < this.cells.length; i++) {
                 if (this.ids.includes(this.cells[i].id)) continue;
 
                 this.cells.splice(i, 1);
                 i--;
-                gameInfo.byScale -= 0.05;
             }
         }
 
@@ -976,6 +988,7 @@
         startMass: 500,
         scale: 1,
         byScale: 0,
+        cellScale: 0,
         updateTime: 0,
         deltaTime: 0,
         perSecond: 1000 / 60,
@@ -1000,6 +1013,12 @@
 
     let renderVar = null;
 
+    function calcScaleByCell() {
+        if (!playersArr[0].current) return null;
+
+        return 0.05 * (playersArr[0].cells.length - 1);
+    }
+
     function render() {
         // return true;
         new Promise(() => {
@@ -1009,12 +1028,18 @@
                 gameInfo.updateTime = performance.now();
 
                 context.clearRect(0, 0, canvas.width, canvas.height);
-                let backgroundColor = (+gameSettings.isBackground && !isEmpty(gameSettings.background)) ? gameSettings.background : "#000000";
+                let backgroundColor = (gameSettings.isBackground && !isEmpty(gameSettings.background)) ? gameSettings.background : "#000000";
                 context.fillStyle = backgroundColor;
                 context.fillRect(0, 0, canvas.width, canvas.height);
 
+                let cellScale = calcScaleByCell();
+                if(!isEmpty(cellScale)){
+                    gameInfo.byScale += cellScale - gameInfo.cellScale;
+                    gameInfo.cellScale = cellScale;
+                }
+
                 if (Math.abs(gameInfo.byScale) > 0) {
-                    let speed = gameInfo.byScale * (gameInfo.deltaTime / gameInfo.perSecond) / 10;
+                    let speed = gameInfo.byScale * (gameInfo.deltaTime / gameInfo.perSecond) / 20;
                     if (Math.abs(speed) < 0.01) speed = gameInfo.byScale > 0 ? 0.01 : -0.01;
                     if (Math.abs(gameInfo.byScale) < Math.abs(speed)) speed = gameInfo.byScale;
 
@@ -1045,9 +1070,9 @@
                 }
                 Arc.drawCenter();
 
-
+                // let time = performance.now();
                 let renderLength = rendersArr.length;
-                rendersArr = rendersArr.sort((a, b) => a.drawableRadius - b.drawableRadius);
+                // rendersArr = rendersArr.sort((a, b) => a.drawableRadius - b.drawableRadius);
                 for (let i = 0; i < renderLength; i += 2) {
                     rendersArr[i].render();
                     try {
@@ -1091,7 +1116,7 @@
             for (let i = 0; i < length; i++) {
 
                 let cell = unit.cells[i];
-                let c = new Cell(cell.x, cell.y, cell.mass, 0, 0, cell.main, unit.color, player, cell.id, 0);
+                let c = new Cell(cell.x, cell.y, cell.mass, 0, 0, cell.main, cell.color, player, cell.id, 0);
                 c.engineSin = cell.engineSin;
                 c.engineCos = cell.engineCos;
                 c.engineDistance = cell.engineDistance;
@@ -1112,18 +1137,21 @@
         } else if (unit.name === "food") {
             let food = new Food(unit.x, unit.y, unit.mass, unit.color);
             food.toMass = unit.toMass;
+            food.id = unit.id;
 
             returned = food;
 
         } else if (unit.name === "bullet") {
             let bullet = new Bullet(unit.x, unit.y, unit.sin, unit.cos, unit.mass, unit.distance, unit.color);
             bullet.toMass = unit.toMass;
+            bullet.id = unit.id;
 
             returned = bullet;
 
         } else if (unit.name === "virus") {
             let virus = new Virus(unit.x, unit.y, unit.sin, unit.cos, unit.distance, unit.mass, unit.color);
             virus.toMass = unit.toMass;
+            virus.id = unit.id;
 
             returned = virus;
         }
@@ -1144,6 +1172,7 @@
                 playersArr[0].update(delta);
                 render();
                 updateHtml();
+                getTopPlayers();
                 ws.sendJson({action: "get_all_units"});
                 setTimeout(function () {
                     ws.sendJson({
@@ -1170,6 +1199,33 @@
         if (name === "virus") {
             virusArr.push(unit);
             return true;
+        }
+
+    }
+
+
+    function getTopPlayers() {
+        let arr = playersArr.sort((a, b) => b.mass - a.mass);
+        let html = "";
+        for (let [key, player] of Object.entries(arr)) {
+            if (key >= 10) break;
+            html += "<div class='flex_row'><span class='number'>" + (+key + 1) + "</span><span class='nick'>" + player.nick + "</span><span class='mass'>" + Math.floor(player.mass) + "</span></div>";
+        }
+        $("#top_players").html(html);
+        setTimeout(getTopPlayers, 2000);
+    }
+
+    function destroyUnit(type, id) {
+        let arr = [];
+        if (type === "virus") arr = virusArr;
+        else if (type === "food") arr = foodsArr;
+        else if (type === "bullet") arr = bulletsArr;
+
+        for (let i = 0; i < arr.length; i++) {
+            if (+arr[i].id === +id) {
+                arr.splice(i, 1);
+                break;
+            }
         }
 
     }
@@ -1233,6 +1289,13 @@
         sendChatMessage();
     });
 
+
+    function clearFood() {
+        for (let i = 0; i < foodsArr.length; i++) {
+            foodsArr[i].clear();
+        }
+    }
+
     window.addEventListener("keypress", event => {
         let code = event.code.toLowerCase();
         if (code === "space") {
@@ -1242,6 +1305,11 @@
                 });
             }
             playersArr[0].split();
+            return true;
+        }
+
+        if (code === "keyr") {
+            clearFood();
             return true;
         }
 
@@ -1260,6 +1328,11 @@
 
         if (code === "keyg") {
             $("#user_account").toggleClass("closed");
+            return true;
+        }
+
+        if (code === "keyc") {
+            $("#game_settings").toggleClass("closed");
             return true;
         }
     });
@@ -1345,6 +1418,7 @@
             wheel += byScale;
             gameInfo.byScale += byScale;
         });
+        document.getElementById("game_settings").addEventListener("wheel", event => event.stopPropagation());
     }
 
     function clearAll() {
@@ -1355,6 +1429,8 @@
         [playersArr, virusArr, foodsArr, bulletsArr, rendersArr] = [[], [], [], [], []];
     }
 
+
+    let ping = $("#ping");
 
     function startGame(ip) {
         isGame = false;
@@ -1386,10 +1462,17 @@
                 return true;
             }
 
+            if (data.action === "load_game_settings") {
+                gameInfo.width = data.settings.width;
+                gameInfo.height = data.settings.height;
+            }
+
             if (data.action === "spawn_unit") {
                 delete data.action;
                 let unit = getUnit(data);
                 addUnit(unit, getTimeByDelta(Date.now() - data.time));
+
+                return true;
             }
 
             if (data.action === "get_all_units") {
@@ -1473,6 +1556,8 @@
                 setTimeout(function () {
                     ws.sendJson({action: "update_units"});
                 }, 0);
+
+                return true;
             }
 
             // if (data.action === "player_split") {
@@ -1497,13 +1582,14 @@
                 return true;
             }
 
-            let ping = $("#ping");
             if (data.action === "ping") {
                 let delta = Date.now() - data.time;
                 if (delta < 0) {
                     console.log("now " + Date.now() + " time " + data.time);
                 }
                 ping.text(delta);
+
+                return true;
             }
 
             if (data.action === "nick_info") {
@@ -1533,6 +1619,8 @@
                 if (!player) return true;
 
                 player.setNick(data.nick, data.skin, data.skinId);
+
+                return true;
             }
 
             if (data.action === "select_sticker") {
@@ -1541,6 +1629,8 @@
 
                 if (isEmpty(data.number)) data.number = null;
                 player.stickerI = data.number;
+
+                return true;
             }
 
             if (data.action === "change_color") {
@@ -1548,7 +1638,15 @@
                 if (!player) return true;
 
                 player.setColor(data.color);
+
+                return true;
             }
+
+            if (data.action === "destroy_unit") {
+                destroyUnit(data.type, data.id);
+                return true;
+            }
+
         });
     }
 
