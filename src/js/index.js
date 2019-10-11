@@ -128,7 +128,9 @@ class Command {
     commands = {
         add_mass: ["to_id", "mass"],
         break_player: ["to_id"],
-        mute: ["target_id"]
+        mute: ["target_id"],
+        kick: ["target_id"],
+        ban_ip: ["target_id"]
     };
 
     constructor(command) {
@@ -527,7 +529,7 @@ $("body").mouseup(() => resizeChat = false)
     .on("click", ".user_actions.user div:eq(3)", function () {
         let nick = $("#selected_chat_nick").val().trim();
         let id = $("#selected_chat_user").val().trim();
-        if (!id || !nick) return true;
+        if (isEmpty(id) || !nick) return true;
 
         Message.selectPM(nick, id);
     })
@@ -544,6 +546,20 @@ $("body").mouseup(() => resizeChat = false)
         navigator.clipboard.writeText(nick);
     })
 
+
+    .on("click", ".user_actions.admin div:eq(1)", function(){
+        let id = $("#selected_chat_user").val().trim();
+        if(isEmpty(id)) return true;
+
+        new Command("ban_ip " + id);
+    })
+
+    .on("click", ".user_actions.admin div:eq(2)", function(){
+        let id = $("#selected_chat_user").val().trim();
+        if(isEmpty(id) || !ws) return true;
+
+        new Command("kick " + id);
+    })
 
     .on("click", ".user_actions.admin div:eq(3)", function () {
         let id = $("#selected_chat_user").val().trim();

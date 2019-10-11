@@ -39,7 +39,7 @@ class Arc {
     }
 
     get speed() {
-        return 15 / this.drawableRadius;
+        return 20 / this.drawableRadius;
     }
 
     get mouseDist() {
@@ -619,7 +619,6 @@ class Player {
 
     async authNick() {
         let nickInfo = await this.getNickInfo();
-        let skin = "";
         if (nickInfo) {
             if (!Functions.isEmpty(nickInfo.password) && String(this.password) !== String(nickInfo.password)) {
                 this.nick = "Wrong password";
@@ -855,7 +854,9 @@ class Game {
         for (let i = 0; i < length; i++) {
             if (+wsId !== +this.playersArr[i].wsId) continue;
 
-            this.playersArr.splice(i, 1);
+            setTimeout(() => {
+                this.playersArr.splice(i, 1);
+            }, 5000);
             break;
         }
     }
@@ -864,20 +865,21 @@ class Game {
         let players = this.playersArr.map(unit => {
             return this.getUnit(unit, all);
         });
+        let virus = this.virusArr.map(unit => {
+            return this.getUnit(unit);
+        });
         if (all) {
             let foods = this.foodsArr.map(unit => {
                 return this.getUnit(unit);
             });
-            let virus = this.virusArr.map(unit => {
-                return this.getUnit(unit);
-            });
+
             let bullets = this.bulletsArr.map(unit => {
                 return this.getUnit(unit);
             });
 
             return {players, foods, virus, bullets};
         }
-        return {players};
+        return {players, virus};
     }
 
     getUnit(unit, all = true) {
@@ -887,20 +889,25 @@ class Game {
             let obj = {
                 name,
                 cells: [],
+                cellId: unit.cellId,
                 mouseY: unit.mouse.y,
                 mouseX: unit.mouse.x,
                 color: unit.color,
                 id: unit.wsId,
                 nick: unit.nick,
                 skin: unit.skin,
-                skinId: unit.skinId
+                skinId: unit.skinId,
+                stickersSet: unit.stickersSet || "",
+                stickerI: Functions.isEmpty(unit.stickerI) ? "" : unit.stickerI
             };
-            if(!all){
+            if (!all) {
                 delete obj.mouseY;
                 delete obj.mouseX;
                 delete obj.nick;
                 delete obj.skin;
                 delete obj.skinId;
+                delete obj.stickerI;
+                delete obj.stickersSet;
             }
             let length = unit.cells.length;
             for (let i = 0; i < length; i++) {
@@ -1049,8 +1056,7 @@ class Game {
         this.playersArr[player.count].changeAccount(userId, token);
     }
 
-
-    exportGameSettings(){
+    exportGameSettings() {
         return gameInfo;
     }
 

@@ -15,6 +15,7 @@ const Units = require('./GameClasses/Units.js');
 // подключенные клиенты
 let clients = {};
 let clientsSize = 0;
+let bannedIP = [];
 
 // WebSocket-сервер на порту 8081
 const webSocketServer = new WebSocketServer.Server({
@@ -53,7 +54,9 @@ class Command {
     adminsCommand = {
         add_mass: this.addMass,
         break_player: this.breakPlayer,
-        mute: this.mutePlayer
+        mute: this.mutePlayer,
+        kick: this.kickPlayer,
+        ban_ip: this.banIp
     };
 
 
@@ -87,14 +90,46 @@ class Command {
     }
 
     addMass(id, params) {
-        if (isEmpty(params.mass)) params.mass = 1000;
-        if (isEmpty(params.to_id)) params.to_id = id;
+        if (Functions.isEmpty(params.mass)) params.mass = 1000;
+        if (Functions.isEmpty(params.to_id)) params.to_id = id;
         Units.game.addMass(params.to_id, params.mass);
     }
 
     breakPlayer(id, params) {
-        if (isEmpty(params.to_id)) params.to_id = id;
+        if (Functions.isEmpty(params.to_id)) params.to_id = id;
         Units.game.breakPlayer(params.to_id);
+    }
+
+    kickPlayer(id, params) {
+        if (Functions.isEmpty(params.target_id)) params.target_id = id;
+        let player = Units.game.findPlayer(params.target_id);
+        if (!player) return true;
+
+        player = player.player;
+        if (player.isAdmin) return true;
+
+        let currentPlayer = Units.game.findPlayer(id);
+        if (!currentPlayer) return true;
+        currentPlayer = currentPlayer.player;
+        if (player.isModer && !currentPlayer.isAdmin) return true;
+
+        clients[params.target_id].ws.close();
+
+    }
+
+    banIp(id, params) {
+        if (Functions.isEmpty(params.target_id)) return true;
+
+        let currentPlayer = Units.game.findPlayer(id);
+        let targetPlayer = Units.game.findPlayer(params.target_id);
+
+        // if (targetPlayer.isAdmin || (targetPlayer.isModer && !currentPlayer.isAdmin)) return true;
+
+        let ip = clients[params.target_id].IPAddress;
+        if (bannedIP.includes(ip)) return true;
+
+        bannedIP.push(ip);
+        clients[params.target_id].ws.close();
     }
 }
 
@@ -183,6 +218,20 @@ webSocketServer.on('connection', function (ws, req) {
     clients[id].isConnect = false;
     clients[id].isMute = false;
     clients[id].IPAddress = req.connection.remoteAddress || ws._socket.remoteAddress;
+
+
+    ws.on('close', function () {
+        delete clients[id];
+
+        Units.game.playerDisconnect(id);
+        wsMessage({action: "player_disconnect", id: id});
+    });
+
+
+    if(bannedIP.includes(clients[id].IPAddress)){
+        clients[id].ws.close();
+        return true;
+    }
 
     wsMessage({
         action: "load_game_settings",
@@ -350,12 +399,5 @@ webSocketServer.on('connection', function (ws, req) {
     setInterval(() => {
         wsMessage({action: "ping"});
     }, 1000);
-
-    ws.on('close', function () {
-        delete clients[id];
-
-        Units.game.playerDisconnect(id);
-        wsMessage({action: "player_disconnect", id: id});
-    });
 
 });

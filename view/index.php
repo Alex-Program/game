@@ -321,6 +321,17 @@
         </div>
     </div>
     <div>
+        <span class="label_settings">Оптимизация</span>
+        <!--        <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
+        <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
+        <div class="tumbler">
+            <input type="checkbox" class="toggle_settings" data-name="isOptimization">
+            <div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+    <div>
         <span class="label_settings">Отображать массу игроков</span>
         <!--                <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
         <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
