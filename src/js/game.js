@@ -906,7 +906,7 @@
         }
 
         deleteCells() {
-            if (performance.now() - this.lastDeletedTime < 10000) return true;
+            if (performance.now() - this.lastDeletedTime < 10000 || this.isSplit) return true;
             this.lastDeletedTime = performance.now();
             for (let i = 0; i < this.cells.length; i++) {
                 if (this.ids.includes(this.cells[i].id)) continue;

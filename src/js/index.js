@@ -360,6 +360,8 @@ class User {
     fillUserInfo() {
         let accountDiv = $("#account_div");
         accountDiv.find("img").attr("src", this.img);
+        if (isEmpty(this.img)) accountDiv.find("img").hide();
+
         accountDiv.find(".user_name").text(this.name);
         accountDiv.find(".user_balance").text(this.balance + " snl");
         $("#login").hide();
@@ -547,16 +549,16 @@ $("body").mouseup(() => resizeChat = false)
     })
 
 
-    .on("click", ".user_actions.admin div:eq(1)", function(){
+    .on("click", ".user_actions.admin div:eq(1)", function () {
         let id = $("#selected_chat_user").val().trim();
-        if(isEmpty(id)) return true;
+        if (isEmpty(id)) return true;
 
         new Command("ban_ip " + id);
     })
 
-    .on("click", ".user_actions.admin div:eq(2)", function(){
+    .on("click", ".user_actions.admin div:eq(2)", function () {
         let id = $("#selected_chat_user").val().trim();
-        if(isEmpty(id) || !ws) return true;
+        if (isEmpty(id) || !ws) return true;
 
         new Command("kick " + id);
     })
@@ -744,7 +746,47 @@ $("body").mouseup(() => resizeChat = false)
         $(audio).show();
     })
 
-    .on("click", "#select_music", e => e.stopPropagation());
+    .on("click", "#select_music", e => e.stopPropagation())
+
+    .on("click", "#to_sign_up", function () {
+        $("#login").hide();
+        $("#registration_div").show();
+    })
+
+    .on("click", "#to_sign_in", function () {
+        $("#registration_div").hide();
+        $("#login").show();
+    })
+
+    .on("click", "#sign_up_button", function () {
+        let name = $("#name_sign_up").val().trim();
+        let password = $("#password_sign_up").val().trim();
+        let repeatPassword = $("#repeat_password").val().trim();
+        if (!name || !password || !repeatPassword) return true;
+
+        if (password !== repeatPassword) return alert("Пароли не совпадают");
+
+        let json = {
+            action: "registration",
+            name,
+            password
+        };
+
+        sendRequest("api/registration", json)
+            .then(data => {
+                if (data.result !== "true") return true;
+
+                setCookie("Token", data.data.token, {"max-age": 30 * 24 * 60 * 60});
+                setCookie("User-Id", data.data.user_id, {"max-age": 30 * 24 * 60 * 60});
+
+                user = new User();
+            });
+    })
+
+    .on("input", "input", function () {
+        this.checkValidity();
+    });
+
 
 loadGameSettings();
 fillGameSettings();

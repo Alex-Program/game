@@ -68,7 +68,7 @@
 </div>
 
 <div id="main_menu">
-    <div style="display: flex; justify-content: center">
+    <div style="display: flex; justify-content: center; margin-top: 5px;">
         <div id="login">
             <div>
                 <div>
@@ -78,8 +78,9 @@
                     <input type="text" class="red_input" id="password_sign_in" placeholder="Пароль">
                 </div>
             </div>
-            <div style="display: flex; justify-content: center;">
+            <div style="display: flex; justify-content: center; flex-direction: row;">
                 <button class="button button_primary" id="sign_in_button">Войти</button>
+                <button class="button button_green" id="to_sign_up" style="margin-left: 10px;">Регистрация</button>
             </div>
         </div>
         <div id="account_div" style="display: none; position: relative;">
@@ -92,6 +93,15 @@
                 </div>
             </div>
             <div id="exit_button" class="closed">ВЫЙТИ</div>
+        </div>
+        <div id="registration_div" style="display: none;">
+            <input type="text" class="red_input" placeholder="Имя" id="name_sign_up" required>
+            <input type="text" class="red_input" placeholder="Пароль" style="margin-top: 5px;" id="password_sign_up" required>
+            <input type="text" class="red_input" placeholder="Повторите пароль" style="margin-top: 5px;" id="repeat_password" required>
+            <div class="flex_row" style="margin-top: 5px;">
+                <button class="button button_primary" id="to_sign_in">Вход</button>
+                <button class="button button_green" style="margin-left: 10px;" id="sign_up_button">Зарегистрироваться</button>
+            </div>
         </div>
     </div>
     <div style="position: relative; display: flex; flex-direction: row; margin-left:10px; margin-right: 10px;">
@@ -168,8 +178,8 @@
             <h2 class="h2">Выберите сервер</h2>
             <div style="display: flex; flex-direction: row;">
                 <div style="padding: 10px;">
-                                                            <div class="server" data-ip="178.21.8.10:8081">178.21.8.10:8081</div>
-<!--                    <div class="server" data-ip="127.0.0.1:8081">178.21.8.10:8081</div>-->
+                    <div class="server" data-ip="178.21.8.10:8081">178.21.8.10:8081</div>
+                    <!--                    <div class="server" data-ip="127.0.0.1:8081">178.21.8.10:8081</div>-->
                 </div>
 
                 <div style="padding: 10px;">

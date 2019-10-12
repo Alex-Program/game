@@ -22,6 +22,17 @@ class Auth extends Model
         $this->mysqli->query($sql);
     }
 
+    public function registration($password, $name)
+    {
+        $password = $this->mysqli->real_escape_string($password);
+        $name = $this->mysqli->real_escape_string($name);
+
+        $sql = "INSERT INTO `users` (`password`, `name`) VALUES ('" . $password . "', '" . $name . "')";
+        if ($this->mysqli->query($sql)) return $this->mysqli->insert_id;
+
+        return false;
+    }
+
     public function authByToken($userId, $token)
     {
         $userId = $this->mysqli->real_escape_string($userId);
@@ -112,10 +123,11 @@ class Auth extends Model
 
         $sql = "SELECT `stickers` FROM `users` WHERE `id`=" . $userId;
         $result = $this->mysqli->query($sql);
-        if ($result->num_rows === 0) return false;
+        if ($result->num_rows === 0) return [];
 
         $row = $result->fetch_assoc();
         $stickers = $row['stickers'];
+        if(empty($stickers)) return [];
         try {
             $stickers = json_decode($stickers, true);
         } catch (Throwable $e) {
