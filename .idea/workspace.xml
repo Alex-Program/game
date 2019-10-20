@@ -1,46 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="011e9982-741d-4222-841e-091d212022f0" name="Default Changelist" comment="optimization">
-      <change afterPath="$PROJECT_DIR$/controller/servers_controller.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/model/Server.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/css/servers.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/css/whole.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/js/servers.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/view/servers.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="011e9982-741d-4222-841e-091d212022f0" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controller/admin_controller.php" beforeDir="false" afterPath="$PROJECT_DIR$/controller/admin_controller.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controller/auth_controller.php" beforeDir="false" afterPath="$PROJECT_DIR$/controller/auth_controller.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controller/registration_controller.php" beforeDir="false" afterPath="$PROJECT_DIR$/controller/registration_controller.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controller/user_controller.php" beforeDir="false" afterPath="$PROJECT_DIR$/controller/user_controller.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/model/Auth.php" beforeDir="false" afterPath="$PROJECT_DIR$/model/Auth.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/model/Model.php" beforeDir="false" afterPath="$PROJECT_DIR$/model/Model.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/mvc.php" beforeDir="false" afterPath="$PROJECT_DIR$/public/mvc.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/GameClasses/Units.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/GameClasses/Units.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/functions.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/functions.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/server.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/all_images/23.png" beforeDir="false" afterPath="$PROJECT_DIR$/src/all_images/23.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/all_images/24.png" beforeDir="false" afterPath="$PROJECT_DIR$/src/all_images/24.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/all_images/25.png" beforeDir="false" afterPath="$PROJECT_DIR$/src/all_images/25.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/all_images/26.png" beforeDir="false" afterPath="$PROJECT_DIR$/src/all_images/26.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/all_images/27.png" beforeDir="false" afterPath="$PROJECT_DIR$/src/all_images/27.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/all_images/28.png" beforeDir="false" afterPath="$PROJECT_DIR$/src/all_images/28.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/all_images/29.png" beforeDir="false" afterPath="$PROJECT_DIR$/src/all_images/29.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/all_images/30.png" beforeDir="false" afterPath="$PROJECT_DIR$/src/all_images/30.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/all_images/31.png" beforeDir="false" afterPath="$PROJECT_DIR$/src/all_images/31.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/css/header.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/css/header.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/css/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/css/index.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/images/carbon_background.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/src/images/carbon_background.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/images/gamepad.png" beforeDir="false" afterPath="$PROJECT_DIR$/src/images/gamepad.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/images/gear.png" beforeDir="false" afterPath="$PROJECT_DIR$/src/images/gear.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/images/music_button.png" beforeDir="false" afterPath="$PROJECT_DIR$/src/images/music_button.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/images/triangle1.png" beforeDir="false" afterPath="$PROJECT_DIR$/src/images/triangle1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/images/triangle2.png" beforeDir="false" afterPath="$PROJECT_DIR$/src/images/triangle2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/js/game.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/game.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/js/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/view/header.php" beforeDir="false" afterPath="$PROJECT_DIR$/view/header.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/view/index.php" beforeDir="false" afterPath="$PROJECT_DIR$/view/index.php" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -406,7 +369,7 @@
       <workItem from="1571446358515" duration="7701000" />
       <workItem from="1571459890373" duration="1275000" />
       <workItem from="1571478522187" duration="2540000" />
-      <workItem from="1571545286276" duration="3661000" />
+      <workItem from="1571545286276" duration="3772000" />
     </task>
     <task id="LOCAL-00001" summary="add viruses">
       <created>1567508394746</created>
@@ -604,7 +567,14 @@
       <option name="project" value="LOCAL" />
       <updated>1570853227678</updated>
     </task>
-    <option name="localTasksCounter" value="29" />
+    <task id="LOCAL-00029" summary="add servers">
+      <created>1571551606179</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1571551606179</updated>
+    </task>
+    <option name="localTasksCounter" value="30" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -635,6 +605,7 @@
     <MESSAGE value="add more settings" />
     <MESSAGE value="change multiplayeer" />
     <MESSAGE value="optimization" />
-    <option name="LAST_COMMIT_MESSAGE" value="optimization" />
+    <MESSAGE value="add servers" />
+    <option name="LAST_COMMIT_MESSAGE" value="add servers" />
   </component>
 </project>
