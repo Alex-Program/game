@@ -33,12 +33,15 @@ $isAuth = false;
 require('../model/db.php');
 require('../controller/auth_controller.php');
 
+$forAdmin = ["servers"];
+
+
 if ($api) {
     if (!$isAuth && $page != "registration") {
         echo json_encode(["result" => "false", "data" => "invalid_token"], 256);
         exit;
     }
-    if (!file_exists("../controller/" . $page . "_controller.php") || $page == "auth") {
+    if (!file_exists("../controller/" . $page . "_controller.php") || $page == "auth" || (in_array($page, $forAdmin) && !ADMIN)) {
         echo json_encode(["result" => "false", "data" => "invalid_page"], 256);
         exit;
     }
@@ -51,7 +54,8 @@ if ($api) {
     exit;
 }
 
-if (!file_exists("../view/" . $page . ".php")) {
+
+if (!file_exists("../view/" . $page . ".php") || (in_array($page, $forAdmin) && !ADMIN)) {
     header("Location: /");
     exit;
 }

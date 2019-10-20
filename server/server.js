@@ -2,7 +2,7 @@ Array.prototype.includesByType = function (search) {
     for (let i = 0; i < this.length; i++) {
         if (typeof search === "string" && String(this[i]) === search) return true;
         if (typeof search === "number" && +this[i] === search) return true;
-        if (typeof search === "boolean" && +this[i] === search) return true;
+        if (typeof search === "boolean" && Boolean(+this[i]) === search) return true;
     }
 
     return false;
@@ -56,7 +56,8 @@ class Command {
         break_player: this.breakPlayer,
         mute: this.mutePlayer,
         kick: this.kickPlayer,
-        ban_ip: this.banIp
+        ban_ip: this.banIp,
+        ban_account: this.banAccount
     };
 
 
@@ -123,7 +124,7 @@ class Command {
         let currentPlayer = Units.game.findPlayer(id);
         let targetPlayer = Units.game.findPlayer(params.target_id);
 
-        // if (targetPlayer.isAdmin || (targetPlayer.isModer && !currentPlayer.isAdmin)) return true;
+        if (targetPlayer.isAdmin || (targetPlayer.isModer && !currentPlayer.isAdmin)) return true;
 
         let ip = clients[params.target_id].IPAddress;
         if (bannedIP.includes(ip)) return true;
@@ -131,6 +132,23 @@ class Command {
         bannedIP.push(ip);
         clients[params.target_id].ws.close();
     }
+
+    banAccount(id, params) {
+        if (Functions.isEmpty(params.target_id)) return true;
+
+        let currentPlayer = Units.game.findPlayer(id);
+        let targetPlayer = Units.game.findPlayer(params.target_id);
+
+        if (targetPlayer.isAdmin || (targetPlayer.isModer && !currentPlayer.isAdmin)) return true;
+        if (!targetPlayer.account) return true;
+
+        let obj = {
+            action: "ban_account",
+            id: targetPlayer.account.id
+        };
+        Functions.sendRequest("api/admin", obj);
+    }
+
 }
 
 let command = new Command();
@@ -228,7 +246,7 @@ webSocketServer.on('connection', function (ws, req) {
     });
 
 
-    if(bannedIP.includes(clients[id].IPAddress)){
+    if (bannedIP.includes(clients[id].IPAddress)) {
         clients[id].ws.close();
         return true;
     }

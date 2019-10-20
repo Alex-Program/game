@@ -4,6 +4,7 @@
 <script src="/src/js/Ws.js"></script>
 <link href="https://fonts.googleapis.com/css?family=Special+Elite&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css?family=Caveat&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../src/css/whole.css">
 <link rel="stylesheet" href="../src/css/index.css">
 
 <canvas id="canvas">
@@ -48,6 +49,7 @@
     <div>Кикнуть</div>
     <div>Мут</div>
     <div>Снизить массу</div>
+    <div>Забанить ЛК</div>
 </div>
 
 <div class="user_actions user closed">
@@ -87,6 +89,7 @@
             <div class="flex_row" style="z-index: 2;">
                 <img src="">
                 <div class="user_name"></div>
+                <div class="main_text"><span><span class="user_level"></span> LVL</span></div>
                 <div id="add_balance_div">
                     <div class="user_balance"></div>
                     <div id="add_balance">+</div>
@@ -96,48 +99,102 @@
         </div>
         <div id="registration_div" style="display: none;">
             <input type="text" class="red_input" placeholder="Имя" id="name_sign_up" required>
-            <input type="text" class="red_input" placeholder="Пароль" style="margin-top: 5px;" id="password_sign_up" required>
-            <input type="text" class="red_input" placeholder="Повторите пароль" style="margin-top: 5px;" id="repeat_password" required>
+            <input type="text" class="red_input" placeholder="Пароль" style="margin-top: 5px;" id="password_sign_up"
+                   required>
+            <input type="text" class="red_input" placeholder="Повторите пароль" style="margin-top: 5px;"
+                   id="repeat_password" required>
             <div class="flex_row" style="margin-top: 5px;">
                 <button class="button button_primary" id="to_sign_in">Вход</button>
-                <button class="button button_green" style="margin-left: 10px;" id="sign_up_button">Зарегистрироваться</button>
+                <button class="button button_green" style="margin-left: 10px;" id="sign_up_button">Зарегистрироваться
+                </button>
             </div>
         </div>
     </div>
     <div style="position: relative; display: flex; flex-direction: row; margin-left:10px; margin-right: 10px;">
-        <div style="flex: 1 1 auto;">
-            <div class="triangle left for_user closed" style="float: left;">
-                <!--                <img src="/src/images/triangle.png">-->
-                <svg width="70" height="70">
-                    <polygon points="5,70 35,5 65,70"
-                             fill="red" stroke="red" stroke-width="5"/>
-                </svg>
+        <div class="triangle">
+            <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 2000 2000">
+                <defs>
+                    <style>
+                        .cls-1 {
+                            fill-rule: evenodd;
+                        }
+                    </style>
+                </defs>
+                <path stroke-width="40" stroke="red" fill="red"
+                      class="cls-1" d="M997.258,631.983L746.418,184.851l512.652,6.332Z"/>
+                <path stroke-width="40" stroke="red" fill="white"
+                      class="cls-1" d="M997.258,1078.98L746.418,631.851l512.652,6.332Z"/>
+                <path stroke-width="40" stroke="red" fill="white"
+                      class="cls-1" d="M997.258,1525.98l-250.84-447.13,512.652,6.33Z"/>
+                <path stroke-width="40" stroke="red" fill="white"
+                      class="cls-1" d="M997.258,1972.98l-250.84-447.13,512.652,6.33Z"/>
+            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 2000 2000" class="rotate"
+                 style="margin-top: 23%; margin-left: -23%;">
+                <defs>
+                    <style>
+                        .cls-1 {
+                            fill-rule: evenodd;
+                        }
+                    </style>
+                </defs>
+                <!--                <path stroke-width="20" stroke="red" class="cls-1" d="M1005.98,1525.85l248.61,448.38-512.606-8.89Zm2.23-446.99,248.61,448.37-512.609-8.88Zm2.23-447,248.61,448.378-512.612-8.89Zm2.22-446.994,248.61,448.376-512.606-8.886Z"/>-->
 
-                <div class="button_label">Магазин</div>
-            </div>
-            <div class="triangle left for_user closed" style="float: left; clear: both; margin-top: 10px;">
-                <svg width="70" height="70">
-                    <polygon points="5,70 35,5 65,70"
-                             fill="red" stroke="red" stroke-width="5"/>
-                </svg>
-            </div>
-        </div>
-        <div style="flex: 1 1 auto;">
-            <div class="triangle right" style="float: right;" id="personal_account">
-                <div class="button_label">Личный<br> кабинет</div>
-                <svg width="70" height="70">
-                    <polygon points="5,70 35,5 65,70"
-                             fill="red" stroke="red" stroke-width="5"/>
-                </svg>
+                <path stroke-width="40" stroke="red" fill="red"
+                      class="cls-1" d="M997.258,631.983L746.418,184.851l512.652,6.332Z"/>
+                <path stroke-width="40" stroke="red" fill="white"
+                      class="cls-1" d="M997.258,1078.98L746.418,631.851l512.652,6.332Z"/>
+                <path stroke-width="40" stroke="red" fill="white"
+                      class="cls-1" d="M997.258,1525.98l-250.84-447.13,512.652,6.33Z"/>
+                <path stroke-width="40" stroke="red" fill="white"
+                      class="cls-1" d="M997.258,1972.98l-250.84-447.13,512.652,6.33Z"/>
 
-            </div>
-            <div class="triangle right for_user closed" style="float: right; clear: both; margin-top: 10px;">
-                <svg width="70" height="70">
-                    <polygon points="5,70 35,5 65,70"
-                             fill="red" stroke="red" stroke-width="5"/>
-                </svg>
-            </div>
+            </svg>
+
         </div>
+
+        <div class="triangle" style="justify-content: flex-end;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 2000 2000" class="rotate"
+                 style="margin-top: 23%;">
+                <defs>
+                    <style>
+                        .cls-1 {
+                            fill-rule: evenodd;
+                        }
+                    </style>
+                </defs>
+                <!--                <path stroke-width="20" stroke="red" class="cls-1" d="M1005.98,1525.85l248.61,448.38-512.606-8.89Zm2.23-446.99,248.61,448.37-512.609-8.88Zm2.23-447,248.61,448.378-512.612-8.89Zm2.22-446.994,248.61,448.376-512.606-8.886Z"/>-->
+
+                <path stroke-width="40" stroke="red" fill="red"
+                      class="cls-1" d="M997.258,631.983L746.418,184.851l512.652,6.332Z"/>
+                <path stroke-width="40" stroke="red" fill="white"
+                      class="cls-1" d="M997.258,1078.98L746.418,631.851l512.652,6.332Z"/>
+                <path stroke-width="40" stroke="red" fill="white"
+                      class="cls-1" d="M997.258,1525.98l-250.84-447.13,512.652,6.33Z"/>
+                <path stroke-width="40" stroke="red" fill="white"
+                      class="cls-1" d="M997.258,1972.98l-250.84-447.13,512.652,6.33Z"/>
+
+            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 2000 2000"
+                 style="margin-left: -23%;">
+                <defs>
+                    <style>
+                        .cls-1 {
+                            fill-rule: evenodd;
+                        }
+                    </style>
+                </defs>
+                <path stroke-width="40" stroke="red" fill="red"
+                      class="cls-1" d="M997.258,631.983L746.418,184.851l512.652,6.332Z"/>
+                <path stroke-width="40" stroke="red" fill="white"
+                      class="cls-1" d="M997.258,1078.98L746.418,631.851l512.652,6.332Z"/>
+                <path stroke-width="40" stroke="red" fill="white"
+                      class="cls-1" d="M997.258,1525.98l-250.84-447.13,512.652,6.33Z"/>
+                <path stroke-width="40" stroke="red" fill="white"
+                      class="cls-1" d="M997.258,1972.98l-250.84-447.13,512.652,6.33Z"/>
+            </svg>
+        </div>
+
     </div>
 
     <!--    <img id="play_button" src="/src/images/play_button.jpg">-->
@@ -177,9 +234,8 @@
         <div>
             <h2 class="h2">Выберите сервер</h2>
             <div style="display: flex; flex-direction: row;">
-                <div style="padding: 10px;">
-                    <div class="server" data-ip="178.21.8.10:8081">178.21.8.10:8081</div>
-                    <!--                    <div class="server" data-ip="127.0.0.1:8081">178.21.8.10:8081</div>-->
+                <div style="padding: 10px;" id="all_servers">
+                 
                 </div>
 
                 <div style="padding: 10px;">

@@ -9,6 +9,7 @@
     <script src="/src/js/Ws.js"></script>
     <script src="/src/js/header.js"></script>
     <link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap.css">
+    <link rel="stylesheet" href="/src/css/whole.css">
     <link rel="stylesheet" href="/src/css/header.css">
 </head>
 <body>

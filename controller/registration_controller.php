@@ -94,3 +94,11 @@ if ($request['action'] == "get_nick") {
     echo json_encode(["result" => "true", "data" => $nick], 256);
     exit;
 }
+
+if ($request['action'] == "get_all_servers") {
+    $server = new Server();
+    $arr = $server->getAllServers();
+
+    echo json_encode(["result" => "true", "data" => $arr], 256);
+    exit;
+}

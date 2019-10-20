@@ -130,7 +130,8 @@ class Command {
         break_player: ["to_id"],
         mute: ["target_id"],
         kick: ["target_id"],
-        ban_ip: ["target_id"]
+        ban_ip: ["target_id"],
+        ban_account: ["target_id"]
     };
 
     constructor(command) {
@@ -298,6 +299,8 @@ class User {
     img = null;
     balance = null;
     userNicks = [];
+    level = 0;
+    experience = 0;
 
     constructor() {
         $.ajaxSetup({
@@ -353,6 +356,8 @@ class User {
                 this.name = data.name;
                 this.balance = data.balance;
                 this.img = data.img;
+                this.experience = data.experience;
+                this.level = data.level;
                 this.fillUserInfo();
             });
     }
@@ -360,6 +365,7 @@ class User {
     fillUserInfo() {
         let accountDiv = $("#account_div");
         accountDiv.find("img").attr("src", this.img);
+        accountDiv.find(".user_level").text(this.level);
         if (isEmpty(this.img)) accountDiv.find("img").hide();
 
         accountDiv.find(".user_name").text(this.name);
@@ -429,6 +435,17 @@ if (!isEmpty(userId) && !isEmpty(token)) {
         });
 }
 localSkinsPromise = User.getLocalSkins();
+
+sendRequest("api/registration", {action: "get_all_servers"})
+    .then(data => {
+        if (data.result !== "true") return false;
+
+        let html = "";
+        for (let server of data.data) {
+            html += "<div class='server' data-ip='" + server.ip + "'>" + server.name + "</div>";
+        }
+        $("#all_servers").html(html);
+    });
 
 
 let resizeChat = false;
@@ -575,6 +592,13 @@ $("body").mouseup(() => resizeChat = false)
         if (isEmpty(id)) return true;
 
         new Command("break_player " + id);
+    })
+
+    .on("click", ".user_actions.admin div:eq(5)", function () {
+        let id = $("#selected_chat_user").val().trim();
+        if (isEmpty(id)) return true;
+
+        new Command("ban_account " + id);
     })
 
     .on("click", function () {

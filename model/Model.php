@@ -4,6 +4,7 @@
 class Model
 {
     protected $mysqli;
+    protected $tableName = "";
 
     public function __construct()
     {
@@ -43,7 +44,7 @@ class Model
     {
         $id = $this->mysqli->real_escape_string($id);
 
-        $sql = "SELECT * FROM `" . $this->table_name . "` WHERE `id`=" . $id;
+        $sql = "SELECT * FROM `" . $this->tableName . "` WHERE `id`=" . $id;
         $result = $this->mysqli->query($sql);
         if ($result->num_rows === 0) return false;
 
@@ -56,7 +57,7 @@ class Model
         $value = $this->mysqli->real_escape_string($value);
         $id = $this->mysqli->real_escape_string($id);
 
-        $sql = "UPDATE `" . $this->table_name . "` SET `" . $column . "`='" . $value . "' WHERE `id`=" . $id;
+        $sql = "UPDATE `" . $this->tableName . "` SET `" . $column . "`='" . $value . "' WHERE `id`=" . $id;
         if ($this->mysqli->query($sql)) return true;
 
         return false;

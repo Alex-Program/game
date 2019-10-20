@@ -11,7 +11,7 @@ let gameInfo = {
     food: 2000,
     foodMinMass: 5,
     foodMaxMass: 50,
-    virus: 10,
+    virus: 100,
     bulletMass: 50
 };
 
@@ -246,6 +246,7 @@ class Cell extends Arc {
         this.engineCos = 0;
         this.isConnect = false;
         this.isCollising = false;
+        this.lastDecreaseTime = performance.now();
         setTimeout(() => this.isConnect = true, 1000);
 
         this.updateDirection();
@@ -257,6 +258,11 @@ class Cell extends Arc {
         this.updateDirection();
 
         let speed = Math.min(this.mouseDist, this.speed);
+
+        if (performance.now() - this.lastDecreaseTime > 1000 && this.mass > 200) {
+            this.toMass -= this.mass / 100;
+            this.lastDecreaseTime = performance.now();
+        }
 
         if (this.spaceDistance === 0) {
             this.x = Functions.roundFloor(this.x + this.cos * speed * delta, 2);
@@ -575,6 +581,7 @@ class Player {
         this.account = null;
         this.stickersSet = null;
         this.stickerI = null;
+        this.lastShootTime = performance.now();
 
         // clients[wsId].isConnect = true;
 
@@ -595,6 +602,10 @@ class Player {
         await Functions.sendRequest("api/admin", {action: "get_account_info", token: this.token, userId: this.userId})
             .then(data => {
                 if (data.result !== "true") {
+                    this.account = null;
+                    return false;
+                }
+                if (+data.data.is_banned) {
                     this.account = null;
                     return false;
                 }
@@ -690,10 +701,12 @@ class Player {
     }
 
     shoot() {
+        if (performance.now() - this.lastShootTime < 100) return true;
         let length = this.cells.length;
         for (let i = 0; i < length; i++) {
             this.cells[i].shoot();
         }
+        this.lastShootTime = performance.now();
     }
 
 
@@ -975,13 +988,13 @@ class Game {
     }
 
     shoot(wsId, time) {
-        let playerState = this.getPlayerInGameState(time, wsId);
+        // let playerState = this.getPlayerInGameState(time, wsId);
         let playerNow = this.findPlayer(wsId);
-        if (!playerState || !playerNow) return true;
-
-        this.playersArr[playerNow.count] = playerState;
+        // if (!playerState || !playerNow) return true;
+        if (!playerNow) return true;
+        // this.playersArr[playerNow.count] = playerState;
         this.playersArr[playerNow.count].shoot();
-        this.playersArr[playerNow.count].update(this.getTimeByDelta(Date.now() - time));
+        // this.playersArr[playerNow.count].update(this.getTimeByDelta(Date.now() - time));
     }
 
     split(wsId, time) {

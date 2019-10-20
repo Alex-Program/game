@@ -9,6 +9,7 @@ class Auth extends Model
     public function __construct()
     {
         parent::__construct();
+        $this->tableName = "users";
 
         $sql = "CREATE TABLE IF NOT EXISTS `users` (
     `id` int(11) AUTO_INCREMENT PRIMARY KEY,
@@ -17,8 +18,21 @@ class Auth extends Model
     `name` text NOT NULL,
     `img` text NOT NULL,
     `stickers` text NOT NULL,
-    `balance` int(11) default 0
+    `balance` int(11) default 0,
+    `level` int(11) default 0,
+    `experience` bigint(32) default 0,
+    `is_admin` tinyint(1) default 0,
+    `is_banned` tinyint(1) default 0
 )";
+        $this->mysqli->query($sql);
+
+        $sql = "ALTER TABLE `users` ADD `level` int(11) default 1";
+        $this->mysqli->query($sql);
+        $sql = "ALTER TABLE `users` ADD `experience` bigint(32) default 0";
+        $this->mysqli->query($sql);
+        $sql = "ALTER TABLE `users` ADD `is_admin`tinyint(1) default 0";
+        $this->mysqli->query($sql);
+        $sql = "ALTER TABLE `users` ADD `is_banned`tinyint(1) default 0";
         $this->mysqli->query($sql);
     }
 
@@ -127,7 +141,7 @@ class Auth extends Model
 
         $row = $result->fetch_assoc();
         $stickers = $row['stickers'];
-        if(empty($stickers)) return [];
+        if (empty($stickers)) return [];
         try {
             $stickers = json_decode($stickers, true);
         } catch (Throwable $e) {

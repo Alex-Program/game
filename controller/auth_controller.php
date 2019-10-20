@@ -20,7 +20,9 @@ if (!$token || !$userId) return;
 
 $userInfo = $auth->authByToken($userId, $token);
 if (!$userInfo) return;
+if($userInfo['is_banned'] == 1) return;
 
 $isAuth = true;
+$isAdmin = (int)$userInfo['is_admin'];
 define("USER_ID", $userInfo['id']);
-define("ADMIN", false);
+define("ADMIN", (boolean)$isAdmin);

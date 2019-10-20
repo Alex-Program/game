@@ -1,0 +1,18 @@
+#main_block {
+    position: absolute;
+    top: 200px;
+    left: 50%;
+    transform: translate(-50%, 0);
+    padding: 50px;
+    background: aliceblue;
+    border-radius: 5px;
+    border: solid 2px black;
+}
+
+.server > *{
+    margin: 5px;
+}
+
+.ip {
+    width: 200px;
+}

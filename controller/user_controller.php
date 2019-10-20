@@ -99,7 +99,7 @@ if ($request['action'] === "change_nick") {
         exit;
     }
 
-    if(!empty($request['nick']) && $skin->getByNick($request['nick'])){
+    if (!empty($request['nick']) && $skin->getByNick($request['nick'])) {
         echo json_encode(["result" => "false", "data" => "exists"], 256);
         exit;
     }
@@ -134,7 +134,7 @@ if ($request['action'] === "change_nick") {
         }
     }
 
-    echo json_encode(["result" => "true", "data" => ""], 256);
+    echo json_encode(["result" => "true", "data" => $request['id']], 256);
     exit;
 }
 
@@ -163,7 +163,7 @@ if ($_POST['action'] == "change_user_img") {
     exit;
 }
 
-if($request['action'] == "get_user_stickers"){
+if ($request['action'] == "get_user_stickers") {
     $auth = new Auth();
     $arr = $auth->getUserStickers(USER_ID);
 

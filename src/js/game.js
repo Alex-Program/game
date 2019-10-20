@@ -849,7 +849,9 @@
 
 
         changePos(player) {
-            this.cellId = player.cellId;
+            if (!this.isSplit) {
+                this.cellId = player.cellId;
+            }
             let length = player.cells.length;
             this.ids = [];
             for (let i = 0; i < length; i++) {
@@ -887,7 +889,9 @@
                     // if(c < 10) continue;
                     let sin = dY / c;
                     let cos = dX / c;
-                    this.cells[cell.count].toMass = pCell.toMass + pCell.mass - this.cells[cell.count].mass;
+                    if (this.cells[cell.count].toMass >= 0) {
+                        this.cells[cell.count].toMass = pCell.toMass + pCell.mass - this.cells[cell.count].mass;
+                    }
                     // this.cells[cell.count].mass = pCell.mass;
 
                     // this.cells[cell.count].x = pCell.x;
@@ -1310,33 +1314,24 @@
         }
     }
 
-    window.addEventListener("keypress", event => {
+    let lastKeyPressTime = {};
+
+    let preventDefault = ["tab"];
+    let keyPressed = [];
+    let isSticker = false;
+    window.addEventListener("keydown", function (event) {
         let code = event.code.toLowerCase();
-        if (code === "space") {
-            if (typeof ws !== "undefined") {
-                ws.sendJson({
-                    action: "player_split"
-                });
-            }
-            playersArr[0].split();
-            return true;
+        if (code in lastKeyPressTime) {
+            if (performance.now() - lastKeyPressTime[code] < 100) return true;
         }
+        lastKeyPressTime[code] = performance.now();
 
-        if (code === "keyr") {
-            clearFood();
-            return true;
-        }
-
-        if (event.code.toLowerCase() === "minus") {
-            gameInfo.scale = roundFloor(gameInfo.scale + 0.1, 2);
-            return true;
-        }
-
-        if (event.code.toLowerCase() === "keyw") {
-            if (typeof ws !== "undefined") {
-                ws.sendJson({action: "player_shoot"});
-            }
-            // playersArr[0].shoot();
+        if (preventDefault.includes(code)) event.preventDefault();
+        if (keyPressed.includes(code)) return true;
+        keyPressed.push(code);
+        if (code === "tab") {
+            if (!ws) return true;
+            showOnline();
             return true;
         }
 
@@ -1349,21 +1344,31 @@
             $("#game_settings").toggleClass("closed");
             return true;
         }
-    });
 
-    let preventDefault = ["tab"];
-    let keyPressed = [];
-    let isSticker = false;
-    window.addEventListener("keydown", function (event) {
-        let code = event.code.toLowerCase();
-        if (preventDefault.includes(code)) event.preventDefault();
-        if (keyPressed.includes(code)) return true;
-        keyPressed.push(code);
-        if (code === "tab") {
-            if (!ws) return true;
-            showOnline();
+        if (code === "keyr") {
+            clearFood();
             return true;
         }
+
+        if (code === "keyw") {
+            if (typeof ws !== "undefined") {
+                ws.sendJson({action: "player_shoot"});
+            }
+            // playersArr[0].shoot();
+            return true;
+        }
+
+        if (code === "space") {
+            if (typeof ws !== "undefined") {
+                ws.sendJson({
+                    action: "player_split"
+                });
+            }
+            playersArr[0].split();
+            return true;
+        }
+
+
         if (["digit1", "digit2", "digit3", "digit4", "digit5", "digit6", "digit7", "digit8", "digit9"].includes(code)) {
             if (isSticker || !ws) return true;
 
