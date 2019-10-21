@@ -185,6 +185,10 @@ function stringToArrayBuffer(str) {
     return textEncode.encode(str);
 }
 
+function getRandomInt(min, max){
+    return Math.round((max - min) * Math.random() + min);
+}
+
 class Preloader {
     static start() {
         $("#preloader").removeClass("active closed").addClass("active");

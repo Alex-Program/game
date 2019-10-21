@@ -397,6 +397,7 @@ canvas {
 }
 
 #play_button {
+    z-index: 1;
     color: red;
     font: bold 80pt/90pt 'Special Elite';
     -webkit-text-stroke: 3px black;
@@ -437,6 +438,7 @@ canvas {
     padding: 35px 20px 20px;
     opacity: 0;
     overflow: hidden;
+    z-index: 1;
 }
 
 #servers_list.show {
@@ -495,37 +497,6 @@ canvas {
     border: solid 1px gold;
 }
 
-#user_account {
-    transition: opacity 0.5s, visibility 0.5s;
-    opacity: 1;
-    visibility: visible;
-    position: fixed;
-    bottom: 0;
-    right: 0;
-    background: black;
-    z-index: 11;
-    border-radius: 5px;
-    overflow: auto;
-    display: flex;
-    flex-direction: row;
-    color: gold;
-    white-space: nowrap;
-    text-align: center;
-    cursor: default;
-    max-height: 500px;
-}
-
-#user_account.closed {
-    opacity: 0;
-    visibility: hidden;;
-}
-
-#user_account h3 {
-    background: red;
-    border-bottom: solid 1px black;
-    box-shadow: inset 0 0 5px black;
-}
-
 #exit_button {
     transition: top 0.5s;
     position: absolute;
@@ -548,7 +519,7 @@ canvas {
     top: 0;
 }
 
-#all_skins .user_skin, .user_sticker {
+.user_sticker {
     transition: background 0.5s;
     background: black;
     display: flex;
@@ -559,33 +530,25 @@ canvas {
     cursor: pointer;
 }
 
-#all_skins .user_skin.selected, .user_sticker.selected {
+.user_sticker.selected {
     background: lightseagreen;
 }
 
-#all_skins .user_skin:not(.selected):hover, .user_sticker:hover {
+.user_sticker:hover {
     background: red;
 }
 
-#all_skins .user_skin:not(.selected):hover .delete {
-    background: #9b0000;
-}
-
-#all_skins .html:not(.local):not(:empty) {
-    border-bottom: solid 2px gold;
-}
-
-#all_skins .user_skin:not(.selected):hover span, .user_sticker:hover span {
+.user_sticker:hover span {
     background: #cd0000;
 }
 
-#all_skins .user_skin img, .user_sticker img {
+.user_sticker img {
     width: 50px;
     border-radius: 25px;
     border: solid 1px gold;
 }
 
-#all_skins .user_skin span, .user_sticker span {
+.user_sticker span {
     transition: background 0.5s;
     flex: 1 1 auto;
     text-align: center;
@@ -599,7 +562,7 @@ canvas {
     border: dashed 1px gold;
 }
 
-#all_skins .user_skin .skin, .user_sticker .skin {
+.user_sticker .skin {
     border: solid 1px white;
     border-radius: 5px;
 }
@@ -742,7 +705,7 @@ canvas {
     text-align: center;
 }
 
-#all_skins span.delete, #select_nick span.delete {
+#select_nick span.delete {
     transition: background 0.5s;
     background: red;
     color: white;
@@ -1025,4 +988,224 @@ canvas {
     display: flex;
     flex-direction: column;
     position: relative;
+}
+
+
+@keyframes box_shadow {
+    0% {
+        box-shadow: 0 0 10px red;
+    }
+    50% {
+        box-shadow: 0 0 10px gold;
+    }
+    100% {
+        box-shadow: 0 0 10px red;
+    }
+}
+
+
+#show_account {
+    transition: background 0.5s;
+    background: #52a8c5;
+    position: absolute;
+    top: 50px;
+    right: 10px;
+    z-index: 10;
+    border-radius: 25px;
+    padding: 1px;
+    animation-name: box_shadow;
+    animation-duration: 2s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+}
+
+#show_account:hover {
+    background: #6adbff;
+}
+
+#show_account > img {
+    width: 50px;
+    cursor: pointer;
+}
+
+
+#user_nicks {
+    transition: right 0.5s;
+    background: rgba(0, 0, 0, 0.8);
+    position: fixed;
+    right: 0;
+    top: 0;
+    height: 100%;
+    padding: 10px;
+    z-index: 11;
+    overflow: auto;
+    border-left: solid 3px gold;
+}
+
+#user_nicks.closed {
+    right: -100%;
+}
+
+.account_tag {
+    transition: background 0.5s;
+    background: rgba(255, 0, 0, 0.8);
+    color: gold;
+    padding: 5px;
+    font: bold 12pt/12pt sans-serif;
+    cursor: pointer;
+}
+
+.account_tag.selected {
+    background: rgba(32, 178, 170, 0.8);
+}
+
+.account_tag:not(.selected):hover {
+    background: rgba(255, 128, 117, 0.8);
+}
+
+#user_nicks .user_skin, #user_nicks .user_sticker {
+    transition: background 0.5s;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+    border-bottom: solid 3px gold;
+    cursor: pointer;
+}
+
+#user_nicks .user_skin.selected, #user_nicks .user_sticker.selected {
+    background: rgba(32, 178, 170, 0.8);
+}
+
+#user_nicks .user_skin:not(.selected):hover, #user_nicks .user_sticker:not(.selected):hover {
+    background: rgba(255, 65, 68, 0.8);
+}
+
+#user_nicks img {
+    width: 50px;
+    border-radius: 25px;
+}
+
+#user_nicks .user_skin span:not(.delete), #user_nicks .user_sticker span {
+    flex-grow: 1;
+    text-align: center;
+    padding: 5px;
+    color: gold;
+    border-radius: 5px;
+    border: solid 2px gold;
+    background: red;
+    font: bold 18pt/18pt 'Caveat';
+    margin-left: 10px;
+    letter-spacing: 2px;
+}
+
+#user_nicks .user_skin .delete {
+    padding: 5px;
+    color: gold;
+    background: red;
+    border-radius: 5px;
+    border: solid 2px gold;
+    font: bold 12pt/12pt sans-serif;
+    margin-left: 10px;
+}
+
+.star {
+    transition: top 1s ease-out, left 1s ease-out;
+    position: absolute;
+    width: 70px;
+}
+
+#vk {
+    z-index: 2;
+    position: absolute;
+    left: 25px;
+    bottom: 25px;
+    align-items: center;
+}
+
+#vk img {
+    width: 50px;
+    cursor: pointer;
+}
+
+#vk span {
+    transition: opacity 0.5s, visibility 0.5s, transform 0.5s;
+    overflow: hidden;
+    color: gold;
+    font: bold 10pt/10pt sans-serif;
+    max-width: 150px;
+    padding: 5px;
+    background: red;
+    border-radius: 5px;
+    border: solid 2px gold;
+    margin-left: 10px;
+    transform: scale(0);
+    visibility: hidden;
+    opacity: 0;
+}
+
+#vk img:hover + span {
+    visibility: visible;
+    transform: scale(1);
+    opacity: 1;
+}
+
+
+#sandl {
+    position: absolute;
+    top: 25px;
+    left: 50px;
+    font: bold 35pt/35pt 'Special Elite';
+    color: gold;
+    -webkit-text-stroke-width: 2px;
+    -webkit-text-stroke-color: black;
+    animation-name: play_button;
+    animation-timing-function: linear;
+    animation-duration: 2s;
+    animation-iteration-count: infinite;
+}
+
+#main_buttons {
+    position: absolute;
+    top: 100px;
+    left: 25px;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1;
+    border: solid 3px gold;
+    border-radius: 5px;
+}
+
+#main_buttons > div {
+    cursor: pointer;
+    transition: background 0.5s;
+    padding: 15px 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: solid 3px gold;
+}
+
+#main_buttons > div:hover {
+    background: rgba(255, 0, 0, 0.8);
+}
+
+#main_buttons > div > span {
+    padding: 5px;
+    background: red;
+    color: gold;
+    border-radius: 5px;
+    border: dashed 2px gold;
+    font: bold 20pt/20pt 'Caveat';
+    letter-spacing: 2px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+#main_buttons > div > span > img {
+    width: 25px;
+    margin-right: 10px;
 }

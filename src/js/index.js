@@ -229,7 +229,7 @@ function deleteLocalNick(nick) {
 
 function onDeleteLocalNick(nick) {
     deleteLocalNick(nick);
-    $(".user_skin").each(function (i, element) {
+    $(".local_skins .user_skin, #select_nick .local .user_skin").each(function (i, element) {
         let n = $(element).attr("data-nick");
         if (n.toLowerCase() === nick.toLowerCase()) $(element).remove();
     });
@@ -279,10 +279,9 @@ function fillGameSettings() {
 
         if (input.attr("type") === "checkbox") {
             input.prop("checked", Boolean(+value));
-            continue;
-        }
 
-        input.val(value);
+        } else input.val(value);
+
         input.change();
     }
 
@@ -327,7 +326,8 @@ class User {
         $("#account_div").hide();
         $("#login").show();
         $("#select_nick .html:not(.local)").empty();
-        $("#all_skins .html:not(.local), #all_stickers .html").empty();
+        $("#user_nicks .user_skins").empty();
+        $("#user_nicks .user_stickers").empty();
         $.ajaxSetup({
             beforeSend: function (xhr) {
                 xhr.setRequestHeader("Token", null);
@@ -342,9 +342,9 @@ class User {
 
         ws.sendJson({
             action: "change_account",
-            token: getCookie("token") || "",
-            userId: getCookie("userId") || ""
-        })
+            token: getCookie("Token") || "",
+            userId: getCookie("User-Id") || ""
+        });
     }
 
     getUserInfo() {
@@ -383,12 +383,13 @@ class User {
                     this.userNicks.push(skin.nick.toLowerCase());
                     html += "<div class='user_skin' data-password='" + skin.password + "' data-nick='" + skin.nick + "'><div class='skin'><img src='" + skin.skin + "'></div><span>" + skin.nick + "</span></div>";
                 }
-                $("#all_skins .html.local .user_skin, #select_nick .html.local .user_skin").each((i, element) => {
+                $("#select_nick .html.local .user_skin").each((i, element) => {
                     let nick = $(element).attr("data-nick").toLowerCase();
                     if (this.userNicks.includes(nick)) $(element).remove();
                 });
-                $("#all_skins .html:not(.local)").html(html);
+
                 $("#select_nick .html:not(.local)").html(html);
+                $("#user_nicks .user_skins").html(html);
             });
     }
 
@@ -399,7 +400,8 @@ class User {
                 for (let sticker of data.data) {
                     html += "<div class='user_sticker' data-id='" + sticker.id + "'><div class='skin'><img src='" + sticker.stickers[0].src + "'></div><span>" + sticker.name + "</span></div>"
                 }
-                $("#all_stickers .html").html(html);
+
+                $("#user_nicks .user_stickers").html(html);
             });
     }
 
@@ -415,8 +417,8 @@ class User {
             if (!isEmpty(info.skin)) html += "<div class='skin'><img src='" + info.skin + "'></div>";
             html += "<span>" + skin.nick + "</span><span class='delete'>x</span></div>";
         }
-        $("#all_skins .html.local").html(html);
         $("#select_nick .html.local").html(html);
+        $("#user_nicks .local_skins").html(html);
     }
 
 }
@@ -657,33 +659,7 @@ $("body").mouseup(() => resizeChat = false)
         $("#color_preview").css({background: color, color: textColor}).text(color);
     })
 
-    .on("click", "#personal_account", () => $("#user_account").toggleClass("closed"))
-
     .on("click", "#account_div", () => $("#exit_button").toggleClass("closed"))
-
-    .on("click", "#all_skins .user_skin", function () {
-        if (!ws || $(this).hasClass("selected")) return true;
-
-        $("#all_skins .user_skin.selected").not(this).removeClass("selected");
-        $(this).addClass("selected");
-        changeNick($(this).attr("data-nick"), $(this).attr("data-password"));
-    })
-
-    .on("click", "#all_stickers .user_sticker", function () {
-        if (!ws || $(this).hasClass("selected")) return true;
-
-        $("#all_stickers .user_sticker").not(this).removeClass("selected");
-        $(this).addClass("selected");
-        let id = $(this).attr("data-id");
-        ws.sendJson({
-            action: "select_sticker_set",
-            id
-        })
-    })
-
-    .on("click", "#user_account", function () {
-        $(this).addClass("closed");
-    })
 
     .on("click", "#exit_button", function () {
         user.onLogOut();
@@ -718,6 +694,10 @@ $("body").mouseup(() => resizeChat = false)
 
     .on("mouseleave", "#game_settings", function () {
         if (changeSettings) return true;
+        $(this).addClass("closed");
+    })
+
+    .on("mouseleave", "#user_nicks", function () {
         $(this).addClass("closed");
     })
 
@@ -809,7 +789,51 @@ $("body").mouseup(() => resizeChat = false)
 
     .on("input", "input", function () {
         this.checkValidity();
-    });
+    })
+
+    .on("click", "#show_account", () => $("#user_nicks").removeClass("closed"))
+
+    .on("click", ".account_tag", function () {
+        let target = $(this).attr("data-target");
+        $("#user_nicks .toggle:not(." + target + ")").hide();
+        $("#user_nicks ." + target).show();
+        $("#user_nicks .account_tag").not(this).removeClass("selected");
+        $(this).addClass("selected");
+    })
+
+    .on("click", "#user_nicks .user_skin", function () {
+        if (!ws || $(this).hasClass("selected")) return true;
+        $("#user_nicks .user_skin.selected").removeClass("selected");
+        $(this).addClass("selected");
+        let nick = $(this).attr("data-nick");
+        let password = $(this).attr("data-password");
+        changeNick(nick, password);
+    })
+
+    .on("click", "#user_nicks .user_sticker", function () {
+        if (!ws || $(this).hasClass("selected")) return true;
+        $("#user_nicks .user_sticker.selected").removeClass("selected");
+        $(this).addClass("selected");
+        let id = $(this).attr("data-id");
+        ws.sendJson({
+            action: "select_sticker_set",
+            id
+        });
+    })
+
+    .on("click", "#vk", () => window.open("https://vk.com/ssandll", "_blank"));
+
+
+{
+    let body = document.getElementsByTagName("body")[0];
+    for (let i = 0; i < 100; i++) {
+        let image = $("<img/>");
+        image.attr("src", "/src/images/star.png");
+        image.addClass("star");
+        image.css({top: getRandomInt(50, body.scrollHeight - 50), left: getRandomInt(50, body.scrollWidth - 50)});
+        $("#main_menu").append(image);
+    }
+}
 
 
 loadGameSettings();

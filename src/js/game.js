@@ -91,14 +91,16 @@
                 if (radius < 2) radius = 2;
                 context.restore();
             }
-            this.drawArc(drawableX, drawableY, radius, color);
+            // let transparent = (name === "food" && imagesArr['food']);
+            let transparent = false;
+            this.drawArc(drawableX, drawableY, radius, color, transparent);
 
             context.restore();
 
             if (name === "cell") {
                 let stickerI = this.owner.stickerI;
                 let stickerSet = this.owner.stickersSet;
-                if (stickerI >= 0 && stickerSet && imagesArr[stickerSet[stickerI].image_id]) {
+                if (stickerI !== null && stickerI >= 0 && stickerSet && imagesArr[stickerSet[stickerI].image_id]) {
                     this.drawImage(imagesArr[stickerSet[stickerI].image_id], drawableX, drawableY, radius);
                 } else if (imagesArr[this.owner.skinId]) {
                     this.drawImage(imagesArr[this.owner.skinId], drawableX, drawableY, radius);
@@ -123,6 +125,10 @@
                 return true;
             }
 
+            // if (name === "food" && imagesArr['food']) {
+            //     this.drawImage(imagesArr['food'], drawableX, drawableY, radius * 2);
+            // }
+
             if ((name === "food" || name === "bullet") && gameSettings.isAllMass) {
                 this.drawText(drawableX, drawableY, this.drawableRadius / (1.5 * gameInfo.scale), Math.floor(this.mass), textColor);
             }
@@ -141,12 +147,14 @@
             context.shadowOffsetY = y;
         }
 
-        drawArc(x, y, radius, color) {
+        drawArc(x, y, radius, color, transparent = false) {
             context.beginPath();
             context.fillStyle = color;
+            if (transparent) context.globalAlpha = 0;
             context.arc(x, y, radius, 0, 2 * Math.PI, false);
             context.fill();
             context.closePath();
+            context.globalAlpha = 1;
         }
 
         drawImage(image, x, y, radius) {
@@ -1017,6 +1025,7 @@
     // loadImage("virus", "/src/images/virus_arrow.png");
     loadImage("virus_arrow", "/src/images/virus_arrow1.png");
     loadImage("center", "/src/images/logo.png");
+    loadImage("food", "/src/images/star.png");
     // loadImage("virus", "https://avatars.mds.yandex.net/get-pdb/939186/3e8700ba-511c-45e1-b9fb-dc3f02e88ca4/s1200");
 
 
@@ -1335,13 +1344,13 @@
             return true;
         }
 
-        if (code === "keyg") {
-            $("#user_account").toggleClass("closed");
+        if (code === "keyc") {
+            $("#game_settings").toggleClass("closed");
             return true;
         }
 
-        if (code === "keyc") {
-            $("#game_settings").toggleClass("closed");
+        if (code === "keyg") {
+            $("#user_nicks").toggleClass("closed");
             return true;
         }
 
@@ -1641,9 +1650,6 @@
 
             if (data.action === "ping") {
                 let delta = Date.now() - data.time;
-                if (delta < 0) {
-                    console.log("now " + Date.now() + " time " + data.time);
-                }
                 ping.text(delta);
 
                 return true;
