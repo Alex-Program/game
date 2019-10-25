@@ -117,92 +117,91 @@
             </div>
         </div>
     </div>
-    <!--    <div style="position: relative; display: flex; flex-direction: row; margin-left:10px; margin-right: 10px; z-index: 1;">-->
-    <!--        <div class="triangle">-->
-    <!--            <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 2000 2000">-->
-    <!--                <defs>-->
-    <!--                    <style>-->
-    <!--                        .cls-1 {-->
-    <!--                            fill-rule: evenodd;-->
-    <!--                        }-->
-    <!--                    </style>-->
-    <!--                </defs>-->
-    <!--                <path stroke-width="40" stroke="red" fill="red"-->
-    <!--                      class="cls-1" d="M997.258,631.983L746.418,184.851l512.652,6.332Z"/>-->
-    <!--                <path stroke-width="40" stroke="red" fill="white"-->
-    <!--                      class="cls-1" d="M997.258,1078.98L746.418,631.851l512.652,6.332Z"/>-->
-    <!--                <path stroke-width="40" stroke="red" fill="white"-->
-    <!--                      class="cls-1" d="M997.258,1525.98l-250.84-447.13,512.652,6.33Z"/>-->
-    <!--                <path stroke-width="40" stroke="red" fill="white"-->
-    <!--                      class="cls-1" d="M997.258,1972.98l-250.84-447.13,512.652,6.33Z"/>-->
-    <!--            </svg>-->
-    <!--            <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 2000 2000" class="rotate"-->
-    <!--                 style="margin-top: 23%; margin-left: -23%;">-->
-    <!--                <defs>-->
-    <!--                    <style>-->
-    <!--                        .cls-1 {-->
-    <!--                            fill-rule: evenodd;-->
-    <!--                        }-->
-    <!--                    </style>-->
-    <!--                </defs>-->
-    <!---->
-    <!--                <path stroke-width="40" stroke="red" fill="red"-->
-    <!--                      class="cls-1" d="M997.258,631.983L746.418,184.851l512.652,6.332Z"/>-->
-    <!--                <path stroke-width="40" stroke="red" fill="white"-->
-    <!--                      class="cls-1" d="M997.258,1078.98L746.418,631.851l512.652,6.332Z"/>-->
-    <!--                <path stroke-width="40" stroke="red" fill="white"-->
-    <!--                      class="cls-1" d="M997.258,1525.98l-250.84-447.13,512.652,6.33Z"/>-->
-    <!--                <path stroke-width="40" stroke="red" fill="white"-->
-    <!--                      class="cls-1" d="M997.258,1972.98l-250.84-447.13,512.652,6.33Z"/>-->
-    <!---->
-    <!--            </svg>-->
-    <!---->
-    <!--        </div>-->
-    <!---->
-    <!--        <div class="triangle" style="justify-content: flex-end;">-->
-    <!--            <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 2000 2000" class="rotate"-->
-    <!--                 style="margin-top: 23%;">-->
-    <!--                <defs>-->
-    <!--                    <style>-->
-    <!--                        .cls-1 {-->
-    <!--                            fill-rule: evenodd;-->
-    <!--                        }-->
-    <!--                    </style>-->
-    <!--                </defs>-->
-    <!---->
-    <!--                <path stroke-width="40" stroke="red" fill="red"-->
-    <!--                      class="cls-1" d="M997.258,631.983L746.418,184.851l512.652,6.332Z"/>-->
-    <!--                <path stroke-width="40" stroke="red" fill="white"-->
-    <!--                      class="cls-1" d="M997.258,1078.98L746.418,631.851l512.652,6.332Z"/>-->
-    <!--                <path stroke-width="40" stroke="red" fill="white"-->
-    <!--                      class="cls-1" d="M997.258,1525.98l-250.84-447.13,512.652,6.33Z"/>-->
-    <!--                <path stroke-width="40" stroke="red" fill="white"-->
-    <!--                      class="cls-1" d="M997.258,1972.98l-250.84-447.13,512.652,6.33Z"/>-->
-    <!---->
-    <!--            </svg>-->
-    <!--            <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 2000 2000"-->
-    <!--                 style="margin-left: -23%;">-->
-    <!--                <defs>-->
-    <!--                    <style>-->
-    <!--                        .cls-1 {-->
-    <!--                            fill-rule: evenodd;-->
-    <!--                        }-->
-    <!--                    </style>-->
-    <!--                </defs>-->
-    <!--                <path stroke-width="40" stroke="red" fill="red"-->
-    <!--                      class="cls-1" d="M997.258,631.983L746.418,184.851l512.652,6.332Z"/>-->
-    <!--                <path stroke-width="40" stroke="red" fill="white"-->
-    <!--                      class="cls-1" d="M997.258,1078.98L746.418,631.851l512.652,6.332Z"/>-->
-    <!--                <path stroke-width="40" stroke="red" fill="white"-->
-    <!--                      class="cls-1" d="M997.258,1525.98l-250.84-447.13,512.652,6.33Z"/>-->
-    <!--                <path stroke-width="40" stroke="red" fill="white"-->
-    <!--                      class="cls-1" d="M997.258,1972.98l-250.84-447.13,512.652,6.33Z"/>-->
-    <!--            </svg>-->
-    <!--        </div>-->
-    <!---->
-    <!--    </div>-->
+    <div style="position: relative; display: flex; flex-direction: row; margin-left:10px; margin-right: 10px; z-index: 1;">
+        <div class="triangle">
+            <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 2000 2000">
+                <defs>
+                    <style>
+                        .cls-1 {
+                            fill-rule: evenodd;
+                        }
+                    </style>
+                </defs>
+                <path stroke-width="40" stroke="red" fill="red"
+                      class="cls-1" d="M997.258,631.983L746.418,184.851l512.652,6.332Z"/>
+                <path stroke-width="40" stroke="red" fill="white"
+                      class="cls-1" d="M997.258,1078.98L746.418,631.851l512.652,6.332Z"/>
+                <path stroke-width="40" stroke="red" fill="white"
+                      class="cls-1" d="M997.258,1525.98l-250.84-447.13,512.652,6.33Z"/>
+                <path stroke-width="40" stroke="red" fill="white"
+                      class="cls-1" d="M997.258,1972.98l-250.84-447.13,512.652,6.33Z"/>
+            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 2000 2000" class="rotate"
+                 style="margin-top: 23%; margin-left: -23%;">
+                <defs>
+                    <style>
+                        .cls-1 {
+                            fill-rule: evenodd;
+                        }
+                    </style>
+                </defs>
 
-    <!--    <img id="play_button" src="/src/images/play_button.jpg">-->
+                <path stroke-width="40" stroke="red" fill="red"
+                      class="cls-1" d="M997.258,631.983L746.418,184.851l512.652,6.332Z"/>
+                <path stroke-width="40" stroke="red" fill="white"
+                      class="cls-1" d="M997.258,1078.98L746.418,631.851l512.652,6.332Z"/>
+                <path stroke-width="40" stroke="red" fill="white"
+                      class="cls-1" d="M997.258,1525.98l-250.84-447.13,512.652,6.33Z"/>
+                <path stroke-width="40" stroke="red" fill="white"
+                      class="cls-1" d="M997.258,1972.98l-250.84-447.13,512.652,6.33Z"/>
+
+            </svg>
+
+        </div>
+
+        <div class="triangle" style="justify-content: flex-end;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 2000 2000" class="rotate"
+                 style="margin-top: 23%;">
+                <defs>
+                    <style>
+                        .cls-1 {
+                            fill-rule: evenodd;
+                        }
+                    </style>
+                </defs>
+
+                <path stroke-width="40" stroke="red" fill="red"
+                      class="cls-1" d="M997.258,631.983L746.418,184.851l512.652,6.332Z"/>
+                <path stroke-width="40" stroke="red" fill="white"
+                      class="cls-1" d="M997.258,1078.98L746.418,631.851l512.652,6.332Z"/>
+                <path stroke-width="40" stroke="red" fill="white"
+                      class="cls-1" d="M997.258,1525.98l-250.84-447.13,512.652,6.33Z"/>
+                <path stroke-width="40" stroke="red" fill="white"
+                      class="cls-1" d="M997.258,1972.98l-250.84-447.13,512.652,6.33Z"/>
+
+            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 2000 2000"
+                 style="margin-left: -23%;">
+                <defs>
+                    <style>
+                        .cls-1 {
+                            fill-rule: evenodd;
+                        }
+                    </style>
+                </defs>
+                <path stroke-width="40" stroke="red" fill="red"
+                      class="cls-1" d="M997.258,631.983L746.418,184.851l512.652,6.332Z"/>
+                <path stroke-width="40" stroke="red" fill="white"
+                      class="cls-1" d="M997.258,1078.98L746.418,631.851l512.652,6.332Z"/>
+                <path stroke-width="40" stroke="red" fill="white"
+                      class="cls-1" d="M997.258,1525.98l-250.84-447.13,512.652,6.33Z"/>
+                <path stroke-width="40" stroke="red" fill="white"
+                      class="cls-1" d="M997.258,1972.98l-250.84-447.13,512.652,6.33Z"/>
+            </svg>
+        </div>
+
+    </div>
+
     <div id="play_button">PLAY</div>
 
 
@@ -256,8 +255,8 @@
     </div>
 
 
-    <div id="main_buttons">
-        <div>
+    <div id="main_buttons" class="closed">
+        <div data-page="cabinet">
             <span><img src="/src/images/account.png">Личный кабинет</span>
         </div>
         <div>

@@ -3,10 +3,12 @@
   <component name="ChangeListManager">
     <list default="true" id="011e9982-741d-4222-841e-091d212022f0" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/GameClasses/Units.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/GameClasses/Units.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/functions.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/functions.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/css/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/css/index.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/js/functions.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/functions.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/js/game.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/game.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/js/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/users_img/1.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/src/users_img/1.jpg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/view/index.php" beforeDir="false" afterPath="$PROJECT_DIR$/view/index.php" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -375,7 +377,11 @@
       <workItem from="1571478522187" duration="2540000" />
       <workItem from="1571545286276" duration="12333000" />
       <workItem from="1571617620157" duration="9987000" />
-      <workItem from="1571639267821" duration="4857000" />
+      <workItem from="1571639267821" duration="5623000" />
+      <workItem from="1571705876351" duration="4843000" />
+      <workItem from="1571808733850" duration="1188000" />
+      <workItem from="1571889351842" duration="3290000" />
+      <workItem from="1571973582298" duration="3019000" />
     </task>
     <task id="LOCAL-00001" summary="add viruses">
       <created>1567508394746</created>
@@ -587,7 +593,14 @@
       <option name="project" value="LOCAL" />
       <updated>1571551688420</updated>
     </task>
-    <option name="localTasksCounter" value="31" />
+    <task id="LOCAL-00031" summary="interface">
+      <created>1571650289619</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1571650289619</updated>
+    </task>
+    <option name="localTasksCounter" value="32" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -619,6 +632,7 @@
     <MESSAGE value="change multiplayeer" />
     <MESSAGE value="optimization" />
     <MESSAGE value="add servers" />
-    <option name="LAST_COMMIT_MESSAGE" value="add servers" />
+    <MESSAGE value="interface" />
+    <option name="LAST_COMMIT_MESSAGE" value="interface" />
   </component>
 </project>

@@ -46,7 +46,7 @@ exports.rgbToHex = function (...rgb) {
 };
 
 exports.sendRequest = function (url, obj, method = "POST") {
-    url = "http://sandl.pw/" + url;
+    url = "http://game.pw/" + url;
     let options = {
         url,
         method,

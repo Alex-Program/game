@@ -994,9 +994,9 @@
             x: mouseCoords.x,
             y: mouseCoords.y
         });
-        if (playersArr.length > 0 && playersArr[0].current) {
-            playersArr[0].mouseMove(mouseCoords.x, mouseCoords.y);
-        }
+        // if (playersArr.length > 0 && playersArr[0].current) {
+        //     playersArr[0].mouseMove(mouseCoords.x, mouseCoords.y);
+        // }
 
     });
     ///////////////
@@ -1042,6 +1042,8 @@
 
         return 0.01 * (playersArr[0].cells.length - 1);
     }
+
+    let startUpdateTime = 0;
 
     function render() {
         // return true;
@@ -1529,6 +1531,7 @@
                 }
                 isGame = true;
                 setTimeout(function () {
+                    startUpdateTime = performance.now();
                     ws.sendJson({action: "update_units"});
                 }, 0);
                 return true;
@@ -1550,18 +1553,20 @@
                 if (!isGame) return true;
                 delete data.action;
 
+                let delta = getTimeByDelta((performance.now() - startUpdateTime) / 2);
+                console.log(performance.now() - startUpdateTime);
                 let length = data.units.players.length;
                 for (let i = 0; i < length; i++) {
                     let unit = getUnit(data.units.players[i]);
                     // if (name === "player") {
-                    if (playersArr.length > 0 && +unit.id === playersArr[0].id) {
+                    // if (playersArr.length > 0 && +unit.id === playersArr[0].id) {
                         // unit.current = true;
                         // pArr.unshift(unit);
                         // pArr[0].update(getTimeByDelta(Date.now() - data.time));
                         // console.log(unit.cells[0].x + " " + playersArr[0].cells[0].x);
                         // continue;
-                    }
-                    // unit.update(getTimeByDelta(Date.now() - data.time));
+                    // }
+                    unit.update(delta);
                     let player = findPlayer(unit.id);
                     if (player !== null) {
                         player.changePos(unit);
@@ -1588,6 +1593,7 @@
                 length = data.units.virus.length;
                 for (let i = 0; i < length; i++) {
                     let pVirus = getUnit(data.units.virus[i]);
+                    pVirus.update(delta);
 
                     let virus = findVirus(pVirus.id);
                     if (!virus) {
@@ -1620,8 +1626,9 @@
                 // gameInfo.updateTime -= Date.now() - data.time;
                 // renderVar = requestAnimationFrame(render);
                 setTimeout(function () {
+                    startUpdateTime = performance.now();
                     ws.sendJson({action: "update_units"});
-                }, 0);
+                }, 1000);
 
                 return true;
             }

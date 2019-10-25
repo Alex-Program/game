@@ -914,8 +914,8 @@ class Game {
                 stickerI: Functions.isEmpty(unit.stickerI) ? "" : unit.stickerI
             };
             if (!all) {
-                delete obj.mouseY;
-                delete obj.mouseX;
+                // delete obj.mouseY;
+                // delete obj.mouseX;
                 delete obj.nick;
                 delete obj.skin;
                 delete obj.skinId;

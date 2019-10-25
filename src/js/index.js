@@ -72,7 +72,7 @@ class Message {
         if (Number(data.isSecondary)) cl += " small_message";
 
 
-        $("#all_messages").append("<div class='div_message " + cl + "' data-pid='" + data.id + "' data-nick='" + data.nick + "' data-admin='" + isAdmin + "'><span class='pm_icon'>ЛС</span><div class='icon'></div><span class='nick_name' style='color: " + data.color + "'>" + data.nick + ":</span><span class='message'> " + data.message + "</span></div>");
+        $("#all_messages").append("<div class='div_message " + cl + "' data-pid='" + data.id + "' data-nick='" + escapeHtml(data.nick) + "' data-admin='" + isAdmin + "'><span class='pm_icon'>ЛС</span><div class='icon'></div><span class='nick_name' style='color: " + escapeHtml(data.color) + "'>" + escapeHtml(data.nick) + ":</span><span class='message'> " + escapeHtml(data.message) + "</span></div>");
         $("#all_messages").stop().animate({scrollTop: $("#all_messages")[0].scrollHeight});
         // $("#all_messages")[0].scrollTop = $("#all_messages")[0].scrollHeight;
         if ($("#all_messages > div").length > 50) $("#all_messages > div:eq(0)").remove();
@@ -821,7 +821,14 @@ $("body").mouseup(() => resizeChat = false)
         });
     })
 
-    .on("click", "#vk", () => window.open("https://vk.com/ssandll", "_blank"));
+    .on("click", "#vk", () => window.open("https://vk.com/ssandll", "_blank"))
+
+    .on("click", "#sandl", () => $("#main_buttons").toggleClass("closed"))
+
+    .on("click", "#main_buttons > div", function () {
+        let page = $(this).attr("data-page");
+        window.open(page, "_blank");
+    });
 
 
 {

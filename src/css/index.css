@@ -573,6 +573,7 @@ canvas {
     visibility: visible;
     position: fixed;
     border-radius: 10px;
+    border: solid 2px gold;
     background: black;
     top: 0;
     left: 0;
@@ -1159,6 +1160,8 @@ canvas {
     left: 50px;
     font: bold 35pt/35pt 'Special Elite';
     color: gold;
+    cursor: pointer;
+    z-index: 2;
     -webkit-text-stroke-width: 2px;
     -webkit-text-stroke-color: black;
     animation-name: play_button;
@@ -1168,6 +1171,7 @@ canvas {
 }
 
 #main_buttons {
+    transition: opacity 0.5s, visibility 0.5s, transform 0.5s;
     position: absolute;
     top: 100px;
     left: 25px;
@@ -1175,6 +1179,15 @@ canvas {
     z-index: 1;
     border: solid 3px gold;
     border-radius: 5px;
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+}
+
+#main_buttons.closed {
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0);
 }
 
 #main_buttons > div {
