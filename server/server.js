@@ -225,7 +225,7 @@ function updateUnits() {
     setTimeout(updateUnits, 50);
 }
 
-setTimeout(updateUnits, 50);
+// setTimeout(updateUnits, 50);
 // setInterval(updateUnits, 50);
 
 
@@ -313,17 +313,17 @@ webSocketServer.on('connection', function (ws, req) {
 
             return true;
         }
-        // if (data.action === "update_units") {
-        //     let time = Date.now();
-        //     let arr = Units.game.getAllUnits(false);
-        //     wsMessage({
-        //         action: "update_units",
-        //         units: arr,
-        //         time
-        //     }, id);
-        //
-        //     return true;
-        // }
+        if (data.action === "update_units") {
+            let time = Date.now();
+            let arr = Units.game.getAllUnits(false);
+            wsMessage({
+                action: "update_units",
+                units: arr,
+                time
+            }, id);
+
+            return true;
+        }
 
         if (data.action === "chat_message") {
             if (clients[id].isMute) return true;

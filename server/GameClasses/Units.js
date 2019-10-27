@@ -736,8 +736,8 @@ class Game {
         this.onSpawnUnit = unit => "";
         this.onDestroyUnit = (type, id) => "";
         this.actions = [];
-
     }
+
 
     startGame() {
         gameInfo.updateTime = performance.now();
