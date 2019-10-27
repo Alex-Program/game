@@ -210,19 +210,23 @@ function chatMessage(id, message, pm, pmId, isSecondary = false) {
     } else wsMessage(json);
 }
 
-// function updateUnits() {
-//     let time = Date.now();
-//     let arr = Units.game.getAllUnits();
-//     wsMessage({
-//         action: "update_units",
-//         units: arr,
-//         time
-//     });
-//
-//     setTimeout(updateUnits, 1000);
-// }
-//
-// setTimeout(updateUnits, 0);
+let startUpdate = Date.now();
+function updateUnits() {
+    // console.log(Date.now() - startUpdate);
+    startUpdate = Date.now();
+    let time = Date.now();
+    let arr = Units.game.getAllUnits();
+    wsMessage({
+        action: "update_units",
+        units: arr,
+        time
+    });
+
+    setTimeout(updateUnits, 50);
+}
+
+setTimeout(updateUnits, 50);
+// setInterval(updateUnits, 50);
 
 
 webSocketServer.on('connection', function (ws, req) {
@@ -309,17 +313,17 @@ webSocketServer.on('connection', function (ws, req) {
 
             return true;
         }
-        if (data.action === "update_units") {
-            let time = Date.now();
-            let arr = Units.game.getAllUnits(false);
-            wsMessage({
-                action: "update_units",
-                units: arr,
-                time
-            }, id);
-
-            return true;
-        }
+        // if (data.action === "update_units") {
+        //     let time = Date.now();
+        //     let arr = Units.game.getAllUnits(false);
+        //     wsMessage({
+        //         action: "update_units",
+        //         units: arr,
+        //         time
+        //     }, id);
+        //
+        //     return true;
+        // }
 
         if (data.action === "chat_message") {
             if (clients[id].isMute) return true;

@@ -735,6 +735,7 @@ class Game {
         this.bulletId = 0;
         this.onSpawnUnit = unit => "";
         this.onDestroyUnit = (type, id) => "";
+        this.actions = [];
 
     }
 

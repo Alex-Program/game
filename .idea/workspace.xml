@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="011e9982-741d-4222-841e-091d212022f0" name="Default Changelist" comment="">
+    <list default="true" id="011e9982-741d-4222-841e-091d212022f0" name="Default Changelist" comment="fix bugs">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/functions.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/functions.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/GameClasses/Units.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/GameClasses/Units.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/js/game.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/game.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -64,7 +66,7 @@
     <property name="DefaultHtmlFileTemplate" value="HTML File" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="javascript.nodejs.core.library.configured.version" value="12.11.1" />
+    <property name="javascript.nodejs.core.library.configured.version" value="12.13.0" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/../space.pw" />
     <property name="list.type.of.created.stylesheet" value="CSS" />
     <property name="nodejs_interpreter_path" value="node" />
@@ -375,7 +377,11 @@
       <workItem from="1571705876351" duration="4843000" />
       <workItem from="1571808733850" duration="1188000" />
       <workItem from="1571889351842" duration="3290000" />
-      <workItem from="1571973582298" duration="3229000" />
+      <workItem from="1571973582298" duration="15564000" />
+      <workItem from="1571995803882" duration="965000" />
+      <workItem from="1572056964052" duration="7972000" />
+      <workItem from="1572142216527" duration="1221000" />
+      <workItem from="1572149474720" duration="7495000" />
     </task>
     <task id="LOCAL-00001" summary="add viruses">
       <created>1567508394746</created>
@@ -601,7 +607,14 @@
       <option name="project" value="LOCAL" />
       <updated>1571977218673</updated>
     </task>
-    <option name="localTasksCounter" value="33" />
+    <task id="LOCAL-00033" summary="fix bugs">
+      <created>1571977412000</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1571977412000</updated>
+    </task>
+    <option name="localTasksCounter" value="34" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

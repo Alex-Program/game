@@ -23,7 +23,52 @@
     }
 
 ///////////////
+    class GameStates {
+        constructor() {
+            this.states = [];
+        }
 
+        addGameState(state) {
+            this.states.push(state);
+        }
+
+        getGameState(time) {
+            if (this.states.length === 0) return null;
+            return this.states[0];
+            for (let i = 0; i < this.states.length; i++) {
+                if (time <= this.states[i].time) return this.states[i];
+            }
+
+            return null;
+        }
+
+        getStateByTime(time) {
+            for (let i = 0; i < this.states.length; i++) {
+                if (time <= this.states[i].time) {
+                    return this.states[i];
+                }
+            }
+
+            return null;
+        }
+
+        removeBeforeState(time) {
+            // return;
+            // console.log(this.states[this.states.length - 1].time - time);
+            for (let i = 0; i < this.states.length; i++) {
+                if (time < this.states[i].time) break;
+
+                this.states.splice(i, 1);
+                i--;
+            }
+
+        }
+
+        removeFirstState() {
+            this.states.splice(0, 1);
+        }
+
+    }
 
     class Arc {
 
@@ -509,14 +554,15 @@
         update(delta = 1) {
             this.updateDirection();
             let speed = Math.min(this.mouseDist, this.speed);
-            if (this.spaceDistance === 0) {
-                this.x = roundFloor(this.x + this.cos * speed * delta, 2);
-                this.y = roundFloor(this.y + this.sin * speed * delta, 2);
+            if (this.spaceDistance === 0 && delta === 1) {
+                this.x = roundFloor(this.x + this.cos * speed, 2);
+                this.y = roundFloor(this.y + this.sin * speed, 2);
             }
 
             if (Math.abs(this.toMass) > 0) {
-                let speed = this.toMass * delta / 5;
-                if (Math.abs(speed) < 1) speed = this.toMass >= 0 ? 1 : -1;
+                // let speed = this.toMass * delta / 5;
+                let speed = this.toMass * delta;
+                // if (Math.abs(speed) < 1) speed = this.toMass >= 0 ? 1 : -1;
                 if (Math.abs(this.toMass) < Math.abs(speed)) speed = this.toMass;
 
                 this.mass = Math.round(this.mass + speed);
@@ -532,7 +578,8 @@
 
             if (Math.abs(this.spaceDistance > 0)) {
                 if (this.spaceDistance <= this.totalSpaceDistane / 1.3) this.isCollising = true;
-                let speed = this.spaceDistance * delta / 15;
+                // let speed = this.spaceDistance * delta / 15;
+                let speed = this.spaceDistance * delta;
                 if (Math.abs(speed) < 1) speed = this.spaceDistance >= 0 ? 1 : -1;
                 // if (Math.abs(speed) > 10) speed = this.spaceDistance >= 0 ? 10 : -10;
                 if (Math.abs(this.spaceDistance) < Math.abs(speed)) speed = this.spaceDistance;
@@ -543,15 +590,21 @@
             }
 
             if (Math.abs(this.engineDistance > 0)) {
-                let speed = this.engineDistance * delta / 25;
-                if (Math.abs(speed) < 1) speed = this.engineDistance >= 0 ? 1 : -1;
+                // let speed = this.engineDistance * delta / 25;
+                let speed = this.engineDistance * delta;
+                // if (Math.abs(speed) < 1) speed = this.engineDistance >= 0 ? 1 : -1;
                 // if (Math.abs(speed) > 30) speed = this.engineDistance >= 0 ? 30 : -30;
-                if (Math.abs(this.engineDistance) < Math.abs(speed)) speed = this.engineDistance;
+                // if (Math.abs(this.engineDistance) < Math.abs(speed)) speed = this.engineDistance;
 
-                this.x = roundFloor(this.x + speed * this.engineCos * this.speed, 2);
-                this.y = roundFloor(this.y + speed * this.engineSin * this.speed, 2);
+                // this.x = roundFloor(this.x + speed * this.engineCos * this.speed, 2);
+                this.x = roundFloor(this.x + speed * this.engineCos, 2);
+                // this.y = roundFloor(this.y + speed * this.engineSin * this.speed, 2);
+                this.y = roundFloor(this.y + speed * this.engineSin, 2);
                 this.engineDistance = roundFloor(this.engineDistance - speed, 2);
             }
+            this.updateCenterDrawable();
+            rendersArr.push(this);
+            return true;
 
             for (let i = 0; i < bulletsArr.length; i++) {
                 let bullet = bulletsArr[i];
@@ -570,6 +623,8 @@
 
                 let c = Math.sqrt((this.x - virus.x) ** 2 + (this.y - virus.y) ** 2);
                 if (c > this.drawableRadius - 0.5 * virus.drawableRadius) continue;
+
+                this.owner.isSplit = true;
 
                 let count = Math.min(Math.floor((this.mass / 2) / 50), 64 - this.owner.cells.length);
                 let mass = Math.floor((this.mass / 2) / count);
@@ -596,17 +651,19 @@
                 this.toMass -= this.mass / 2;
                 virusArr.splice(i, 1);
                 i--;
+
+                this.owner.isSplit = false;
             }
 
-            for (let i = 0; i < foodsArr.length; i++) {
-                let food = foodsArr[i];
-                let c = Math.sqrt((this.x - food.x) ** 2 + (this.y - food.y) ** 2);
-                if (c > this.drawableRadius + food.drawableRadius + 1) continue;
-
-                this.toMass += food.mass;
-                foodsArr.splice(i, 1);
-                i--;
-            }
+            // for (let i = 0; i < foodsArr.length; i++) {
+            //     let food = foodsArr[i];
+            //     let c = Math.sqrt((this.x - food.x) ** 2 + (this.y - food.y) ** 2);
+            //     if (c > this.drawableRadius + food.drawableRadius + 1) continue;
+            //
+            //     this.toMass += food.mass;
+            //     foodsArr.splice(i, 1);
+            //     i--;
+            // }
 
             if (this.x < 0) this.x = 0;
             else if (this.x > gameInfo.width) this.x = gameInfo.width;
@@ -868,7 +925,7 @@
                 this.ids.push(+pCell.id);
                 if (!cell) {
                     if (this.isSplit) continue;
-                    console.log("cell");
+                    // console.log("cell");
                     let c = new Cell(pCell.x, pCell.y, pCell.mass, pCell.sin, pCell.cos, pCell.main, pCell.color, this, pCell.id, pCell.spaceDistance, true);
                     c.spaceSin = pCell.spaceSin;
                     c.spaceCos = pCell.spaceCos;
@@ -879,6 +936,8 @@
                     c.totalSpaceDistane = pCell.totalSpaceDistane;
                     c.isConnect = true;
                     c.isCollising = pCell.isCollising;
+                    c.sin = pCell.sin;
+                    c.cos = pCell.cos;
                     this.cells.push(c);
                     continue;
                 }
@@ -894,8 +953,10 @@
                     let dX = pCell.x - this.cells[cell.count].x;
                     let dY = pCell.y - this.cells[cell.count].y;
                     let c = Math.sqrt(dX ** 2 + dY ** 2);
+                    // console.log(c);
                     // if(c < 10) continue;
                     let sin = dY / c;
+                    // console.log(sin);
                     let cos = dX / c;
                     if (this.cells[cell.count].toMass >= 0) {
                         this.cells[cell.count].toMass = pCell.toMass + pCell.mass - this.cells[cell.count].mass;
@@ -904,7 +965,8 @@
 
                     // this.cells[cell.count].x = pCell.x;
                     // this.cells[cell.count].y = pCell.y;
-
+                    this.cells[cell.count].sin = pCell.sin;
+                    this.cells[cell.count].cos = pCell.cos;
                     this.cells[cell.count].engineCos = cos;
                     this.cells[cell.count].engineSin = sin;
                     this.cells[cell.count].engineDistance = c;
@@ -1034,6 +1096,7 @@
     let virusArr = [];
     let foodsArr = [];
     let playersArr = [];
+    let states = new GameStates();
 
     let renderVar = null;
 
@@ -1044,15 +1107,60 @@
     }
 
     let startUpdateTime = 0;
+    let lastStateTime = 0;
+    let differentStateTime = 1;
+    let lastStateTimeLocal = 0;
+
+    let isFirstRender = false;
+    let isSecondRender = false;
 
     function render() {
         // return true;
         new Promise(() => {
             // let time = performance.now();
             while (performance.now() - gameInfo.updateTime >= gameInfo.perSecond) {
+
                 gameInfo.deltaTime = performance.now() - gameInfo.updateTime;
                 gameInfo.updateTime = performance.now();
+                let delta = 1;
 
+                if (performance.now() - lastStateTimeLocal >= differentStateTime) {
+                    // let k = performance.now() - lastStateTimeLocal;
+                    let newTime = lastStateTime + performance.now() - lastStateTimeLocal - differentStateTime;
+                    let state = lastStateTime ? states.getStateByTime(newTime) : states.getGameState();
+                    // if(!state){
+                    //     console.log("now " + performance.now());
+                    //     console.log("lastlocal " + lastStateTimeLocal);
+                    //     console.log("k " + k);
+                    //     console.log("laststate " + lastStateTime);
+                    //     console.log("states " + states.states[states.states.length - 1].time);
+                    //     console.log("differenstates " + (newTime - states.states[states.states.length - 1].time));
+                    //     console.log("deltatime " + gameInfo.deltaTime);
+                    //     return true;
+                    // }
+                    // if (!lastStateTime) states.removeFirstState();
+                    // else states.removeBeforeState(newTime);
+                    if (state) {
+                        differentStateTime = lastStateTime ? (state.time - newTime) : 0;
+                        // console.log(differentStateTime);
+                        // delta = lastStateTime ? gameInfo.deltaTime / differentStateTime : 1;
+                        if(!isFirstRender) delta = 1;
+                        else{
+                            delta = (isFirstRender && !isSecondRender) ? 2 * gameInfo.deltaTime / differentStateTime : gameInfo.deltaTime / differentStateTime;
+                        }
+                        lastStateTime = state.time;
+                        lastStateTimeLocal = performance.now();
+                        for (let i = 0; i < state.players.length; i++) {
+                            let sPlayer = state.players[i];                        if(!isFirstRender) delta = 1;
+
+                            let player = findPlayer(sPlayer.id);
+                            if (!player) continue;
+                            player.changePos(sPlayer);
+                        }
+                    }
+                }
+
+                // console.log(delta);
                 context.clearRect(0, 0, canvas.width, canvas.height);
                 let backgroundColor = (gameSettings.isBackground && !isEmpty(gameSettings.background)) ? gameSettings.background : "#000000";
                 context.fillStyle = backgroundColor;
@@ -1076,11 +1184,11 @@
                 rendersArr = [];
 
                 for (let i = 0; i < playersArr.length; i++) {
-                    playersArr[i].update(getTimeByDelta(gameInfo.deltaTime));
+                    playersArr[i].update(delta);
                 }
 
                 for (let i = 0; i < bulletsArr.length; i++) {
-                    bulletsArr[i].update(getTimeByDelta(gameInfo.deltaTime));
+                    bulletsArr[i].update(delta);
                 }
 
                 for (let i = 0; i < virusArr.length; i++) {
@@ -1111,6 +1219,8 @@
                 // Arc.drawCompass();
 
                 // console.log(performance.now() - time);
+                if (isFirstRender) isSecondRender = true;
+                isFirstRender = true;
             }
             renderVar = requestAnimationFrame(render);
         });
@@ -1122,7 +1232,9 @@
     let coordsHtml = $("#coords");
 
     function updateHtml() {
-        coordsHtml.text("Mass: " + playersArr[0].mass + " X: " + Math.floor(gameInfo.centerX * 10) + " Y: " + Math.floor(gameInfo.centerY * 10));
+        if (playersArr.length > 0) {
+            coordsHtml.text("Mass: " + playersArr[0].mass + " X: " + Math.floor(gameInfo.centerX * 10) + " Y: " + Math.floor(gameInfo.centerY * 10));
+        }
         requestAnimationFrame(updateHtml);
     }
 
@@ -1197,11 +1309,9 @@
             if (unit.current) {
                 if (playersArr.length > 0 && playersArr[0].current) return true;
                 playersArr.unshift(unit);
-                gameInfo.updateTime = performance.now();
                 playersArr[0].update(delta);
-                render();
-                updateHtml();
-                getTopPlayers();
+
+                ws.sendJson({action: "update_units"});
                 ws.sendJson({action: "get_all_units"});
                 setTimeout(function () {
                     ws.sendJson({
@@ -1210,6 +1320,13 @@
                         y: playersArr[0].mouse.y
                     });
                 }, 1000);
+                setTimeout(function () {
+                    gameInfo.updateTime = performance.now();
+                    render();
+                    updateHtml();
+                    getTopPlayers();
+                    isGame = true;
+                }, 100);
                 return true;
             }
             playersArr.push(unit);
@@ -1375,7 +1492,7 @@
                     action: "player_split"
                 });
             }
-            playersArr[0].split();
+            // playersArr[0].split();
             return true;
         }
 
@@ -1529,7 +1646,6 @@
                     let unit = getUnit(arr[i]);
                     addUnit(unit);
                 }
-                isGame = true;
                 setTimeout(function () {
                     startUpdateTime = performance.now();
                     ws.sendJson({action: "update_units"});
@@ -1550,23 +1666,33 @@
             }
 
             if (data.action === "update_units") {
-                if (!isGame) return true;
+                // if (!isGame) return true;
+                // console.log(Date.now() - data.time);
                 delete data.action;
 
-                let delta = getTimeByDelta((performance.now() - startUpdateTime) / 2);
-                console.log(performance.now() - startUpdateTime);
+                // let delta = getTimeByDelta((performance.now() - startUpdateTime) / 2);
+                let players = data.units.players.map(player => getUnit(player));
+                let virus = data.units.virus.map(virus => getUnit(virus));
+                states.addGameState({time: data.time, players, virus});
+                if (lastStateTime) {
+                    states.removeBeforeState(lastStateTime + performance.now() - lastStateTimeLocal - differentStateTime);
+                }
+                if (states.states.length > 10 && !isGame) {
+
+                }
+                /*
                 let length = data.units.players.length;
                 for (let i = 0; i < length; i++) {
                     let unit = getUnit(data.units.players[i]);
                     // if (name === "player") {
                     // if (playersArr.length > 0 && +unit.id === playersArr[0].id) {
-                        // unit.current = true;
-                        // pArr.unshift(unit);
-                        // pArr[0].update(getTimeByDelta(Date.now() - data.time));
-                        // console.log(unit.cells[0].x + " " + playersArr[0].cells[0].x);
-                        // continue;
+                    // unit.current = true;
+                    // pArr.unshift(unit);
+                    // pArr[0].update(getTimeByDelta(Date.now() - data.time));
+                    // console.log(unit.cells[0].x + " " + playersArr[0].cells[0].x);
+                    // continue;
                     // }
-                    unit.update(delta);
+                    // unit.update(delta);
                     let player = findPlayer(unit.id);
                     if (player !== null) {
                         player.changePos(unit);
@@ -1593,10 +1719,11 @@
                 length = data.units.virus.length;
                 for (let i = 0; i < length; i++) {
                     let pVirus = getUnit(data.units.virus[i]);
-                    pVirus.update(delta);
+                    // pVirus.update(delta);
 
                     let virus = findVirus(pVirus.id);
                     if (!virus) {
+                        continue;
                         let v = new Virus(pVirus.x, pVirus.y, pVirus.sin, pVirus.cos, pVirus.distance, pVirus.mass);
                         v.toMass = pVirus.toMass;
                         virusArr.push(v);
@@ -1616,7 +1743,7 @@
 
                     virusArr[virus.count].toMass = pVirus.toMass + pVirus.mass - virusArr[virus.count].mass;
                 }
-
+*/
 
                 // cancelAnimationFrame(renderVar);
                 // playersArr = pArr;
@@ -1625,10 +1752,10 @@
                 // foodsArr = fArr;
                 // gameInfo.updateTime -= Date.now() - data.time;
                 // renderVar = requestAnimationFrame(render);
-                setTimeout(function () {
-                    startUpdateTime = performance.now();
-                    ws.sendJson({action: "update_units"});
-                }, 1000);
+                // setTimeout(function () {
+                //     startUpdateTime = performance.now();
+                //     ws.sendJson({action: "update_units"});
+                // }, 0);
 
                 return true;
             }
@@ -1646,7 +1773,7 @@
                 let player = findPlayer(data.id);
                 if (!player) return true;
 
-                player.mouseMove(data.x, data.y);
+                // player.mouseMove(data.x, data.y);
                 return true;
             }
 
