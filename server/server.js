@@ -295,18 +295,18 @@ webSocketServer.on('connection', function (ws, req) {
 
             let arr = Units.game.getAllUnits();
 
-            wsMessage({units: arr, action: "get_all_units"}, id);
+            wsMessage({u: arr, action: "get_all_units"}, id);
 
             return true;
         }
         if (data.action === "mouse_move") {
             Units.game.mouseMove(id, data.x, data.y, data.time);
-            wsMessage({
-                action: "mouse_move",
-                x: data.x,
-                y: data.y,
-                id
-            });
+            // wsMessage({
+            //     action: "mouse_move",
+            //     x: data.x,
+            //     y: data.y,
+            //     id
+            // });
 
             return true;
         }
@@ -317,26 +317,26 @@ webSocketServer.on('connection', function (ws, req) {
         }
         if (data.action === "player_split") {
             Units.game.split(id, data.time);
-            wsMessage({
-                action: "player_split",
-                id,
-                time: data.time
-            });
+            // wsMessage({
+            //     action: "player_split",
+            //     id,
+            //     time: data.time
+            // });
 
             return true;
         }
-        if (data.action === "update_units") {
-            return true;
-            let time = Date.now();
-            let arr = Units.game.getAllUnits(false);
-            wsMessage({
-                action: "update_units",
-                units: arr,
-                time
-            }, id);
-
-            return true;
-        }
+        // if (data.action === "update_units") {
+        //     return true;
+        //     let time = Date.now();
+        //     let arr = Units.game.getAllUnits(false);
+        //     wsMessage({
+        //         action: "update_units",
+        //         units: arr,
+        //         time
+        //     }, id);
+        //
+        //     return true;
+        // }
 
         if (data.action === "chat_message") {
             if (clients[id].isMute) return true;
@@ -431,7 +431,7 @@ webSocketServer.on('connection', function (ws, req) {
             return true;
         }
 
-        if(data.action === "ping"){
+        if (data.action === "ping") {
             wsMessage({action: "ping"}, id);
         }
     });

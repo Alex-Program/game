@@ -892,8 +892,8 @@ class Game {
             if (performance.now() - this.lastUpdateUnitsTime > 1000 / 20) {
                 let arr = this.getAllUnits(false);
                 this.wsMessage({
-                    action: "update_units",
-                    units: arr,
+                    action: "u",
+                    u: arr,
                     time: Date.now()
                 });
                 this.lastUpdateUnitsTime = performance.now();
@@ -925,22 +925,22 @@ class Game {
     }
 
     getAllUnits(all = true) {
-        let players = [];
+        let p = [];
         for (let i = 0; i < this.playersArr.length; i++) {
-            let p = this.playersArr[i];
+            let player = this.playersArr[i];
             // if (!all && !p.isChanged) continue;
 
-            players.push(this.getUnit(p, all));
+            p.push(this.getUnit(player, all));
             this.playersArr[i].isChanged = false;
         }
 
 
-        let virus = [];
+        let v = [];
         for (let i = 0; i < this.virusArr.length; i++) {
-            let v = this.virusArr[i];
-            if (!all && !v.isChanged) continue;
+            let virus = this.virusArr[i];
+            if (!all && !virus.isChanged) continue;
 
-            virus.push(this.getUnit(v));
+            v.push(this.getUnit(virus));
             this.virusArr[i].isChanged = false;
         }
         if (all) {
@@ -953,9 +953,9 @@ class Game {
                 return this.getUnit(unit);
             });
 
-            return {players, foods, virus, bullets};
+            return {p, foods, v, bullets};
         }
-        return {players, virus};
+        return {p, v};
     }
 
     getUnit(unit, all = true) {

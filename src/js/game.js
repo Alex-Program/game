@@ -1771,7 +1771,7 @@
             }
 
             if (data.action === "get_all_units") {
-                let arr = [...data.units.players, ...data.units.foods, ...data.units.virus, ...data.units.bullets];
+                let arr = [...data.u.p, ...data.u.foods, ...data.u.v, ...data.u.bullets];
                 let length = arr.length;
 
                 for (let i = 0; i < length; i++) {
@@ -1796,14 +1796,14 @@
                 return true;
             }
 
-            if (data.action === "update_units") {
+            if (data.action === "u") {
                 // if (!isGame) return true;
                 // console.log(Date.now() - data.time);
                 delete data.action;
 
                 // let delta = getTimeByDelta((performance.now() - startUpdateTime) / 2);
-                let players = data.units.players.map(player => getUnit(player));
-                let virus = data.units.virus.map(virus => getUnit(virus));
+                let players = data.u.p.map(player => getUnit(player));
+                let virus = data.u.v.map(virus => getUnit(virus));
                 // console.log(states.states.length);
                 states.addGameState({time: data.time, players, virus});
                 if (lastStateTime) {
