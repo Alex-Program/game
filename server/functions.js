@@ -85,3 +85,7 @@ exports.stringToArrayBuffer = function(str) {
     let textEncode = new TextEncoder("utf-8");
     return textEncode.encode(str);
 };
+
+exports.getRandomColor = function(){
+    return exports.rgbToHex(exports.getRandomInt(0, 255), exports.getRandomInt(0, 255), exports.getRandomInt(0, 255));
+};

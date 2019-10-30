@@ -14,7 +14,6 @@ const {isEmpty} = Functions;
 const Units = require('./GameClasses/Units.js');
 // подключенные клиенты
 let clients = {};
-let clientsSize = 0;
 let bannedIP = [];
 
 // WebSocket-сервер на порту 8081
@@ -171,6 +170,7 @@ class Command {
 let command = new Command();
 
 Units.game.onSpawnUnit = function (unit) {
+    let isBot = unit.constructor.name.toLowerCase() === "player" && unit.type === "bot";
 
     unit = Units.game.getUnit(unit);
     let message = {
@@ -184,7 +184,7 @@ Units.game.onSpawnUnit = function (unit) {
         wsMessage(message, message.id);
 
         nickInfo(message.id);
-        chatMessage(message.id, "вошел в игру", 0, 0, true);
+        if (!isBot) chatMessage(message.id, "вошел в игру", 0, 0, true);
         return true;
     }
 
@@ -243,8 +243,8 @@ function updateUnits() {
 
 webSocketServer.on('connection', function (ws, req) {
     console.log("player connect");
-    let id = clientsSize;
-    clientsSize++;
+    let id = Units.game.playerId;
+    Units.game.playerId++;
     clients[id] = {};
     clients[id].ws = ws;
     clients[id].isAdmin = false;

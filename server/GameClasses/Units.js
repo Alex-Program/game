@@ -16,7 +16,8 @@ let gameInfo = {
     bulletEatenCoefficient: 0.5,
     connectTime: 1000,
     connectTimeMassCoefficient: 0.1,
-    maxCells: 64
+    maxCells: 64,
+    botsCount: 10
 };
 
 
@@ -416,6 +417,7 @@ class Cell extends Arc {
 
 
         for (let p = 0; p < game.playersArr.length; p++) {
+            if(typeof game.playersArr[p] === "undefined") continue;
             for (let i = 0; i < game.playersArr[p].cells.length; i++) {
 
                 let cell = game.playersArr[p].cells[i];
@@ -478,6 +480,10 @@ class Cell extends Arc {
                     game.playersArr[p].updateI--;
                 }
                 if (game.playersArr[p].cells.length === 0) {
+                    game.playersArr[p].destroy();
+                    game.playersArr.splice(p, 1);
+                    p--;
+                    if (p < game.updatePlayerI) game.updatePlayerI--;
                     continue;
                 }
                 if (cell.main) game.playersArr[p].cells[0].main = true;
@@ -587,7 +593,8 @@ class Cell extends Arc {
 
 class Player {
 
-    constructor(wsId, x, y, mass, mouseX, mouseY, color = "#000000", nick, password = "", token = "", userId = "") {
+    constructor(wsId, x, y, mass, mouseX, mouseY, color = "#000000", nick, password = "", token = "", userId = "", type = "player") {
+        this.type = type;
         this.nick = nick;
         this.password = password;
         this.skin = "";
@@ -628,8 +635,12 @@ class Player {
         await this.authNick();
         await this.authAccount();
 
-        this.cells[0].updateDirection();
-        game.onSpawnUnit(this);
+        try {
+            this.cells[0].updateDirection();
+            game.onSpawnUnit(this);
+        } catch (e) {
+        }
+
     }
 
     async authAccount() {
@@ -715,6 +726,10 @@ class Player {
             this.cells[this.updateI].update(delta);
             try {
                 mass = (mass + this.cells[this.updateI].mass) || mass;
+                if (this.cells[this.updateI].main) {
+                    this.x = this.cells[this.updateI].x;
+                    this.y = this.cells[this.updateI].y;
+                }
             } catch {
             }
             // rendersArr.push(this.cells[this.updateI]);
@@ -757,6 +772,11 @@ class Player {
 
         this.isChanged = true;
     }
+
+    destroy() {
+        game.onDestroyUnit(this.constructor.name.toLowerCase(), this.wsId);
+    }
+
 }
 
 
@@ -772,6 +792,8 @@ class Game {
         this.foodId = 0;
         this.virusId = 0;
         this.bulletId = 0;
+        this.playerId = 0;
+        this.updatePlayerI = 0;
         this.onSpawnUnit = unit => "";
         this.onDestroyUnit = (type, id) => "";
         this.wsMessage = (message, id = null, besidesId = null) => "";
@@ -804,9 +826,30 @@ class Game {
         }
     }
 
-    updateUnit() {
+    getRandomMapCoords() {
+        return {x: Functions.getRandomInt(50, gameInfo.width), y: Functions.getRandomInt(50, gameInfo.height)};
+    }
+
+    spawnBots() {
+        let count = gameInfo.botsCount;
         for (let i = 0; i < this.playersArr.length; i++) {
-            this.playersArr[i].update(this.getTimeByDelta(gameInfo.deltaTime));
+            if (this.playersArr[i].type === "bot") count--;
+        }
+        while (count > 0) {
+            let coords = this.getRandomMapCoords();
+            let mouseCoords = this.getRandomMapCoords();
+            this.playersArr.push(
+                new Player(this.playerId++, coords.x, coords.y, gameInfo.startMass, mouseCoords.x, mouseCoords.y, Functions.getRandomColor(), "ni", "", "", "", "bot")
+            );
+            count--;
+        }
+
+    }
+
+    updateUnit() {
+        this.updatePlayerI = 0;
+        for (; this.updatePlayerI < this.playersArr.length; this.updatePlayerI++) {
+            this.playersArr[this.updatePlayerI].update(this.getTimeByDelta(gameInfo.deltaTime));
         }
 
         for (let i = 0; i < this.bulletsArr.length; i++) {
@@ -879,8 +922,9 @@ class Game {
     }
 
     loop() {
-        // let time = performance.now();
         while (performance.now() - gameInfo.updateTime >= gameInfo.perSecond) {
+            // let time = performance.now();
+
             gameInfo.deltaTime = performance.now() - gameInfo.updateTime;
             gameInfo.updateTime = performance.now();
 
@@ -888,6 +932,7 @@ class Game {
             this.spawnUnit();
             this.updateUnit();
             this.addGameState();
+            this.spawnBots();
 
             if (performance.now() - this.lastUpdateUnitsTime > 1000 / 20) {
                 let arr = this.getAllUnits(false);

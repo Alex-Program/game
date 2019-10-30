@@ -1468,6 +1468,7 @@
         if (type === "virus") arr = virusArr;
         else if (type === "food") arr = foodsArr;
         else if (type === "bullet") arr = bulletsArr;
+        else if(type === "player") arr = playersArr;
 
         for (let i = 0; i < arr.length; i++) {
             if (+arr[i].id === +id) {
