@@ -33,6 +33,7 @@ function wsMessage(message, id = null, besidesId = null) {
 
     for (let wsId in clients) {
         if (!clients.hasOwnProperty(wsId)) continue;
+        if (clients[wsId].ws.bufferedAmount !== 0) continue;
 
         if (besidesId !== null && +wsId === +besidesId) continue;
         clients[wsId].ws.send(message);
@@ -47,7 +48,6 @@ function wsModerMessage(message) {
         wsMessage(message, player.wsId);
     }
 }
-
 
 function gameMessage(message, isModer = false) {
     let json = {action: "game_message", message};

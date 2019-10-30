@@ -417,7 +417,7 @@ class Cell extends Arc {
 
 
         for (let p = 0; p < game.playersArr.length; p++) {
-            if(typeof game.playersArr[p] === "undefined") continue;
+            if(!game.playersArr[p].isSpawned) continue;
             for (let i = 0; i < game.playersArr[p].cells.length; i++) {
 
                 let cell = game.playersArr[p].cells[i];
@@ -627,6 +627,7 @@ class Player {
         this.stickerI = null;
         this.lastShootTime = performance.now();
         this.isChanged = true;
+        this.isSpawned = false;
 
         this.main();
     }
@@ -637,6 +638,7 @@ class Player {
 
         try {
             this.cells[0].updateDirection();
+            this.isSpawned = true;
             game.onSpawnUnit(this);
         } catch (e) {
         }
@@ -710,6 +712,7 @@ class Player {
     }
 
     update(delta = 1) {
+        if(!this.isSpawned) return true;
         this.updateI = 0;
         let mass = 0;
 
@@ -936,6 +939,7 @@ class Game {
 
             if (performance.now() - this.lastUpdateUnitsTime > 1000 / 20) {
                 let arr = this.getAllUnits(false);
+                // console.log(JSON.stringify(arr));
                 this.wsMessage({
                     action: "u",
                     u: arr,
@@ -1033,24 +1037,30 @@ class Game {
             let length = unit.cells.length;
             for (let i = 0; i < length; i++) {
                 let cell = unit.cells[i];
-                obj.c.push({
+                let objC = {
                     x: cell.x,
                     y: cell.y,
                     m: cell.mass, // mass
-                    tm: cell.toMass, // toMass
+                    // tm: cell.toMass, // toMass
                     ss: cell.spaceSin, // spaceSin
                     sc: cell.spaceCos, // spaceCos
                     sd: cell.spaceDistance,
                     tsd: cell.totalSpaceDistane,
-                    ed: cell.engineDistance,
-                    es: cell.engineSin,
-                    ec: cell.engineCos,
+                    // ed: cell.engineDistance,
+                    // es: cell.engineSin,
+                    // ec: cell.engineCos,
                     ic: cell.isConnect,
                     id: cell.id,
-                    c: cell.color,
+                    // c: cell.color,
                     icl: cell.isCollising,
                     mn: cell.main
-                });
+                };
+                if(!all){
+                    for(let key in objC){
+                        if(!objC[key]) delete objC[key];
+                    }
+                }
+                obj.c.push(objC);
             }
 
 

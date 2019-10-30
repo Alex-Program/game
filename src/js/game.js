@@ -970,7 +970,7 @@
                 if (!cell) {
                     if (this.isSplit) continue;
                     // console.log("cell");
-                    let c = new Cell(pCell.x, pCell.y, pCell.mass, pCell.sin, pCell.cos, pCell.main, pCell.color, this, pCell.id, pCell.spaceDistance, true);
+                    let c = new Cell(pCell.x, pCell.y, pCell.mass, pCell.sin, pCell.cos, pCell.main, this.color, this, pCell.id, pCell.spaceDistance, true);
                     c.spaceSin = pCell.spaceSin;
                     c.spaceCos = pCell.spaceCos;
                     c.engineSin = pCell.engineSin;
@@ -1356,18 +1356,22 @@
             for (let i = 0; i < length; i++) {
 
                 let cell = unit.c[i];
-                let c = new Cell(cell.x, cell.y, cell.m, 0, 0, cell.mn, cell.c, player, cell.id, 0);
-                c.engineSin = cell.es;
-                c.engineCos = cell.ec;
-                c.engineDistance = cell.ed;
-                c.spaceCos = cell.sc;
-                c.spaceSin = cell.ss;
-                c.spaceDistance = cell.sd;
-                c.totalSpaceDistane = cell.tsd;
-                c.toMass = cell.tm;
-                c.isConnect = cell.ic;
-                c.isCollising = cell.icl;
-                c.updateDirection();
+                let c = new Cell(cell.x || 0, cell.y || 0, cell.m || 0, 0, 0, cell.mn || false, player.color, player, cell.id || 0, 0);
+                // c.engineSin = cell.es;
+                // c.engineCos = cell.ec;
+                // c.engineDistance = cell.ed;
+                c.engineSin = 0;
+                c.engineCos = 0;
+                c.engineDistance = 0;
+                c.spaceCos = cell.sc || 0;
+                c.spaceSin = cell.ss || 0;
+                c.spaceDistance = cell.sd || 0;
+                c.totalSpaceDistane = cell.tsd || 0;
+                // c.toMass = cell.tm;
+                c.toMass = 0;
+                c.isConnect = cell.ic || 0;
+                c.isCollising = cell.icl || 0;
+                // c.updateDirection();
                 arr.push(c);
 
             }
