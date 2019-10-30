@@ -750,6 +750,7 @@ class Game {
         this.onSpawnUnit = unit => "";
         this.onDestroyUnit = (type, id) => "";
         this.wsMessage = (message, id = null, besidesId = null) => "";
+        this.lastUpdateUnitsTime = performance.now();
     }
 
 
@@ -863,6 +864,15 @@ class Game {
             this.updateUnit();
             this.addGameState();
 
+            if (performance.now() - this.lastUpdateUnitsTime > 1000 / 30) {
+                let arr = this.getAllUnits();
+                this.wsMessage({
+                    action: "update_units",
+                    units: arr,
+                    time: Date.now()
+                });
+                this.lastUpdateUnitsTime = performance.now();
+            }
             // console.log(performance.now() - time);
         }
 

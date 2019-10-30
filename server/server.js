@@ -237,7 +237,7 @@ function updateUnits() {
     setTimeout(updateUnits, 50);
 }
 
-setTimeout(updateUnits, 50);
+// setTimeout(updateUnits, 50);
 // setInterval(updateUnits, 10);
 
 
