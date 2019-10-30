@@ -417,7 +417,7 @@ class Cell extends Arc {
 
 
         for (let p = 0; p < game.playersArr.length; p++) {
-            if(!game.playersArr[p].isSpawned) continue;
+            if (!game.playersArr[p].isSpawned) continue;
             for (let i = 0; i < game.playersArr[p].cells.length; i++) {
 
                 let cell = game.playersArr[p].cells[i];
@@ -483,7 +483,7 @@ class Cell extends Arc {
                     game.playersArr[p].destroy();
                     game.playersArr.splice(p, 1);
                     p--;
-                    if (p < game.updatePlayerI) game.updatePlayerI--;
+                    if (p <= game.updatePlayerI) game.updatePlayerI--;
                     continue;
                 }
                 if (cell.main) game.playersArr[p].cells[0].main = true;
@@ -628,6 +628,7 @@ class Player {
         this.lastShootTime = performance.now();
         this.isChanged = true;
         this.isSpawned = false;
+        this.lastUpdateUnitsTime = performance.now();
 
         this.main();
     }
@@ -712,7 +713,7 @@ class Player {
     }
 
     update(delta = 1) {
-        if(!this.isSpawned) return true;
+        if (!this.isSpawned) return true;
         this.updateI = 0;
         let mass = 0;
 
@@ -938,13 +939,27 @@ class Game {
             this.spawnBots();
 
             if (performance.now() - this.lastUpdateUnitsTime > 1000 / 20) {
-                let arr = this.getAllUnits(false);
+                let arr = [];
                 // console.log(JSON.stringify(arr));
-                this.wsMessage({
-                    action: "u",
-                    u: arr,
-                    time: Date.now()
-                });
+                for (let i = 0; i < this.playersArr.length; i++) {
+                    let player = this.playersArr[i];
+                    if (player.type === "bot") continue;
+
+                    if (performance.now() - player.lastUpdateUnitsTime >= 100) {
+                        arr = this.getAllUnits(false);
+                        player.lastUpdateUnitsTime = performance.now();
+                    } else arr = this.getAllUnits(false, player.wsId);
+                    this.wsMessage({
+                        action: "u",
+                        u: arr,
+                        time: Date.now()
+                    }, player.wsId);
+                }
+                // this.wsMessage({
+                //     action: "u",
+                //     u: arr,
+                //     time: Date.now()
+                // });
                 this.lastUpdateUnitsTime = performance.now();
             }
             // console.log(performance.now() - time);
@@ -973,14 +988,16 @@ class Game {
         }
     }
 
-    getAllUnits(all = true) {
+    getAllUnits(all = true, wsId = null) {
         let p = [];
         for (let i = 0; i < this.playersArr.length; i++) {
             let player = this.playersArr[i];
+            if (typeof wsId === "number" && player.wsId !== wsId) continue;
             // if (!all && !p.isChanged) continue;
 
             p.push(this.getUnit(player, all));
             this.playersArr[i].isChanged = false;
+            if (typeof wsId === "number" && player.wsId === wsId) break;
         }
 
 
@@ -1055,9 +1072,9 @@ class Game {
                     icl: cell.isCollising,
                     mn: cell.main
                 };
-                if(!all){
-                    for(let key in objC){
-                        if(!objC[key]) delete objC[key];
+                if (!all) {
+                    for (let key in objC) {
+                        if (!objC[key]) delete objC[key];
                     }
                 }
                 obj.c.push(objC);
