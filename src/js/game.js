@@ -79,7 +79,7 @@
             // console.log(this.states[this.states.length - 1].time - time);
             for (let i = 0; i < this.states.length; i++) {
                 if (time < this.states[i].time) break;
-
+                // console.log(time - this.states[i].time);
                 this.states.splice(i, 1);
                 i--;
             }
@@ -153,7 +153,7 @@
 
             let radius = this.drawableRadius / gameInfo.scale;
             if (gameSettings.isDrawCellBorder) {
-                this.drawArc(drawableX, drawableY, radius, toDarkColor(color));
+                this.drawArc(drawableX, drawableY, radius, toChangeColor(color));
                 radius = (this.drawableRadius - 5) / gameInfo.scale;
                 if (radius < 2) radius = 2;
                 context.restore();
@@ -164,6 +164,9 @@
 
             context.restore();
 
+            let isDrawText = ((gameSettings.isOptimization && this.drawableRadius / gameInfo.scale > 25) ||
+                (!gameSettings.isOptimization && this.drawableRadius / (gameInfo.scale) > 15));
+
             if (name === "cell") {
                 let stickerI = this.owner.stickerI;
                 let stickerSet = this.owner.stickersSet;
@@ -173,11 +176,11 @@
                     this.drawImage(imagesArr[this.owner.skinId], drawableX, drawableY, radius);
                 }
 
-                if (!gameSettings.isHideNick && !(gameSettings.isOptimization && this.mass < 500)) {
+                if (!gameSettings.isHideNick && isDrawText) {
                     this.drawText(drawableX, drawableY, this.drawableRadius / (2 * gameInfo.scale), this.owner.nick, textColor, true, strokeTextColor);
                 }
                 drawableY += this.drawableRadius / (2 * gameInfo.scale);
-                if (gameSettings.isCellMass && !(gameSettings.isOptimization && this.mass < 500)) {
+                if (gameSettings.isCellMass && isDrawText) {
                     this.drawText(drawableX, drawableY, this.drawableRadius / (3 * gameInfo.scale), Math.floor(this.mass), textColor);
                 }
                 return true;
@@ -247,6 +250,7 @@
         drawText(x, y, size, value, color = "#FFFFFF", isStroke = false, strokeStyle = "#000000", isShadow = false, shadowColor = "red") {
             if (+gameSettings.isBigText) size *= 1.8;
             else size *= 1.2;
+            if (gameSettings.isOptimization) size /= 1.3;
 
             context.save();
 
@@ -261,7 +265,7 @@
             context.textBaseline = "middle";
             context.font = "bold " + String(size) + "px " + font;
             context.fillText(String(value), x, y);
-            if (isStroke) {
+            if (isStroke && !gameSettings.isOptimization) {
                 context.lineWidth = size / 50;
                 context.strokeStyle = strokeStyle;
                 context.strokeText(String(value), x, y);
@@ -407,7 +411,7 @@
         }
 
         update() {
-            rendersArr.push(this);
+            // rendersArr.push(this);
         }
 
     }
@@ -578,7 +582,7 @@
             this.isConnect = false;
             this.isCollising = false;
             this.isDraw = isDraw;
-            setTimeout(() => this.isConnect = true, 1000);
+            setTimeout(() => this.isConnect = true, gameInfo.connectTime);
 
             this.updateDirection();
         }
@@ -588,6 +592,7 @@
         }
 
         update(delta = 1) {
+
             this.updateDirection();
             let speed = Math.min(this.mouseDist, this.speed);
             if (this.spaceDistance === 0) {
@@ -628,9 +633,9 @@
             if (Math.abs(this.engineDistance > 0)) {
                 let speed = this.engineDistance * delta / 25;
                 // let speed = this.engineDistance * delta;
-                // if (Math.abs(speed) < 1) speed = this.engineDistance >= 0 ? 1 : -1;
+                if (Math.abs(speed) < 1) speed = this.engineDistance >= 0 ? 1 : -1;
                 // if (Math.abs(speed) > 30) speed = this.engineDistance >= 0 ? 30 : -30;
-                // if (Math.abs(this.engineDistance) < Math.abs(speed)) speed = this.engineDistance;
+                if (Math.abs(this.engineDistance) < Math.abs(speed)) speed = this.engineDistance;
 
                 // this.x = roundFloor(this.x + speed * this.engineCos * this.speed, 2);
                 this.x = roundFloor(this.x + speed * this.engineCos, 2);
@@ -639,64 +644,66 @@
                 this.engineDistance = roundFloor(this.engineDistance - speed, 2);
             }
 
-            for (let i = 0; i < bulletsArr.length; i++) {
-                let bullet = bulletsArr[i];
-                let c = Math.sqrt((this.x - bullet.x) ** 2 + (this.y - bullet.y) ** 2);
-                if (this.drawableRadius >= c) {
-                    this.toMass += bullet.mass;
-                    bulletsArr.splice(i, 1);
-                    i--;
-                }
+            if (this.isCollising) {
+                // for (let i = 0; i < bulletsArr.length; i++) {
+                //     let bullet = bulletsArr[i];
+                //     let c = Math.sqrt((this.x - bullet.x) ** 2 + (this.y - bullet.y) ** 2);
+                //     if (this.drawableRadius >= c) {
+                //         this.toMass += bullet.mass * gameInfo.bulletEatenCoefficient;
+                //         bulletsArr.splice(i, 1);
+                //         i--;
+                //     }
+                // }
+
+                // for (let i = 0; i < virusArr.length; i++) {
+                //     if (this.mass < 250) break;
+                //
+                //     let virus = virusArr[i];
+                //
+                //     let c = Math.sqrt((this.x - virus.x) ** 2 + (this.y - virus.y) ** 2);
+                //     if (c > this.drawableRadius - 0.5 * virus.drawableRadius) continue;
+                //
+                //     this.owner.isSplit = true;
+                //
+                //     let count = Math.min(Math.floor((this.mass / 2) / 50), gameInfo.maxCells - this.owner.cells.length);
+                //     let mass = Math.floor((this.mass / 2) / count);
+                //     let angleStep = 180 / count;
+                //     let angle = getAngle(this.sin, this.cos);
+                //
+                //     this.isCollising = true;
+                //
+                //     let currentAngle = angle.degree - 90;
+                //
+                //     while (count > 0) {
+                //         let sin = Math.sin(degreeToRadians(currentAngle));
+                //         let cos = Math.cos(degreeToRadians(currentAngle));
+                //
+                //         let distance = this.radius + mass / 10 + 5;
+                //         this.owner.cells.push(
+                //             new Cell(this.x + distance * cos, this.y + distance * sin, mass, sin, cos, false, this.color, this.owner, ++this.owner.cellId, 50, true)
+                //         );
+                //         currentAngle += angleStep;
+                //         count--;
+                //         // if (this.owner.current) gameInfo.byScale += 0.05;
+                //     }
+                //
+                //     this.toMass -= this.mass / 2;
+                //     virusArr.splice(i, 1);
+                //     i--;
+                //
+                //     this.owner.isSplit = false;
+                // }
+
+                // for (let i = 0; i < foodsArr.length; i++) {
+                //     let food = foodsArr[i];
+                //     let c = Math.sqrt((this.x - food.x) ** 2 + (this.y - food.y) ** 2);
+                //     if (c > this.drawableRadius + food.drawableRadius + 1) continue;
+                //
+                //     this.toMass += food.mass;
+                //     foodsArr.splice(i, 1);
+                //     i--;
+                // }
             }
-
-            // for (let i = 0; i < virusArr.length; i++) {
-            //     if (this.mass < 250) break;
-            //
-            //     let virus = virusArr[i];
-            //
-            //     let c = Math.sqrt((this.x - virus.x) ** 2 + (this.y - virus.y) ** 2);
-            //     if (c > this.drawableRadius - 0.5 * virus.drawableRadius) continue;
-            //
-            //     this.owner.isSplit = true;
-            //
-            //     let count = Math.min(Math.floor((this.mass / 2) / 50), 64 - this.owner.cells.length);
-            //     let mass = Math.floor((this.mass / 2) / count);
-            //     let angleStep = 180 / count;
-            //     let angle = getAngle(this.sin, this.cos);
-            //
-            //     this.isCollising = true;
-            //
-            //     let currentAngle = angle.degree - 90;
-            //
-            //     while (count > 0) {
-            //         let sin = Math.sin(degreeToRadians(currentAngle));
-            //         let cos = Math.cos(degreeToRadians(currentAngle));
-            //
-            //         let distance = this.radius + mass / 10 + 5;
-            //         this.owner.cells.push(
-            //             new Cell(this.x + distance * cos, this.y + distance * sin, mass, sin, cos, false, this.color, this.owner, ++this.owner.cellId, 50, true)
-            //         );
-            //         currentAngle += angleStep;
-            //         count--;
-            //         // if (this.owner.current) gameInfo.byScale += 0.05;
-            //     }
-            //
-            //     this.toMass -= this.mass / 2;
-            //     virusArr.splice(i, 1);
-            //     i--;
-            //
-            //     this.owner.isSplit = false;
-            // }
-
-            // for (let i = 0; i < foodsArr.length; i++) {
-            //     let food = foodsArr[i];
-            //     let c = Math.sqrt((this.x - food.x) ** 2 + (this.y - food.y) ** 2);
-            //     if (c > this.drawableRadius + food.drawableRadius + 1) continue;
-            //
-            //     this.toMass += food.mass;
-            //     foodsArr.splice(i, 1);
-            //     i--;
-            // }
 
             if (this.x < 0) this.x = 0;
             else if (this.x > gameInfo.width) this.x = gameInfo.width;
@@ -735,14 +742,18 @@
                             let differentY = this.y - cell.y;
                             let c = Math.sqrt(differentX ** 2 + differentY ** 2);
 
+                            // let cos = differentX / c || 0;
+                            // let sin = differentY / c || 0;
+                            // this.x = roundFloor(this.x + cos * different, 2);
+                            // this.y = roundFloor(this.y + sin * different, 2);
                             this.engineCos = differentX / c || 0;
                             this.engineSin = differentY / c || 0;
-
                             this.engineDistance = different;
                             // this.x = roundFloor(this.x + different * cos, 2);
                             // this.y = roundFloor(this.y + different * sin, 2)
                         }
 
+                        continue;
                         if (Math.abs(this.spaceDistance) > 0 || this.mass < cell.mass || !this.isConnect || !cell.isConnect) continue;
                         if (distance <= roundFloor(this.drawableRadius - cell.drawableRadius / 2, 2)) {
                             this.toMass = roundFloor(this.toMass + cell.mass, 2);
@@ -753,23 +764,22 @@
                             if (playersArr[p].updateI >= i) {
                                 playersArr[p].updateI--;
                             }
-                            // this.isConnect = false;
-                            // setTimeout(() => this.isConnect = true, 100);
+
                         }
                         continue;
                     }
 
-                    if (this.mass < 1.25 * cell.mass) continue;
-                    if (distance > roundFloor(this.drawableRadius - cell.drawableRadius / 2, 2)) continue;
-                    this.toMass = roundFloor(this.toMass + cell.mass, 2);
-                    playersArr[p].cells.splice(i, 1);
-                    i--;
-
-                    if (playersArr[p].updateI >= i) {
-                        playersArr[p].updateI--;
-                    }
-                    if (playersArr[p].cells.length === 0) continue;
-                    if (cell.main) playersArr[p].cells[0].main = true;
+                    // if (this.mass < 1.25 * cell.mass) continue;
+                    // if (distance > roundFloor(this.drawableRadius - cell.drawableRadius / 2, 2)) continue;
+                    // this.toMass = roundFloor(this.toMass + cell.mass, 2);
+                    // playersArr[p].cells.splice(i, 1);
+                    // i--;
+                    //
+                    // if (playersArr[p].updateI >= i) {
+                    //     playersArr[p].updateI--;
+                    // }
+                    // if (playersArr[p].cells.length === 0) continue;
+                    // if (cell.main) playersArr[p].cells[0].main = true;
 
                 }
             }
@@ -821,7 +831,7 @@
         split() {
             this.isCollising = true;
             let mass = this.mass + this.toMass;
-            if (this.owner.cells.length === 64 || mass <= 250) return true;
+            if (this.owner.cells.length === gameInfo.maxCells || mass <= 250) return true;
 
             let speed = Math.min(this.mouseDist, this.speed);
 
@@ -829,7 +839,7 @@
             this.y = roundFloor(this.y - this.sin * speed, 2);
 
             this.isConnect = false;
-            setTimeout(() => this.isConnect = true, 1000);
+            setTimeout(() => this.isConnect = true, gameInfo.connectTime);
 
             let height = this.radius * this.sin * 1.1;
             let width = this.radius * this.cos * 1.1;
@@ -838,9 +848,10 @@
 
             let distance = 50000 / mass + mass / 10;
 
-            this.owner.cells.push(
-                new Cell(roundFloor(this.x + width, 2), roundFloor(this.y + height, 2), mass / 2, this.sin, this.cos, false, this.color, this.owner, ++this.owner.cellId, distance)
-            );
+            let c = new Cell(roundFloor(this.x + width, 2), roundFloor(this.y + height, 2), mass / 2, this.sin, this.cos, false, this.color, this.owner, ++this.owner.cellId, distance);
+            c.isCollising = false;
+
+            this.owner.cells.push(c);
 
         }
 
@@ -967,7 +978,7 @@
                     c.engineDistance = pCell.engineDistance;
                     c.toMass = pCell.toMass;
                     c.totalSpaceDistane = pCell.totalSpaceDistane;
-                    c.isConnect = true;
+                    c.isConnect = c.isConnect;
                     c.isCollising = pCell.isCollising;
                     c.sin = pCell.sin;
                     c.cos = pCell.cos;
@@ -988,8 +999,14 @@
                     let c = Math.sqrt(dX ** 2 + dY ** 2);
                     // if(c < 10) continue;
                     let sin = dY / c;
-                    // console.log(sin);
                     let cos = dX / c;
+
+                    if (c > 0) {
+                        // console.log(sin);
+                        this.cells[cell.count].sin = sin;
+                        this.cells[cell.count].cos = cos;
+
+                    }
                     // if (this.cells[cell.count].toMass >= 0) {
                     this.cells[cell.count].toMass = pCell.mass - this.cells[cell.count].mass;
                     // }
@@ -997,15 +1014,18 @@
 
                     // this.cells[cell.count].x = pCell.x;
                     // this.cells[cell.count].y = pCell.y;
-                    this.cells[cell.count].sin = sin;
-                    this.cells[cell.count].cos = cos;
-                    this.cells[cell.count].engineCos = cos;
-                    this.cells[cell.count].engineSin = sin;
+
+
                     this.cells[cell.count].spaceDistance = pCell.spaceDistance;
                     this.cells[cell.count].spaceCos = pCell.spaceCos;
                     this.cells[cell.count].spaceSin = pCell.spaceSin;
-                    if (c > 10) this.cells[cell.count].engineDistance = c;
+                    if (c > 10) {
+                        this.cells[cell.count].engineCos = cos;
+                        this.cells[cell.count].engineSin = sin;
+                        this.cells[cell.count].engineDistance = c;
+                    }
                     this.cells[cell.count].isCollising = pCell.isCollising;
+                    this.cells[cell.count].isConnect = pCell.isConnect;
                     this.cells[cell.count].main = pCell.main;
                 } catch (e) {
                 }
@@ -1015,7 +1035,7 @@
         }
 
         deleteCells() {
-            if (performance.now() - this.lastDeletedTime < 10000 || this.isSplit) return true;
+            // if (performance.now() - this.lastDeletedTime < 10000 || this.isSplit) return true;
             this.lastDeletedTime = performance.now();
             for (let i = 0; i < this.cells.length; i++) {
                 if (this.ids.includes(this.cells[i].id)) continue;
@@ -1115,7 +1135,10 @@
         food: 500,
         foodMinMass: 50,
         foodMaxMass: 100,
-        virus: 10
+        bulletEatenCoefficient: 0.5,
+        virus: 10,
+        connectTime: 1000,
+        maxCell: 64
     };
 
 
@@ -1136,9 +1159,10 @@
     let renderVar = null;
 
     function calcScaleByCell() {
-        if (!playersArr[0].current) return null;
+        let player = getCurrentPlayer();
+        if (!player) return null;
 
-        return 0.01 * (playersArr[0].cells.length - 1);
+        return 0.01 * (player.player.cells.length - 1);
     }
 
     let startUpdateTime = 0;
@@ -1149,6 +1173,17 @@
     let isFirstRender = false;
     let isSecondRender = false;
 
+
+    function getCurrentPlayer() {
+        for (let i = 0; i < playersArr.length; i++) {
+            let player = playersArr[i];
+            if (player.current) return {player, count: i};
+        }
+
+        return null;
+    }
+
+
     function render() {
         // return true;
         new Promise(() => {
@@ -1157,7 +1192,9 @@
 
                 gameInfo.deltaTime = performance.now() - gameInfo.updateTime;
                 gameInfo.updateTime = performance.now();
-                let delta = 1;
+                let delta = getTimeByDelta(gameInfo.deltaTime);
+                // console.log(differentStateTime);
+                // console.log(states.states.length);
 
                 if (performance.now() - lastStateTimeLocal >= differentStateTime) {
                     // let k = performance.now() - lastStateTimeLocal;
@@ -1206,6 +1243,7 @@
                         }
                     }
                 }
+                // console.log(delta);
 
                 context.clearRect(0, 0, canvas.width, canvas.height);
                 let backgroundColor = (gameSettings.isBackground && !isEmpty(gameSettings.background)) ? gameSettings.background : "#000000";
@@ -1241,9 +1279,9 @@
                     virusArr[i].update(delta);
                 }
 
-                for (let i = 0; i < foodsArr.length; i++) {
-                    foodsArr[i].update();
-                }
+                // for (let i = 0; i < foodsArr.length; i++) {
+                //     foodsArr[i].update();
+                // }
 
                 if (gameSettings.isGrid) {
                     Arc.drawGrid();
@@ -1251,8 +1289,12 @@
                 Arc.drawCenter();
 
                 // let time = performance.now();
+                for (let i = 0; i < foodsArr.length; i++) {
+                    foodsArr[i].render();
+                }
+
+                rendersArr = rendersArr.sort((a, b) => a.drawableRadius - b.drawableRadius);
                 let renderLength = rendersArr.length;
-                // rendersArr = rendersArr.sort((a, b) => a.drawableRadius - b.drawableRadius);
                 for (let i = 0; i < renderLength; i += 2) {
                     rendersArr[i].render();
                     try {
@@ -1276,10 +1318,21 @@
 
 
     let coordsHtml = $("#coords");
+    let lastFpsUpdate = 0;
+    let fps = $("#coords .fps .value");
 
     function updateHtml() {
-        if (playersArr.length > 0) {
-            coordsHtml.text("Mass: " + playersArr[0].mass + " X: " + Math.floor(gameInfo.centerX * 10) + " Y: " + Math.floor(gameInfo.centerY * 10));
+        let player = getCurrentPlayer();
+
+        if (player) {
+            for (let [key, value] of Object.entries([player.player.cells.length, player.player.mass, "x: " + Math.floor(gameInfo.centerX * 10) + " y: " + Math.floor(gameInfo.centerY * 10)])) {
+                coordsHtml.find(".value:eq(" + key + ")").text(value);
+            }
+            // coordsHtml.text("Cells: " + player.player.cells.length + " Mass: " + player.player.mass + " X: " + Math.floor(gameInfo.centerX * 10) + " Y: " + Math.floor(gameInfo.centerY * 10));
+        }
+        if (performance.now() - lastFpsUpdate > 1000 && gameInfo.deltaTime) {
+            fps.text(Math.round(1000 / gameInfo.deltaTime));
+            lastFpsUpdate = performance.now();
         }
         requestAnimationFrame(updateHtml);
     }
@@ -1349,11 +1402,12 @@
     function addUnit(unit, delta = 1) {
         let name = unit.constructor.name.toLowerCase();
         if (name === "player") {
-            if (playersArr.length > 0 && +playersArr[0].id === unit.id) return true;
+            let currentPlayer = getCurrentPlayer();
+            if (playersArr.length > 0 && currentPlayer && +currentPlayer.player.id === unit.id) return true;
 
             unit.loadImage();
             if (unit.current) {
-                if (playersArr.length > 0 && playersArr[0].current) return true;
+                if (currentPlayer) return true;
                 playersArr.unshift(unit);
                 playersArr[0].update(delta);
 
@@ -1401,7 +1455,9 @@
         let html = "";
         for (let [key, player] of Object.entries(arr)) {
             if (key >= 10) break;
-            html += "<div class='flex_row'><span class='number'>" + (+key + 1) + "</span><span class='nick'>" + player.nick + "</span><span class='mass'>" + Math.floor(player.mass) + "</span></div>";
+            let cl = "";
+            if (player.current) cl = "current";
+            html += "<div class='flex_row " + cl + "'><span class='number'>" + (+key + 1) + "</span><span class='nick'>" + player.nick + "</span><span class='mass'>" + Math.floor(player.mass) + "</span></div>";
         }
         $("#top_players").html(html);
         setTimeout(getTopPlayers, 2000);
@@ -1544,11 +1600,18 @@
 
 
         if (["digit1", "digit2", "digit3", "digit4", "digit5", "digit6", "digit7", "digit8", "digit9"].includes(code)) {
-            if (isSticker || !ws) return true;
+            if (isSticker) {
+                keyPressed.splice(keyPressed.indexOf(code), 1);
+                return true;
+            }
+            if (!ws) return true;
+
+            let player = getCurrentPlayer();
+            if (!player) return true;
 
             isSticker = true;
             let stickerNumber = +code.substr(-1) - 1;
-            playersArr[0].stickerI = stickerNumber;
+            playersArr[player.count].stickerI = stickerNumber;
 
             ws.sendJson({
                 action: "select_sticker",
@@ -1569,8 +1632,10 @@
         if (["digit1", "digit2", "digit3", "digit4", "digit5", "digit6", "digit7", "digit8", "digit9"].includes(code)) {
             isSticker = false;
             if (!ws) return true;
+            let player = getCurrentPlayer();
+            if (!player) return true;
 
-            playersArr[0].stickerI = null;
+            playersArr[player.count].stickerI = null;
             ws.sendJson({
                 action: "select_sticker",
                 number: ""
@@ -1614,6 +1679,12 @@
         document.getElementById("game_settings").addEventListener("wheel", event => event.stopPropagation());
     }
 
+    // function fps(){
+    //     console.log(1000 / gameInfo.deltaTime);
+    //     requestAnimationFrame(fps);
+    // }
+    // fps();
+
     function clearAll() {
         try {
             cancelAnimationFrame(renderVar);
@@ -1643,7 +1714,8 @@
     }
 
 
-    let ping = $("#ping");
+    let ping = $("#coords .ping .value");
+    let startPingTime = 0;
 
     function startGame(ip) {
         isGame = false;
@@ -1665,6 +1737,9 @@
                 userId: getCookie("User-Id") || ""
             });
             ws.sendJson({action: "update_units"});
+            startPingTime = performance.now();
+            ws.sendJson({action: "ping"});
+            // setInterval(() => ws.sendJson({action: "update_units"}), 50);
 
         });
         ws.on("message", function (event) {
@@ -1679,6 +1754,8 @@
             if (data.action === "load_game_settings") {
                 gameInfo.width = data.settings.width;
                 gameInfo.height = data.settings.height;
+                gameInfo.connectTime = data.settings.connectTime;
+                gameInfo.maxCells = data.settings.maxCells;
             }
 
             if (data.action === "spawn_unit") {
@@ -1708,9 +1785,8 @@
             }
 
             if (data.action === "player_disconnect") {
-                let length = playersArr.length;
 
-                for (let i = 0; i < length; i++) {
+                for (let i = 0; i < playersArr.length; i++) {
                     if (+playersArr[i].id !== +data.id) continue;
                     playersArr.splice(i, 1);
                     break;
@@ -1727,6 +1803,7 @@
                 // let delta = getTimeByDelta((performance.now() - startUpdateTime) / 2);
                 let players = data.units.players.map(player => getUnit(player));
                 let virus = data.units.virus.map(virus => getUnit(virus));
+                // console.log(states.states.length);
                 states.addGameState({time: data.time, players, virus});
                 if (lastStateTime) {
                     states.removeBeforeState(lastStateTime + performance.now() - lastStateTimeLocal - differentStateTime);
@@ -1808,7 +1885,7 @@
                 // renderVar = requestAnimationFrame(render);
                 // setTimeout(function () {
                 //     startUpdateTime = performance.now();
-                ws.sendJson({action: "update_units"});
+                // ws.sendJson({action: "update_units"});
                 // }, 0);
 
                 return true;
@@ -1837,13 +1914,18 @@
             }
 
             if (data.action === "ping") {
-                let delta = Date.now() - data.time;
-                ping.text(delta);
+                let delta = performance.now() - startPingTime;
+                ping.text(Math.round(delta / 2));
 
+                setTimeout(function () {
+                    startPingTime = performance.now();
+                    ws.sendJson({action: "ping"});
+                }, 1000);
                 return true;
             }
 
             if (data.action === "nick_info") {
+                isAdmin = +data.is_admin;
                 return true;
             }
 

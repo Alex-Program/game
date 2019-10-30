@@ -17,10 +17,28 @@
 
 </canvas>
 
-<div id="ping"></div>
 
 <div id="coords">
-
+    <div class="flex_row">
+        <span class="label">Cells</span>
+        <span class="value"></span>
+    </div>
+    <div class="flex_row">
+        <span class="label">Mass</span>
+        <span class="value"></span>
+    </div>
+    <div class="flex_row">
+        <span class="label">Coords</span>
+        <span class="value"></span>
+    </div>
+    <div class="flex_row fps">
+        <span class="label">FPS</span>
+        <span class="value"></span>
+    </div>
+    <div class="flex_row ping">
+        <span class="label">Ping</span>
+        <span class="value"></span>
+    </div>
 </div>
 
 <div id="open_chat" class="closed">
@@ -230,7 +248,8 @@
         <div class="flex" style="margin-top: 10px; padding-top: 5px;">
             <input type="color" id="select_color" style="display: none;" value="#FFD700">
             <span class="label_input">Цвет:</span>
-            <span id="color_preview" style="color: black; background: #FFD700;">#FFD700</span>
+            <span id="color_preview" class="color_preview"
+                  style="color: black; background: #FFD700; border-color: #cda500">#FFD700</span>
         </div>
         <div style="display: flex; justify-content: center;">
             <img id="skin_preview" class="closed">
@@ -507,9 +526,12 @@
 
 <div id="user_nicks" class="closed">
     <div class="flex_row" style="border-radius: 5px; overflow: hidden;">
-        <span class="account_tag selected" data-target="user_skins">Ники</span>
-        <span class="account_tag" data-target="local_skins">Локальные ники</span>
-        <span class="account_tag" data-target="user_stickers">Стикеры</span>
+        <div id="change_color" class="color_preview" style="background: #FFD700; border-color: #cda500"></div>
+        <div class="flex_row" style="border-radius: 5px; overflow: hidden; white-space: nowrap;">
+            <span class="account_tag selected" data-target="user_skins">Ники</span>
+            <span class="account_tag" data-target="local_skins">Локальные ники</span>
+            <span class="account_tag" data-target="user_stickers">Стикеры</span>
+        </div>
     </div>
 
     <div class="user_skins toggle">

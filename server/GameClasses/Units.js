@@ -12,7 +12,11 @@ let gameInfo = {
     foodMinMass: 5,
     foodMaxMass: 50,
     virus: 100,
-    bulletMass: 50
+    bulletMass: 50,
+    bulletEatenCoefficient: 0.5,
+    connectTime: 1000,
+    connectTimeMassCoefficient: 0.1,
+    maxCells: 64
 };
 
 
@@ -245,9 +249,9 @@ class Cell extends Arc {
         this.engineSin = 0;
         this.engineCos = 0;
         this.isConnect = false;
-        this.isCollising = false;
+        this.isCollising = true;
         this.lastDecreaseTime = performance.now();
-        setTimeout(() => this.isConnect = true, 1000);
+        setTimeout(() => this.isConnect = true, gameInfo.connectTime + this.mass * gameInfo.connectTimeMassCoefficient);
 
         this.updateDirection();
 
@@ -310,64 +314,72 @@ class Cell extends Arc {
             this.engineDistance = Functions.roundFloor(this.engineDistance - speed, 2);
         }
 
-        for (let i = 0; i < game.bulletsArr.length; i++) {
-            let bullet = game.bulletsArr[i];
-            let c = Math.sqrt((this.x - bullet.x) ** 2 + (this.y - bullet.y) ** 2);
-            if (this.drawableRadius >= c) {
-                this.toMass += bullet.mass;
+        if (this.spaceDistance <= this.totalSpaceDistane / 2) {
+            for (let i = 0; i < game.virusArr.length; i++) {
 
-                bullet.destroy();
-                game.bulletsArr.splice(i, 1);
+                let virus = game.virusArr[i];
+                if (this.mass < virus.mass * 1.5) continue;
+
+                let c = Math.sqrt((this.x - virus.x) ** 2 + (this.y - virus.y) ** 2);
+                if (c > this.drawableRadius - 0.5 * virus.drawableRadius) continue;
+
+                this.toMass += virus.mass;
+                let count = Math.min(Math.floor((this.mass / 2) / 50), gameInfo.maxCells - this.owner.cells.length);
+                let mass = Math.floor((this.mass / 2) / count);
+                let angleStep = 180 / count;
+                let angle = Functions.getAngle(this.sin, this.cos);
+
+                this.isCollising = true;
+
+                let currentAngle = angle.degree - 90;
+
+                if (count > 0) this.toMass -= this.mass / 2;
+
+                while (count > 0) {
+                    let sin = Math.sin(Functions.degreeToRadians(currentAngle));
+                    let cos = Math.cos(Functions.degreeToRadians(currentAngle));
+
+                    let distance = this.radius + mass / 10 + 5;
+                    this.owner.cells.push(
+                        new Cell(this.x + distance * cos, this.y + distance * sin, mass, sin, cos, false, this.color, this.owner, ++this.owner.cellId, 50)
+                    );
+                    currentAngle += angleStep;
+                    count--;
+                }
+
+
+                virus.destroy();
+                game.virusArr.splice(i, 1);
                 i--;
             }
         }
 
-        for (let i = 0; i < game.virusArr.length; i++) {
-            if (this.mass < 250) break;
+        if (this.isCollising) {
+            for (let i = 0; i < game.bulletsArr.length; i++) {
+                let bullet = game.bulletsArr[i];
+                let c = Math.sqrt((this.x - bullet.x) ** 2 + (this.y - bullet.y) ** 2);
+                if (this.drawableRadius >= c) {
+                    this.toMass += bullet.mass * gameInfo.bulletEatenCoefficient;
 
-            let virus = game.virusArr[i];
-
-            let c = Math.sqrt((this.x - virus.x) ** 2 + (this.y - virus.y) ** 2);
-            if (c > this.drawableRadius - 0.5 * virus.drawableRadius) continue;
-
-            let count = Math.min(Math.floor((this.mass / 2) / 50), 64 - this.owner.cells.length);
-            let mass = Math.floor((this.mass / 2) / count);
-            let angleStep = 180 / count;
-            let angle = Functions.getAngle(this.sin, this.cos);
-
-            this.isCollising = true;
-
-            let currentAngle = angle.degree - 90;
-
-            while (count > 0) {
-                let sin = Math.sin(Functions.degreeToRadians(currentAngle));
-                let cos = Math.cos(Functions.degreeToRadians(currentAngle));
-
-                let distance = this.radius + mass / 10 + 5;
-                this.owner.cells.push(
-                    new Cell(this.x + distance * cos, this.y + distance * sin, mass, sin, cos, false, this.color, this.owner, ++this.owner.cellId, 50)
-                );
-                currentAngle += angleStep;
-                count--;
+                    bullet.destroy();
+                    game.bulletsArr.splice(i, 1);
+                    i--;
+                }
             }
 
-            this.toMass -= this.mass / 2;
 
-            virus.destroy();
-            game.virusArr.splice(i, 1);
-            i--;
-        }
+            for (let i = 0; i < game.foodsArr.length; i++) {
+                let food = game.foodsArr[i];
+                let c = Math.sqrt((this.x - food.x) ** 2 + (this.y - food.y) ** 2);
+                if (c > this.drawableRadius + food.drawableRadius + 1) continue;
 
-        for (let i = 0; i < game.foodsArr.length; i++) {
-            let food = game.foodsArr[i];
-            let c = Math.sqrt((this.x - food.x) ** 2 + (this.y - food.y) ** 2);
-            if (c > this.drawableRadius + food.drawableRadius + 1) continue;
+                this.toMass += food.mass;
 
-            this.toMass += food.mass;
+                food.destroy();
+                game.foodsArr.splice(i, 1);
+                i--;
+            }
 
-            food.destroy();
-            game.foodsArr.splice(i, 1);
-            i--;
         }
 
         if (this.x < 0) this.x = 0;
@@ -409,8 +421,12 @@ class Cell extends Arc {
 
                         this.engineCos = differentX / c || 0;
                         this.engineSin = differentY / c || 0;
-
+                        //
                         this.engineDistance = different;
+                        // let cos = differentX / c || 0;
+                        // let sin = differentY / c || 0;
+                        // this.x = Functions.roundFloor(this.x + cos * different, 2);
+                        // this.y = Functions.roundFloor(this.y + sin * different, 2);
                         // this.x = roundFloor(this.x + different * cos, 2);
                         // this.y = roundFloor(this.y + different * sin, 2)
                     }
@@ -490,7 +506,7 @@ class Cell extends Arc {
     split() {
         this.isCollising = true;
         let mass = this.mass + this.toMass;
-        if (this.owner.cells.length === 64 || mass <= 250) return true;
+        if (this.owner.cells.length === gameInfo.maxCells || mass <= 250) return true;
 
         let speed = Math.min(this.mouseDist, this.speed);
 
@@ -498,7 +514,7 @@ class Cell extends Arc {
         this.y = Functions.roundFloor(this.y - this.sin * speed, 2);
 
         this.isConnect = false;
-        setTimeout(() => this.isConnect = true, 1000);
+        setTimeout(() => this.isConnect = true, gameInfo.connectTime + this.mass * gameInfo.connectTimeMassCoefficient);
 
         let height = this.radius * this.sin * 1.1;
         let width = this.radius * this.cos * 1.1;
@@ -507,15 +523,15 @@ class Cell extends Arc {
 
         let distance = 50000 / mass + mass / 10;
 
-        this.owner.cells.push(
-            new Cell(Functions.roundFloor(this.x + width, 2), Functions.roundFloor(this.y + height, 2), mass / 2, this.sin, this.cos, false, this.color, this.owner, ++this.owner.cellId, distance)
-        );
+        let c = new Cell(Functions.roundFloor(this.x + width, 2), Functions.roundFloor(this.y + height, 2), mass / 2, this.sin, this.cos, false, this.color, this.owner, ++this.owner.cellId, distance);
+        c.isCollising = false;
+        this.owner.cells.push(c);
 
     }
 
 
     shoot() {
-        if (this.mass + this.toMass < 250) return true;
+        if (this.mass + this.toMass <= 70) return true;
 
         game.bulletsArr.push(
             new Bullet(this.x + (this.radius + 5) * this.cos, this.y + (this.radius + 5) * this.sin, this.sin, this.cos, gameInfo.bulletMass, 100, this.color)
@@ -583,9 +599,7 @@ class Player {
         this.stickerI = null;
         this.lastShootTime = performance.now();
 
-        // clients[wsId].isConnect = true;
 
-        // this.connect();
         this.main();
     }
 
@@ -735,7 +749,7 @@ class Game {
         this.bulletId = 0;
         this.onSpawnUnit = unit => "";
         this.onDestroyUnit = (type, id) => "";
-        this.actions = [];
+        this.wsMessage = (message, id = null, besidesId = null) => "";
     }
 
 
@@ -938,7 +952,7 @@ class Game {
                     engineDistance: cell.engineDistance,
                     engineSin: cell.engineSin,
                     engineCos: cell.engineCos,
-                    isConnect: true,
+                    isConnect: cell.isConnect,
                     id: cell.id,
                     color: cell.color,
                     isCollising: cell.isCollising,

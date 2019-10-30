@@ -50,6 +50,23 @@ function wsModerMessage(message) {
 }
 
 
+function gameMessage(message, isModer = false) {
+    let json = {action: "game_message", message};
+    isModer ? wsModerMessage(json) : wsMessage(json);
+}
+
+function nickInfo(wsId) {
+    let player = Units.game.findPlayer(wsId);
+    if (!player) return true;
+    player = player.player;
+    let message = {
+        action: "nick_info",
+        is_moder: +player.isModer,
+        is_admin: +player.isAdmin
+    };
+    wsMessage(message, player.wsId);
+}
+
 class Command {
     adminsCommand = {
         add_mass: this.addMass,
@@ -166,16 +183,8 @@ Units.game.onSpawnUnit = function (unit) {
         message.current = "true";
         wsMessage(message, message.id);
 
-        let player = Units.game.findPlayer(message.id);
-        if (!player) return true;
-        player = player.player;
-        message = {
-            action: "nick_info",
-            is_moder: +player.isModer,
-            is_admin: +player.isAdmin
-        };
-        wsMessage(message, player.wsId);
-        chatMessage(player.wsId, "вошел в игру", 0, 0, true);
+        nickInfo(message.id);
+        chatMessage(message.id, "вошел в игру", 0, 0, true);
         return true;
     }
 
@@ -185,6 +194,8 @@ Units.game.onSpawnUnit = function (unit) {
 Units.game.onDestroyUnit = function (type, id) {
     wsMessage({action: "destroy_unit", type, id});
 };
+
+Units.game.wsMessage = wsMessage;
 
 Units.game.startGame();
 
@@ -211,6 +222,7 @@ function chatMessage(id, message, pm, pmId, isSecondary = false) {
 }
 
 let startUpdate = Date.now();
+
 function updateUnits() {
     // console.log(Date.now() - startUpdate);
     startUpdate = Date.now();
@@ -225,8 +237,8 @@ function updateUnits() {
     setTimeout(updateUnits, 50);
 }
 
-// setTimeout(updateUnits, 50);
-// setInterval(updateUnits, 50);
+setTimeout(updateUnits, 50);
+// setInterval(updateUnits, 10);
 
 
 webSocketServer.on('connection', function (ws, req) {
@@ -314,6 +326,7 @@ webSocketServer.on('connection', function (ws, req) {
             return true;
         }
         if (data.action === "update_units") {
+            return true;
             let time = Date.now();
             let arr = Units.game.getAllUnits(false);
             wsMessage({
@@ -380,6 +393,7 @@ webSocketServer.on('connection', function (ws, req) {
                 skin: player.skin,
                 skinId: player.skinId
             });
+            nickInfo(id);
 
             return true;
         }
@@ -416,10 +430,10 @@ webSocketServer.on('connection', function (ws, req) {
 
             return true;
         }
-    });
 
-    setInterval(() => {
-        wsMessage({action: "ping"});
-    }, 1000);
+        if(data.action === "ping"){
+            wsMessage({action: "ping"}, id);
+        }
+    });
 
 });

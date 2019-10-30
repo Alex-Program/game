@@ -64,6 +64,7 @@ canvas {
     font-weight: bold;
 }
 
+
 #all_messages .admin .message {
     /*color: red;*/
 }
@@ -232,22 +233,40 @@ canvas {
 
 #coords {
     position: absolute;
-    bottom: 50px;
-    left: 50%;
-    transform: translate(-50%, 0);;
-    border-radius: 15px;
-    border: solid 1px black;
-    background: rgba(185, 185, 185, 0.55);
-}
-
-#ping {
-    position: absolute;
     top: 50px;
     left: 50px;
-    border: solid 1px black;
-    color: red;
+    padding: 10px;
+    border-radius: 5px;
+    border: solid 3px gold;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    cursor: pointer;
+}
+
+#coords:active {
+    cursor: move;
+}
+
+#coords > div:not(:last-child) {
+    margin-bottom: 5px;
+}
+
+#coords .label {
+    border-radius: 5px;
+    border: solid 2px gold;
+    color: gold;
+    background: red;
     padding: 5px;
-    border-radius: 20px;
+    font: bold 12pt/12pt sans-serif;
+    width: 100px;
+    text-align: center;
+}
+
+#coords .value {
+    flex-grow: 1;
+    margin-left: 10px;
+    color: gold;
+    font: bold 12pt/12pt sans-serif;
 }
 
 #online_players {
@@ -494,7 +513,8 @@ canvas {
     font: bold 12pt/12pt sans-serif;
     padding: 5px;
     cursor: pointer;
-    border: solid 1px gold;
+    border-style: solid;
+    border-width: 3px;
 }
 
 #exit_button {
@@ -934,6 +954,10 @@ canvas {
     border-radius: 5px;
 }
 
+#top_players > div.current .nick, #top_players > div.current .mass {
+    color: gold;
+}
+
 #top_players .number {
     border: solid 1px gold;
     border-radius: 20px;
@@ -1221,4 +1245,13 @@ canvas {
 #main_buttons > div > span > img {
     width: 25px;
     margin-right: 10px;
+}
+
+#change_color {
+    border-radius: 20px;
+    border-width: 5px;
+    border-style: solid;
+    padding: 13px;
+    cursor: pointer;
+    margin-right: 5px;
 }

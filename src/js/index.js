@@ -7,6 +7,7 @@ let gameSettings = {};
 
 let hiddenUsersId = [];
 let highlightedUsersId = [];
+let isAdmin = false;
 
 
 function loadImage(imageName, src) {
@@ -73,9 +74,7 @@ class Message {
 
 
         $("#all_messages").append("<div class='div_message " + cl + "' data-pid='" + data.id + "' data-nick='" + escapeHtml(data.nick) + "' data-admin='" + isAdmin + "'><span class='pm_icon'>ЛС</span><div class='icon'></div><span class='nick_name' style='color: " + escapeHtml(data.color) + "'>" + escapeHtml(data.nick) + ":</span><span class='message'> " + escapeHtml(data.message) + "</span></div>");
-        $("#all_messages").stop().animate({scrollTop: $("#all_messages")[0].scrollHeight});
-        // $("#all_messages")[0].scrollTop = $("#all_messages")[0].scrollHeight;
-        if ($("#all_messages > div").length > 50) $("#all_messages > div:eq(0)").remove();
+        Message.scrollChat();
     }
 
     static hiddenUserMessage() {
@@ -114,6 +113,8 @@ class Message {
         message = message.replace("\n", "<br>");
         let html = "<div class='game_message'><div>" + message + "</div></div>";
         $("#all_messages").append(html);
+
+        Message.scrollChat();
     }
 
     static selectPM(nick, id) {
@@ -122,6 +123,10 @@ class Message {
         $("#message_text").focus();
     }
 
+    static scrollChat() {
+        $("#all_messages").stop().animate({scrollTop: $("#all_messages")[0].scrollHeight});
+        if ($("#all_messages > div").length > 50) $("#all_messages > div:eq(0)").remove();
+    }
 }
 
 class Command {
@@ -154,6 +159,33 @@ class Command {
     }
 }
 
+
+function setLocalNick(nick, password = "") {
+    localStorage.setItem("nick", JSON.stringify({nick, password: password || ""}));
+}
+
+function getLocalNick() {
+    let n = localStorage.getItem("nick");
+    let obj = {
+        nick: "",
+        password: ""
+    };
+    if (!n) return obj;
+    n = JSON.parse(n);
+    obj.nick = n.nick;
+    obj.password = n.password;
+    return obj;
+}
+
+function setLocalColor(color) {
+    localStorage.setItem("color", color);
+}
+
+function getLocalColor() {
+    let c = localStorage.getItem("color");
+    return c || "#FFD700";
+}
+
 function changeColor(color) {
     if (!ws) return true;
     ws.sendJson({
@@ -163,6 +195,8 @@ function changeColor(color) {
 }
 
 function changeNick(nick, password = "") {
+    setLocalNick(nick, password);
+
     if (!ws) return true;
     ws.sendJson({
         action: "change_nick",
@@ -285,6 +319,10 @@ function fillGameSettings() {
         input.change();
     }
 
+    $("#select_color").val(getLocalColor()).change();
+    let nick = getLocalNick();
+    $("#nick_for_game").val(nick.nick).trigger("input");
+    $("#password_for_game").val(nick.password);
 }
 
 let user = null;
@@ -488,10 +526,26 @@ function getNick(nick) {
 let getNickTimeOut = null;
 
 let changeSettings = false;
+let isChangeColor = false;
+let isMoveCoords = false;
+let differentCoordsPosition = {x: 0, y: 0};
 
 $("#resize_chat").mousedown(() => resizeChat = true);
-$("body").mouseup(() => resizeChat = false)
+$("#coords").mousedown(event => {
+    let coords = $("#coords")[0].getBoundingClientRect();
+    differentCoordsPosition.x = event.clientX - coords.left;
+    differentCoordsPosition.y = event.clientY - coords.top;
+    isMoveCoords = true
+});
+$("body").mouseup(() => {
+    resizeChat = false;
+    isMoveCoords = false;
+})
     .mousemove(function (event) {
+        if (isMoveCoords) {
+            $("#coords").css({left: event.clientX - differentCoordsPosition.x, top: event.clientY - differentCoordsPosition.y});
+            return true;
+        }
         if (!resizeChat) return true;
 
         let height = window.innerHeight - 20 - event.clientY;
@@ -536,7 +590,7 @@ $("body").mouseup(() => resizeChat = false)
         event.preventDefault();
         event.stopPropagation();
         let parent = $(this).closest(".div_message");
-        let userActionsDiv = event.ctrlKey ? $(".user_actions.admin") : $(".user_actions.user");
+        let userActionsDiv = (event.ctrlKey && isAdmin) ? $(".user_actions.admin") : $(".user_actions.user");
         userActionsDiv.find("div:eq(0)").text(parent.attr("data-nick") + " (" + parent.attr("data-pid") + ")");
         userActionsDiv.css({top: event.clientY + 10, left: event.clientX + 10}).removeClass("closed");
         $("#selected_chat_user").val(parent.attr("data-pid"));
@@ -649,14 +703,21 @@ $("body").mouseup(() => resizeChat = false)
         $(this).addClass("selected");
     })
 
-    .on("click", "#color_preview", () => $("#select_color").click())
+    .on("click", ".color_preview", () => {
+        isChangeColor = true;
+        $("#select_color").click();
+    })
 
     .on("change", "#select_color", function () {
         let color = $(this).val();
+        let borderColor = toChangeColor(color);
         let rgb = hexToRgb(color);
         let textColor = "white";
         if (rgb.brightness) textColor = "black";
-        $("#color_preview").css({background: color, color: textColor}).text(color);
+        $(".color_preview").css({background: color, "border-color": borderColor, color: textColor});
+        $("#color_preview").text(color);
+        setLocalColor(color);
+        changeColor(color);
     })
 
     .on("click", "#account_div", () => $("#exit_button").toggleClass("closed"))
@@ -698,8 +759,11 @@ $("body").mouseup(() => resizeChat = false)
     })
 
     .on("mouseleave", "#user_nicks", function () {
+        if (isChangeColor) return true;
         $(this).addClass("closed");
     })
+
+    .on("mouseenter", "#user_nicks", () => isChangeColor = false)
 
     .on("mouseenter", "#game_settings", () => changeSettings = false)
 
