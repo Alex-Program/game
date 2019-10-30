@@ -484,7 +484,7 @@ class Cell extends Arc {
                     game.playersArr.splice(p, 1);
                     p--;
                     if (p <= game.updatePlayerI) game.updatePlayerI--;
-                    continue;
+                    break;
                 }
                 if (cell.main) game.playersArr[p].cells[0].main = true;
 
