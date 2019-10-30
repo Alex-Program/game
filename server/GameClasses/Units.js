@@ -864,8 +864,8 @@ class Game {
             this.updateUnit();
             this.addGameState();
 
-            if (performance.now() - this.lastUpdateUnitsTime > 1000 / 30) {
-                let arr = this.getAllUnits();
+            if (performance.now() - this.lastUpdateUnitsTime > 1000 / 20) {
+                let arr = this.getAllUnits(false);
                 this.wsMessage({
                     action: "update_units",
                     units: arr,
@@ -904,8 +904,9 @@ class Game {
             return this.getUnit(unit, all);
         });
         let virus = this.virusArr.map(unit => {
-            return this.getUnit(unit);
+            return this.getUnit(unit, all);
         });
+        virus = [];
         if (all) {
             let foods = this.foodsArr.map(unit => {
                 return this.getUnit(unit);

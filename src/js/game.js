@@ -1743,6 +1743,7 @@
 
         });
         ws.on("message", function (event) {
+            // let data = event.data;
             let data = arrayBufferToString(event.data);
             try {
                 data = JSON.parse(data);
