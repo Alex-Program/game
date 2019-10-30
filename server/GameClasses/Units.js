@@ -155,6 +155,7 @@ class Virus extends Arc {
         this.mass = mass;
         this.toMass = 0;
         this.color = color;
+        this.isChanged = false;
 
         game.onSpawnUnit(this);
     }
@@ -163,9 +164,11 @@ class Virus extends Arc {
 
         if (this.x <= 0 || this.x >= gameInfo.width) {
             this.cos = -this.cos;
+            this.isChanged = true;
         }
         if (this.y <= 0 || this.y >= gameInfo.height) {
             this.sin = -this.sin;
+            this.isChanged = true;
         }
 
         if (Math.abs(this.toMass) > 0) {
@@ -183,6 +186,7 @@ class Virus extends Arc {
                     new Virus(this.x, this.y, this.sin, this.cos, 200)
                 )
             }
+            this.isChanged = true;
         }
 
         if (this.distance > 0) {
@@ -200,6 +204,7 @@ class Virus extends Arc {
             else if (this.y > gameInfo.height) this.y = gameInfo.height;
 
             this.distance = Functions.roundFloor(this.distance - speed, 2);
+            this.isChanged = true;
         }
 
 
@@ -217,6 +222,7 @@ class Virus extends Arc {
 
             this.sin = bullet.sin;
             this.cos = bullet.cos;
+            this.isChanged = true;
         }
 
 
@@ -251,7 +257,11 @@ class Cell extends Arc {
         this.isConnect = false;
         this.isCollising = true;
         this.lastDecreaseTime = performance.now();
-        setTimeout(() => this.isConnect = true, gameInfo.connectTime + this.mass * gameInfo.connectTimeMassCoefficient);
+        this.owner.isChanged = true;
+        setTimeout(() => {
+            this.isConnect = true;
+            this.owner.isChanged = true;
+        }, gameInfo.connectTime + this.mass * gameInfo.connectTimeMassCoefficient);
 
         this.updateDirection();
 
@@ -266,6 +276,7 @@ class Cell extends Arc {
         if (performance.now() - this.lastDecreaseTime > 1000 && this.mass > 200) {
             this.toMass -= this.mass / 100;
             this.lastDecreaseTime = performance.now();
+            this.owner.isChanged = true;
         }
 
         if (this.spaceDistance === 0) {
@@ -351,6 +362,8 @@ class Cell extends Arc {
                 virus.destroy();
                 game.virusArr.splice(i, 1);
                 i--;
+
+                this.owner.isChanged = true;
             }
         }
 
@@ -364,6 +377,7 @@ class Cell extends Arc {
                     bullet.destroy();
                     game.bulletsArr.splice(i, 1);
                     i--;
+                    this.owner.isChanged = true;
                 }
             }
 
@@ -378,6 +392,7 @@ class Cell extends Arc {
                 food.destroy();
                 game.foodsArr.splice(i, 1);
                 i--;
+                this.owner.isChanged = true;
             }
 
         }
@@ -388,8 +403,8 @@ class Cell extends Arc {
         if (this.y < 0) this.y = 0;
         else if (this.y > gameInfo.height) this.y = gameInfo.height;
 
-        this.engineSin = 0;
-        this.engineCos = 0;
+        // this.engineSin = 0;
+        // this.engineCos = 0;
         if (this.x <= 0 || this.x >= gameInfo.width) {
             this.engineCos = -this.cos;
             this.engineDistance = this.x <= 0 ? -this.x : this.x - gameInfo.width;
@@ -423,6 +438,7 @@ class Cell extends Arc {
                         this.engineSin = differentY / c || 0;
                         //
                         this.engineDistance = different;
+                        this.owner.isChanged = true;
                         // let cos = differentX / c || 0;
                         // let sin = differentY / c || 0;
                         // this.x = Functions.roundFloor(this.x + cos * different, 2);
@@ -441,6 +457,7 @@ class Cell extends Arc {
                             i--;
                             this.owner.updateI--;
                         }
+                        this.owner.isChanged = true;
                         // this.isConnect = false;
                         // setTimeout(() => this.isConnect = true, 100);
                     }
@@ -450,6 +467,9 @@ class Cell extends Arc {
 
                 if (this.mass < 1.25 * cell.mass) continue;
                 if (distance > Functions.roundFloor(this.drawableRadius - cell.drawableRadius / 2, 2)) continue;
+                game.playersArr[p].isChanged = true;
+                this.owner.isChanged = true;
+
                 this.toMass = Functions.roundFloor(this.toMass + cell.mass, 2);
                 game.playersArr[p].cells.splice(i, 1);
                 i--;
@@ -549,6 +569,7 @@ class Cell extends Arc {
                 new Bullet(rand.x, rand.y, 0, 0, gameInfo.bulletMass, 0, "#ff0400")
             )
         }
+        this.owner.isChanged = true;
     }
 
     getRandomInRound(radius = 300, distance = 0) {
@@ -598,7 +619,7 @@ class Player {
         this.stickersSet = null;
         this.stickerI = null;
         this.lastShootTime = performance.now();
-
+        this.isChanged = true;
 
         this.main();
     }
@@ -617,14 +638,10 @@ class Player {
             .then(data => {
                 if (data.result !== "true") {
                     this.account = null;
-                    return false;
-                }
-                if (+data.data.is_banned) {
+                } else if (+data.data.is_banned) {
                     this.account = null;
-                    return false;
-                }
-
-                this.account = data.data;
+                } else this.account = data.data;
+                this.isChanged = true;
                 return true;
             });
     }
@@ -664,7 +681,7 @@ class Player {
             this.isAdmin = 0;
             this.isModer = 0;
         }
-
+        this.isChanged = true;
     }
 
     async changeNick(nick, password = "") {
@@ -678,6 +695,7 @@ class Player {
         for (let i = 0; i < this.cells.length; i++) {
             this.cells[i].color = color;
         }
+        this.isChanged = true;
     }
 
     update(delta = 1) {
@@ -712,6 +730,7 @@ class Player {
             this.cells[i].split();
         }
 
+        this.isChanged = true;
     }
 
     shoot() {
@@ -721,16 +740,22 @@ class Player {
             this.cells[i].shoot();
         }
         this.lastShootTime = performance.now();
+
+        this.isChanged = true;
     }
 
 
     mouseMove(x, y) {
         this.mouse = {x, y};
+
+        this.isChanged = true;
     }
 
     setStickers(stickers) {
         this.stickersSet = stickers;
         this.stickerI = null;
+
+        this.isChanged = true;
     }
 }
 
@@ -900,14 +925,26 @@ class Game {
     }
 
     getAllUnits(all = true) {
-        let players = this.playersArr.map(unit => {
-            return this.getUnit(unit, all);
-        });
-        let virus = this.virusArr.map(unit => {
-            return this.getUnit(unit, all);
-        });
-        virus = [];
+        let players = [];
+        for (let i = 0; i < this.playersArr.length; i++) {
+            let p = this.playersArr[i];
+            // if (!all && !p.isChanged) continue;
+
+            players.push(this.getUnit(p, all));
+            this.playersArr[i].isChanged = false;
+        }
+
+
+        let virus = [];
+        for (let i = 0; i < this.virusArr.length; i++) {
+            let v = this.virusArr[i];
+            if (!all && !v.isChanged) continue;
+
+            virus.push(this.getUnit(v));
+            this.virusArr[i].isChanged = false;
+        }
         if (all) {
+
             let foods = this.foodsArr.map(unit => {
                 return this.getUnit(unit);
             });
@@ -926,12 +963,12 @@ class Game {
 
         if (name === "player") {
             let obj = {
-                name,
-                cells: [],
-                cellId: unit.cellId,
-                mouseY: unit.mouse.y,
-                mouseX: unit.mouse.x,
-                color: unit.color,
+                name: "p",
+                c: [], // cells
+                ci: unit.cellId, // cellId
+                my: unit.mouse.y, // mouseY
+                mx: unit.mouse.x, // mouseX
+                cl: unit.color, // color
                 id: unit.wsId,
                 nick: unit.nick,
                 skin: unit.skin,
@@ -951,23 +988,23 @@ class Game {
             let length = unit.cells.length;
             for (let i = 0; i < length; i++) {
                 let cell = unit.cells[i];
-                obj.cells.push({
+                obj.c.push({
                     x: cell.x,
                     y: cell.y,
-                    mass: cell.mass,
-                    toMass: cell.toMass,
-                    spaceSin: cell.spaceSin,
-                    spaceCos: cell.spaceCos,
-                    spaceDistance: cell.spaceDistance,
-                    totalSpaceDistane: cell.totalSpaceDistane,
-                    engineDistance: cell.engineDistance,
-                    engineSin: cell.engineSin,
-                    engineCos: cell.engineCos,
-                    isConnect: cell.isConnect,
+                    m: cell.mass, // mass
+                    tm: cell.toMass, // toMass
+                    ss: cell.spaceSin, // spaceSin
+                    sc: cell.spaceCos, // spaceCos
+                    sd: cell.spaceDistance,
+                    tsd: cell.totalSpaceDistane,
+                    ed: cell.engineDistance,
+                    es: cell.engineSin,
+                    ec: cell.engineCos,
+                    ic: cell.isConnect,
                     id: cell.id,
-                    color: cell.color,
-                    isCollising: cell.isCollising,
-                    main: cell.main
+                    c: cell.color,
+                    icl: cell.isCollising,
+                    mn: cell.main
                 });
             }
 

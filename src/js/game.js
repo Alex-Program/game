@@ -1340,33 +1340,33 @@
 
     function getUnit(unit) {
         let returned = null;
-        if (unit.name === "player") {
-            let current = unit.current === "true";
-            let player = new Player(0, 0, 0, unit.color, current, unit.id, unit.nick, "", "");
-            player.mouse.x = unit.mouseX;
-            player.mouse.y = unit.mouseY;
+        if (unit.name === "p") {
+            let current = unit.cr === "t";
+            let player = new Player(0, 0, 0, unit.cl, current, unit.id, unit.nick, "", "");
+            player.mouse.x = unit.mx;
+            player.mouse.y = unit.my;
             player.skin = unit.skin;
             player.skinId = unit.skinId;
             player.stickersSet = unit.stickersSet || null;
             player.stickerI = isEmpty(unit.stickerI) ? null : unit.stickerI;
-            player.cellId = unit.cellId;
+            player.cellId = unit.ci;
 
-            let length = unit.cells.length;
+            let length = unit.c.length;
             let arr = [];
             for (let i = 0; i < length; i++) {
 
-                let cell = unit.cells[i];
-                let c = new Cell(cell.x, cell.y, cell.mass, 0, 0, cell.main, cell.color, player, cell.id, 0);
-                c.engineSin = cell.engineSin;
-                c.engineCos = cell.engineCos;
-                c.engineDistance = cell.engineDistance;
-                c.spaceCos = cell.spaceCos;
-                c.spaceSin = cell.spaceSin;
-                c.spaceDistance = cell.spaceDistance;
-                c.totalSpaceDistane = cell.totalSpaceDistane;
-                c.toMass = cell.toMass;
-                c.isConnect = cell.isConnect;
-                c.isCollising = cell.isCollising;
+                let cell = unit.c[i];
+                let c = new Cell(cell.x, cell.y, cell.m, 0, 0, cell.mn, cell.c, player, cell.id, 0);
+                c.engineSin = cell.es;
+                c.engineCos = cell.ec;
+                c.engineDistance = cell.ed;
+                c.spaceCos = cell.sc;
+                c.spaceSin = cell.ss;
+                c.spaceDistance = cell.sd;
+                c.totalSpaceDistane = cell.tsd;
+                c.toMass = cell.tm;
+                c.isConnect = cell.ic;
+                c.isCollising = cell.icl;
                 c.updateDirection();
                 arr.push(c);
 

@@ -177,10 +177,10 @@ Units.game.onSpawnUnit = function (unit) {
         action: "spawn_unit",
         ...unit
     };
-    if (message.name === "player") {
-        message.current = "false";
+    if (message.name === "p") {
+        message.cr = "f";
         wsMessage(message, null, message.id);
-        message.current = "true";
+        message.cr = "t";
         wsMessage(message, message.id);
 
         nickInfo(message.id);
