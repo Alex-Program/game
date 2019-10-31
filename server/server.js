@@ -41,6 +41,7 @@ function wsMessage(message, id = null, besidesId = null) {
             if (besidesId !== null && +wsId === +besidesId) continue;
             clients[wsId].ws.send(m);
         }
+        count--;
     }
 
 }
