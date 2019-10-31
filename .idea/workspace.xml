@@ -383,14 +383,7 @@
       <workItem from="1572230479029" duration="16844000" />
       <workItem from="1572316947839" duration="15468000" />
       <workItem from="1572395765051" duration="26111000" />
-      <workItem from="1572482129277" duration="13233000" />
-    </task>
-    <task id="LOCAL-00001" summary="add viruses">
-      <created>1567508394746</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1567508394746</updated>
+      <workItem from="1572482129277" duration="13368000" />
     </task>
     <task id="LOCAL-00002" summary="add chat, fix multiplayer">
       <created>1568955257063</created>
@@ -728,7 +721,14 @@
       <option name="project" value="LOCAL" />
       <updated>1572499864370</updated>
     </task>
-    <option name="localTasksCounter" value="50" />
+    <task id="LOCAL-00050" summary="new render">
+      <created>1572500192482</created>
+      <option name="number" value="00050" />
+      <option name="presentableId" value="LOCAL-00050" />
+      <option name="project" value="LOCAL" />
+      <updated>1572500192483</updated>
+    </task>
+    <option name="localTasksCounter" value="51" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

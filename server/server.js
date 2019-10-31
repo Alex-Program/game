@@ -225,14 +225,14 @@ let startUpdate = Date.now();
 
 
 let arr = [];
-for(let i = 0; i < 5000; i++){
+for(let i = 0; i < 1; i++){
     arr.push(i);
 }
 arr = JSON.stringify(arr);
 console.log(Buffer.from(arr).length);
 function updateUnits() {
-    console.log(Date.now() - startUpdate);
-    startUpdate = Date.now();
+    // console.log(Date.now() - startUpdate);
+    // startUpdate = Date.now();
     // let time = Date.now();
     // let arr = Units.game.getAllUnits();
     // wsMessage({
@@ -243,7 +243,7 @@ function updateUnits() {
     wsMessage({
         arr
     });
-    setTimeout(updateUnits, 50);
+    setTimeout(updateUnits, 0);
 }
 
 setTimeout(updateUnits, 50);
