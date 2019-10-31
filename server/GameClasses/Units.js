@@ -17,7 +17,7 @@ let gameInfo = {
     connectTime: 1000,
     connectTimeMassCoefficient: 0.1,
     maxCells: 64,
-    botsCount: 0
+    botsCount: 100
 };
 
 
@@ -932,7 +932,7 @@ class Game {
 
             gameInfo.deltaTime = performance.now() - gameInfo.updateTime;
             gameInfo.updateTime = performance.now();
-
+            // console.log(gameInfo.deltaTime);
 
             this.spawnUnit();
             this.updateUnit();
