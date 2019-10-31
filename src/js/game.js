@@ -186,7 +186,7 @@
                 }
                 drawableY += this.drawableRadius / (2 * gameInfo.scale);
                 if (gameSettings.isCellMass && isDrawText) {
-                    this.drawText(drawableX, drawableY, this.drawableRadius / (3 * gameInfo.scale), Math.floor(this.mass), textColor);
+                    this.drawText(drawableX, drawableY, this.drawableRadius / (5 * gameInfo.scale), Math.floor(this.mass), textColor);
                 }
                 return true;
             }
@@ -255,7 +255,7 @@
         drawText(x, y, size, value, color = "#FFFFFF", isStroke = false, strokeStyle = "#000000", isShadow = false, shadowColor = "red") {
             if (+gameSettings.isBigText) size *= 1.8;
             else size *= 1.2;
-            if (gameSettings.isOptimization) size /= 1.3;
+            if (gameSettings.isOptimization) size /= 1.7;
 
             context.save();
 
@@ -263,14 +263,14 @@
                 this.setShadow(shadowColor);
             }
 
-            let font = gameSettings.isOptimization ? "'sans-serif'" : "'Caveat'";
+            let font = gameSettings.isOptimization ? "'Open Sans'" : "'Caveat'";
 
             context.fillStyle = color;
             context.textAlign = "center";
             context.textBaseline = "middle";
             context.font = "bold " + String(size) + "px " + font;
             context.fillText(String(value), x, y);
-            if (isStroke && !gameSettings.isOptimization) {
+            if (isStroke) {
                 context.lineWidth = size / 50;
                 context.strokeStyle = strokeStyle;
                 context.strokeText(String(value), x, y);
@@ -1242,6 +1242,8 @@
                         lastStateTime = state.time;
                         lastStateTimeLocal = performance.now();
 
+                        // let time = performance.now();
+
                         for (let i = 0; i < state.players.length; i++) {
                             let sPlayer = state.players[i];
                             if (!isFirstRender) delta = 1;
@@ -1257,6 +1259,7 @@
                             if (!virus) continue;
                             virus.virus.changePos(sVirus);
                         }
+                        // console.log(performance.now() - time);
                     }
                 }
                 // console.log(delta);

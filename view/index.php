@@ -6,6 +6,7 @@
     <script src="/src/js/Ws.js"></script>
     <link href="https://fonts.googleapis.com/css?family=Special+Elite&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Caveat&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../src/css/whole.css">
     <link rel="stylesheet" href="../src/css/index.css">
     <link rel="shortcut icon" href="/src/images/logo.png" type="image/png">

@@ -806,6 +806,7 @@ class Game {
 
 
     startGame() {
+        // return true;
         gameInfo.updateTime = performance.now();
 
         setTimeout(() => this.loop(), 0);

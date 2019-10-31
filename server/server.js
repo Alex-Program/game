@@ -223,21 +223,30 @@ function chatMessage(id, message, pm, pmId, isSecondary = false) {
 
 let startUpdate = Date.now();
 
+
+let arr = [];
+for(let i = 0; i < 5000; i++){
+    arr.push(i);
+}
+arr = JSON.stringify(arr);
+console.log(Buffer.from(arr).length);
 function updateUnits() {
     // console.log(Date.now() - startUpdate);
-    startUpdate = Date.now();
-    let time = Date.now();
-    let arr = Units.game.getAllUnits();
+    // startUpdate = Date.now();
+    // let time = Date.now();
+    // let arr = Units.game.getAllUnits();
+    // wsMessage({
+    //     action: "update_units",
+    //     units: arr,
+    //     time
+    // });
     wsMessage({
-        action: "update_units",
-        units: arr,
-        time
+        arr
     });
-
     setTimeout(updateUnits, 50);
 }
 
-// setTimeout(updateUnits, 50);
+setTimeout(updateUnits, 50);
 // setInterval(updateUnits, 10);
 
 

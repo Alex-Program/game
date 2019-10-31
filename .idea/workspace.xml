@@ -4,7 +4,10 @@
     <list default="true" id="011e9982-741d-4222-841e-091d212022f0" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/GameClasses/Units.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/GameClasses/Units.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/functions.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/functions.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/js/game.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/game.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/view/index.php" beforeDir="false" afterPath="$PROJECT_DIR$/view/index.php" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -384,7 +387,7 @@
       <workItem from="1572230479029" duration="16844000" />
       <workItem from="1572316947839" duration="15468000" />
       <workItem from="1572395765051" duration="26111000" />
-      <workItem from="1572482129277" duration="8670000" />
+      <workItem from="1572482129277" duration="12900000" />
     </task>
     <task id="LOCAL-00001" summary="add viruses">
       <created>1567508394746</created>
@@ -715,7 +718,14 @@
       <option name="project" value="LOCAL" />
       <updated>1572488429261</updated>
     </task>
-    <option name="localTasksCounter" value="48" />
+    <task id="LOCAL-00048" summary="new render">
+      <created>1572492031433</created>
+      <option name="number" value="00048" />
+      <option name="presentableId" value="LOCAL-00048" />
+      <option name="project" value="LOCAL" />
+      <updated>1572492031433</updated>
+    </task>
+    <option name="localTasksCounter" value="49" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

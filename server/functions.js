@@ -70,12 +70,13 @@ exports.sendRequest = function (url, obj, method = "POST") {
     });
 };
 
-exports.arrayBufferToString = function(buf) {
+exports.arrayBufferToString = function (buf) {
     // return String.fromCharCode.apply(null, new Uint8Array(buf));
     let textDecoder = new TextDecoder();
-    return textDecoder.decode(buf);};
+    return textDecoder.decode(buf);
+};
 
-exports.stringToArrayBuffer = function(str) {
+exports.stringToArrayBuffer = function (str) {
     // let buf = new ArrayBuffer(str.length * 2); // 2 bytes for each char
     // let bufView = new Uint8Array(buf);
     // for (let i = 0, strLen = str.length; i < strLen; i++) {
@@ -86,6 +87,6 @@ exports.stringToArrayBuffer = function(str) {
     return textEncode.encode(str);
 };
 
-exports.getRandomColor = function(){
+exports.getRandomColor = function () {
     return exports.rgbToHex(exports.getRandomInt(0, 255), exports.getRandomInt(0, 255), exports.getRandomInt(0, 255));
 };
