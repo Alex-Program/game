@@ -25,18 +25,22 @@ const webSocketServer = new WebSocketServer.Server({
 function wsMessage(message, id = null, besidesId = null) {
     if (!message.time) message.time = Date.now();
     message = JSON.stringify(message);
-    message = Functions.stringToArrayBuffer(message);
-    if (id !== null) {
-        if (!clients.hasOwnProperty(id)) return false;
-        return clients[id].ws.send(message);
-    }
+    let count = Math.floor(message.length / 100) + message.length % 100;
+    while (count > 0) {
+        let m = Functions.stringToArrayBuffer(message.substr(0, 100));
+        message = message.substr(100);
+        if (id !== null) {
+            if (!clients.hasOwnProperty(id)) return false;
+            return clients[id].ws.send(m);
+        }
 
-    for (let wsId in clients) {
-        if (!clients.hasOwnProperty(wsId)) continue;
-        if (clients[wsId].ws.bufferedAmount !== 0) continue;
+        for (let wsId in clients) {
+            if (!clients.hasOwnProperty(wsId)) continue;
+            if (clients[wsId].ws.bufferedAmount !== 0) continue;
 
-        if (besidesId !== null && +wsId === +besidesId) continue;
-        clients[wsId].ws.send(message);
+            if (besidesId !== null && +wsId === +besidesId) continue;
+            clients[wsId].ws.send(m);
+        }
     }
 
 }
@@ -225,11 +229,12 @@ let startUpdate = Date.now();
 
 
 let arr = [];
-for(let i = 0; i < 1; i++){
+for (let i = 0; i < 5000; i++) {
     arr.push(i);
 }
 arr = JSON.stringify(arr);
 console.log(Buffer.from(arr).length);
+
 function updateUnits() {
     // console.log(Date.now() - startUpdate);
     // startUpdate = Date.now();
@@ -243,7 +248,7 @@ function updateUnits() {
     wsMessage({
         arr
     });
-    setTimeout(updateUnits, 0);
+    setTimeout(updateUnits, 50);
 }
 
 setTimeout(updateUnits, 50);
