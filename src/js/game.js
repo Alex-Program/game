@@ -599,7 +599,8 @@
         update(delta = 1) {
 
             this.updateDirection();
-            let speed = Math.min(this.mouseDist, this.speed);
+            // let speed = Math.min(this.mouseDist, this.speed);
+            let speed = this.speed;
             if (this.spaceDistance === 0) {
                 this.x = roundFloor(this.x + this.cos * speed * delta, 2);
                 this.y = roundFloor(this.y + this.sin * speed * delta, 2);
@@ -636,7 +637,7 @@
             }
 
             if (Math.abs(this.engineDistance > 0)) {
-                let speed = this.engineDistance * delta / 25;
+                let speed = this.engineDistance * delta / 50;
                 // let speed = this.engineDistance * delta;
                 if (Math.abs(speed) < 1) speed = this.engineDistance >= 0 ? 1 : -1;
                 // if (Math.abs(speed) > 30) speed = this.engineDistance >= 0 ? 30 : -30;
@@ -1012,11 +1013,11 @@
 
                     this.cells[cell.count].sin = pCell.sin;
                     this.cells[cell.count].cos = pCell.cos;
-                    // if (c > 0) {
-                    //     this.cells[cell.count].sin = sin;
-                    //     this.cells[cell.count].cos = cos;
-                    //
-                    // }
+                    if (c > 0) {
+                        // this.cells[cell.count].sin = sin;
+                        // this.cells[cell.count].cos = cos;
+
+                    }
                     // if (this.cells[cell.count].toMass >= 0) {
                     this.cells[cell.count].toMass = pCell.mass - this.cells[cell.count].mass;
                     // }
@@ -1030,6 +1031,7 @@
                     this.cells[cell.count].spaceCos = pCell.spaceCos;
                     this.cells[cell.count].spaceSin = pCell.spaceSin;
                     if (c > 10) {
+                        // console.log(c);
                         this.cells[cell.count].engineCos = cos;
                         this.cells[cell.count].engineSin = sin;
                         this.cells[cell.count].engineDistance = c;
@@ -1205,11 +1207,10 @@
                 let delta = getTimeByDelta(gameInfo.deltaTime);
                 // console.log(differentStateTime);
                 // console.log(states.states.length);
-                let state = null;
                 if (performance.now() - lastStateTimeLocal >= differentStateTime) {
                     // let k = performance.now() - lastStateTimeLocal;
                     let newTime = lastStateTime + performance.now() - lastStateTimeLocal - differentStateTime;
-                    state = lastStateTime ? states.getStateByTime(newTime) : states.getGameState();
+                    let state = lastStateTime ? states.getStateByTime(newTime) : states.getGameState();
                     // if(!state){
                     //     console.log("now " + performance.now());
                     //     console.log("lastlocal " + lastStateTimeLocal);
@@ -1241,6 +1242,21 @@
                         lastStateTime = state.time;
                         lastStateTimeLocal = performance.now();
 
+                        for (let i = 0; i < state.players.length; i++) {
+                            let sPlayer = state.players[i];
+                            if (!isFirstRender) delta = 1;
+
+                            let player = findPlayer(sPlayer.id);
+                            if (!player) continue;
+                            player.changePos(sPlayer);
+                        }
+
+                        for (let i = 0; i < state.virus.length; i++) {
+                            let sVirus = state.virus[i];
+                            let virus = findVirus(sVirus.id);
+                            if (!virus) continue;
+                            virus.virus.changePos(sVirus);
+                        }
                     }
                 }
                 // console.log(delta);
@@ -1278,23 +1294,7 @@
                 for (let i = 0; i < virusArr.length; i++) {
                     virusArr[i].update(delta);
                 }
-                if(state){
-                    for (let i = 0; i < state.players.length; i++) {
-                        let sPlayer = state.players[i];
-                        if (!isFirstRender) delta = 1;
 
-                        let player = findPlayer(sPlayer.id);
-                        if (!player) continue;
-                        player.changePos(sPlayer);
-                    }
-
-                    for (let i = 0; i < state.virus.length; i++) {
-                        let sVirus = state.virus[i];
-                        let virus = findVirus(sVirus.id);
-                        if (!virus) continue;
-                        virus.virus.changePos(sVirus);
-                    }
-                }
 
                 // for (let i = 0; i < foodsArr.length; i++) {
                 //     foodsArr[i].update();
@@ -1447,7 +1447,7 @@
                     updateHtml();
                     getTopPlayers();
                     isGame = true;
-                }, 100);
+                }, 10);
                 return true;
             }
             playersArr.push(unit);
