@@ -301,12 +301,12 @@ webSocketServer.on('connection', function (ws, req) {
         }
         if (data.action === "mouse_move") {
             Units.game.mouseMove(id, data.x, data.y, data.time);
-            // wsMessage({
-            //     action: "mouse_move",
-            //     x: data.x,
-            //     y: data.y,
-            //     id
-            // });
+            wsMessage({
+                action: "mouse_move",
+                x: data.x,
+                y: data.y,
+                id
+            });
 
             return true;
         }

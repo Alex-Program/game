@@ -42,6 +42,11 @@
                     destroyUnit(command.type, command.id);
                 } else if (command.command === "spawn_unit") {
                     addUnit(command.unit, 1);
+                } else if (command.command === "mouse_move") {
+                    let player = findPlayer(command.id);
+                    if (!player) return true;
+
+                    player.mouseMove(command.x, command.y);
                 }
 
                 this.commands.splice(i, 1);
@@ -789,7 +794,8 @@
         }
 
         updateDirection() {
-            return true;
+            // if (!this.owner.isMouseMove) return true;
+            // return true;
             let differentX = this.owner.mouse.x - this.x;
             let differentY = this.owner.mouse.y - this.y;
 
@@ -878,6 +884,7 @@
         stickerI = null;
         lastDeletedTime = performance.now();
         isSplit = false;
+        isMouseMove = false;
 
         constructor(x, y, mass, color = "#000000", current = false, id, nick, skin = "", skinId = "") {
             this.skin = skin;
@@ -932,6 +939,7 @@
             }
             if (mass > this.totalMass) this.totalMass = mass;
             this.mass = mass;
+            this.isMouseMove = false;
         }
 
 
@@ -954,6 +962,7 @@
 
         mouseMove(x, y) {
             [this.mouse.x, this.mouse.y] = [x, y];
+            this.isMouseMove = true;
         }
 
 
@@ -978,7 +987,7 @@
                     c.engineDistance = pCell.engineDistance;
                     c.toMass = pCell.toMass;
                     c.totalSpaceDistane = pCell.totalSpaceDistane;
-                    c.isConnect = c.isConnect;
+                    c.isConnect = pCell.isConnect;
                     c.isCollising = pCell.isCollising;
                     c.sin = pCell.sin;
                     c.cos = pCell.cos;
@@ -1001,12 +1010,11 @@
                     let sin = dY / c;
                     let cos = dX / c;
 
-                    if (c > 0) {
-                        // console.log(sin);
-                        this.cells[cell.count].sin = sin;
-                        this.cells[cell.count].cos = cos;
-
-                    }
+                    // if (c > 0) {
+                    //     this.cells[cell.count].sin = sin;
+                    //     this.cells[cell.count].cos = cos;
+                    //
+                    // }
                     // if (this.cells[cell.count].toMass >= 0) {
                     this.cells[cell.count].toMass = pCell.mass - this.cells[cell.count].mass;
                     // }
@@ -1019,7 +1027,7 @@
                     this.cells[cell.count].spaceDistance = pCell.spaceDistance;
                     this.cells[cell.count].spaceCos = pCell.spaceCos;
                     this.cells[cell.count].spaceSin = pCell.spaceSin;
-                    if (c > 10) {
+                    if (c > 20) {
                         this.cells[cell.count].engineCos = cos;
                         this.cells[cell.count].engineSin = sin;
                         this.cells[cell.count].engineDistance = c;
@@ -1371,7 +1379,7 @@
                 c.toMass = 0;
                 c.isConnect = cell.ic || 0;
                 c.isCollising = cell.icl || 0;
-                // c.updateDirection();
+                c.updateDirection();
                 arr.push(c);
 
             }
@@ -1472,7 +1480,7 @@
         if (type === "virus") arr = virusArr;
         else if (type === "food") arr = foodsArr;
         else if (type === "bullet") arr = bulletsArr;
-        else if(type === "player") arr = playersArr;
+        else if (type === "player") arr = playersArr;
 
         for (let i = 0; i < arr.length; i++) {
             if (+arr[i].id === +id) {
@@ -1907,10 +1915,8 @@
             // }
 
             if (data.action === "mouse_move") {
-                let player = findPlayer(data.id);
-                if (!player) return true;
+                states.addGameCommand({time: data.time, command: "mouse_move", id: data.id, x: data.x, y: data.y});
 
-                // player.mouseMove(data.x, data.y);
                 return true;
             }
 
