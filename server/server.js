@@ -26,22 +26,33 @@ function wsMessage(message, id = null, besidesId = null) {
     if (!message.time) message.time = Date.now();
     message = JSON.stringify(message);
     let count = Math.floor(message.length / 100) + message.length % 100;
-    while (count > 0) {
+    let first = true;
+    if(count === 0) return true;
+    while (count > -1) {
         let m = Functions.stringToArrayBuffer(message.substr(0, 100));
-        message = message.substr(100);
+        if (first) {
+            m = Functions.stringToArrayBuffer(JSON.stringify({action: "s"}));
+        }
+        if (count === 0) {
+            m = Functions.stringToArrayBuffer(JSON.stringify({action: "e"}));
+        }
+        if (!first) message = message.substr(100);
         if (id !== null) {
             if (!clients.hasOwnProperty(id)) return false;
-            return clients[id].ws.send(m);
+            clients[id].ws.send(m);
         }
+        else {
 
-        for (let wsId in clients) {
-            if (!clients.hasOwnProperty(wsId)) continue;
-            if (clients[wsId].ws.bufferedAmount !== 0) continue;
+            for (let wsId in clients) {
+                if (!clients.hasOwnProperty(wsId)) continue;
+                // if (clients[wsId].ws.bufferedAmount !== 0) continue;
 
-            if (besidesId !== null && +wsId === +besidesId) continue;
-            clients[wsId].ws.send(m);
+                if (besidesId !== null && +wsId === +besidesId) continue;
+                clients[wsId].ws.send(m);
+            }
         }
-        count--;
+        if (!first) count--;
+        first = false;
     }
 
 }
@@ -252,7 +263,7 @@ function updateUnits() {
     setTimeout(updateUnits, 50);
 }
 
-setTimeout(updateUnits, 50);
+// setTimeout(updateUnits, 50);
 // setInterval(updateUnits, 10);
 
 

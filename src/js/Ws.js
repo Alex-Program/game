@@ -1,6 +1,8 @@
 class Ws {
     isConnect = false;
     address = null;
+    message = "";
+    isStart = false;
 
     constructor(address) {
         this.address = address;
@@ -17,9 +19,28 @@ class Ws {
     }
 
     setListeners() {
-        this.ws.onmessage = this.listeners.message;
+        this.ws.onmessage = event => {
+            let message = arrayBufferToString(event.data);
+            // console.log(message);
+            try {
+                message = JSON.parse(message);
+                if (typeof message !== "object") throw("Error");
+
+                if(message.action === "s") this.isStart = true;
+                if(message.action === "e"){
+                    this.listeners.message({data: this.message});
+                    this.isStart = false;
+                    this.message = "";
+                }
+                return true;
+            } catch {
+            }
+
+            if(this.isStart) this.message += message;
+
+        };
         this.ws.onopen = () => {
-            this.isConnect= true;
+            this.isConnect = true;
             this.listeners.open();
         };
         this.ws.onclose = () => {
@@ -29,7 +50,7 @@ class Ws {
         }
     }
 
-    close(){
+    close() {
         this.ws.close();
     }
 
@@ -40,12 +61,12 @@ class Ws {
     }
 
     send(message) {
-        if(!this.isConnect) return true;
+        if (!this.isConnect) return true;
         this.ws.send(message);
     }
 
     sendJson(message) {
-        if(!this.isConnect) return true;
+        if (!this.isConnect) return true;
         message.time = Date.now();
         message = JSON.stringify(message);
         message = stringToArrayBuffer(message);
