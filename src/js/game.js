@@ -795,7 +795,7 @@
 
         updateDirection() {
             // if (!this.owner.isMouseMove) return true;
-            // return true;
+            return true;
             let differentX = this.owner.mouse.x - this.x;
             let differentY = this.owner.mouse.y - this.y;
 
@@ -1010,6 +1010,8 @@
                     let sin = dY / c;
                     let cos = dX / c;
 
+                    this.cells[cell.count].sin = pCell.sin;
+                    this.cells[cell.count].cos = pCell.cos;
                     // if (c > 0) {
                     //     this.cells[cell.count].sin = sin;
                     //     this.cells[cell.count].cos = cos;
@@ -1027,7 +1029,7 @@
                     this.cells[cell.count].spaceDistance = pCell.spaceDistance;
                     this.cells[cell.count].spaceCos = pCell.spaceCos;
                     this.cells[cell.count].spaceSin = pCell.spaceSin;
-                    if (c > 20) {
+                    if (c > 10) {
                         this.cells[cell.count].engineCos = cos;
                         this.cells[cell.count].engineSin = sin;
                         this.cells[cell.count].engineDistance = c;
@@ -1203,11 +1205,11 @@
                 let delta = getTimeByDelta(gameInfo.deltaTime);
                 // console.log(differentStateTime);
                 // console.log(states.states.length);
-
+                let state = null;
                 if (performance.now() - lastStateTimeLocal >= differentStateTime) {
                     // let k = performance.now() - lastStateTimeLocal;
                     let newTime = lastStateTime + performance.now() - lastStateTimeLocal - differentStateTime;
-                    let state = lastStateTime ? states.getStateByTime(newTime) : states.getGameState();
+                    state = lastStateTime ? states.getStateByTime(newTime) : states.getGameState();
                     // if(!state){
                     //     console.log("now " + performance.now());
                     //     console.log("lastlocal " + lastStateTimeLocal);
@@ -1231,24 +1233,14 @@
                         // else{
                         //     delta = (isFirstRender && !isSecondRender) ? 2 * gameInfo.deltaTime / differentStateTime : gameInfo.deltaTime / differentStateTime;
                         // }
+                        // if (differentStateTime){
+                        //     // delta = 2 * gameInfo.deltaTime / differentStateTime;
+                        //     delta = getTimeByDelta(differentStateTime / 2);
+                        // }
                         delta = getTimeByDelta(gameInfo.deltaTime);
                         lastStateTime = state.time;
                         lastStateTimeLocal = performance.now();
-                        for (let i = 0; i < state.players.length; i++) {
-                            let sPlayer = state.players[i];
-                            if (!isFirstRender) delta = 1;
 
-                            let player = findPlayer(sPlayer.id);
-                            if (!player) continue;
-                            player.changePos(sPlayer);
-                        }
-
-                        for (let i = 0; i < state.virus.length; i++) {
-                            let sVirus = state.virus[i];
-                            let virus = findVirus(sVirus.id);
-                            if (!virus) continue;
-                            virus.virus.changePos(sVirus);
-                        }
                     }
                 }
                 // console.log(delta);
@@ -1285,6 +1277,23 @@
 
                 for (let i = 0; i < virusArr.length; i++) {
                     virusArr[i].update(delta);
+                }
+                if(state){
+                    for (let i = 0; i < state.players.length; i++) {
+                        let sPlayer = state.players[i];
+                        if (!isFirstRender) delta = 1;
+
+                        let player = findPlayer(sPlayer.id);
+                        if (!player) continue;
+                        player.changePos(sPlayer);
+                    }
+
+                    for (let i = 0; i < state.virus.length; i++) {
+                        let sVirus = state.virus[i];
+                        let virus = findVirus(sVirus.id);
+                        if (!virus) continue;
+                        virus.virus.changePos(sVirus);
+                    }
                 }
 
                 // for (let i = 0; i < foodsArr.length; i++) {
@@ -1364,7 +1373,7 @@
             for (let i = 0; i < length; i++) {
 
                 let cell = unit.c[i];
-                let c = new Cell(cell.x || 0, cell.y || 0, cell.m || 0, 0, 0, cell.mn || false, player.color, player, cell.id || 0, 0);
+                let c = new Cell(cell.x || 0, cell.y || 0, cell.m || 0, cell.s || 0, cell.c || 0, cell.mn || false, player.color, player, cell.id || 0, 0);
                 // c.engineSin = cell.es;
                 // c.engineCos = cell.ec;
                 // c.engineDistance = cell.ed;
@@ -1379,7 +1388,7 @@
                 c.toMass = 0;
                 c.isConnect = cell.ic || 0;
                 c.isCollising = cell.icl || 0;
-                c.updateDirection();
+                // c.updateDirection();
                 arr.push(c);
 
             }

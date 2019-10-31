@@ -993,7 +993,7 @@ class Game {
         for (let i = 0; i < this.playersArr.length; i++) {
             let player = this.playersArr[i];
             if (typeof wsId === "number" && player.wsId !== wsId) continue;
-            // if (!all && !p.isChanged) continue;
+            if (!all && !player.isChanged) continue;
 
             p.push(this.getUnit(player, all));
             this.playersArr[i].isChanged = false;
@@ -1070,7 +1070,9 @@ class Game {
                     id: cell.id,
                     // c: cell.color,
                     icl: cell.isCollising,
-                    mn: cell.main
+                    mn: cell.main,
+                    s: cell.sin,
+                    c: cell.cos
                 };
                 if (!all) {
                     for (let key in objC) {
