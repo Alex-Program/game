@@ -231,8 +231,8 @@ for(let i = 0; i < 5000; i++){
 arr = JSON.stringify(arr);
 console.log(Buffer.from(arr).length);
 function updateUnits() {
-    // console.log(Date.now() - startUpdate);
-    // startUpdate = Date.now();
+    console.log(Date.now() - startUpdate);
+    startUpdate = Date.now();
     // let time = Date.now();
     // let arr = Units.game.getAllUnits();
     // wsMessage({
