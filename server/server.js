@@ -27,7 +27,7 @@ function wsMessage(message, id = null, besidesId = null) {
     message = JSON.stringify(message);
     let count = Math.floor(message.length / 100) + message.length % 100;
     let first = true;
-    if(count === 0) return true;
+    if (count === 0) return true;
     while (count > -1) {
         let m = Functions.stringToArrayBuffer(message.substr(0, 100));
         if (first) {
@@ -37,18 +37,19 @@ function wsMessage(message, id = null, besidesId = null) {
             m = Functions.stringToArrayBuffer(JSON.stringify({action: "e"}));
         }
         if (!first) message = message.substr(100);
-        if (id !== null) {
-            if (!clients.hasOwnProperty(id)) return false;
-            clients[id].ws.send(m);
-        }
-        else {
+        if (m.buffer.byteLength > 0) {
+            if (id !== null) {
+                if (!clients.hasOwnProperty(id)) return false;
+                clients[id].ws.send(m);
+            } else {
 
-            for (let wsId in clients) {
-                if (!clients.hasOwnProperty(wsId)) continue;
-                // if (clients[wsId].ws.bufferedAmount !== 0) continue;
+                for (let wsId in clients) {
+                    if (!clients.hasOwnProperty(wsId)) continue;
+                    // if (clients[wsId].ws.bufferedAmount !== 0) continue;
 
-                if (besidesId !== null && +wsId === +besidesId) continue;
-                clients[wsId].ws.send(m);
+                    if (besidesId !== null && +wsId === +besidesId) continue;
+                    clients[wsId].ws.send(m);
+                }
             }
         }
         if (!first) count--;
