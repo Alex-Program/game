@@ -1,0 +1,16 @@
+#main_block {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, 0);
+    border-radius: 5px;
+    border: solid 3px gold;
+}
+
+#canvas {
+    cursor: pointer;
+}
+
+#select_image {
+    margin: 10px;
+}

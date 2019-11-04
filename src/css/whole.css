@@ -5,6 +5,10 @@
     outline: none;
 }
 
+canvas{
+    display: block;
+}
+
 html, body {
     width: 100%;
     height: 100%;
@@ -148,6 +152,7 @@ button, button:active, button:focus, input {
     padding: 5px 15px;
     font-weight: bold;
     box-shadow: 0 0 10px red;
+    cursor: pointer;
 }
 
 .button_primary {

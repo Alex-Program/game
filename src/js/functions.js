@@ -195,6 +195,10 @@ function getRandomInt(min, max) {
     return Math.round((max - min) * Math.random() + min);
 }
 
+function objectLength(obj){
+    return Object.keys(obj).length;
+}
+
 class Preloader {
     static start() {
         $("#preloader").removeClass("active closed").addClass("active");

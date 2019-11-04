@@ -17,7 +17,7 @@ let gameInfo = {
     connectTime: 1000,
     connectTimeMassCoefficient: 0.1,
     maxCells: 64,
-    botsCount: 100
+    botsCount: 0
 };
 
 
@@ -317,7 +317,7 @@ class Cell extends Arc {
 
         if (Math.abs(this.engineDistance > 0)) {
             let speed = this.engineDistance * delta / 25;
-            if (Math.abs(speed) < 10) speed = this.engineDistance >= 0 ? 10 : -10;
+            if (Math.abs(speed) < 1) speed = this.engineDistance >= 0 ? 1 : -1;
             if (Math.abs(speed) > 30) speed = this.engineDistance >= 0 ? 30 : -30;
             if (Math.abs(this.engineDistance) < Math.abs(speed)) speed = this.engineDistance;
 
@@ -480,10 +480,11 @@ class Cell extends Arc {
                     game.playersArr[p].updateI--;
                 }
                 if (game.playersArr[p].cells.length === 0) {
-                    game.playersArr[p].destroy();
-                    game.playersArr.splice(p, 1);
-                    p--;
-                    if (p <= game.updatePlayerI) game.updatePlayerI--;
+                    game.playersArr[p].isSpawned = false;
+                    // game.playersArr[p].destroy();
+                    // game.playersArr.splice(p, 1);
+                    // p--;
+                    // if (p <= game.updatePlayerI) game.updatePlayerI--;
                     break;
                 }
                 if (cell.main) game.playersArr[p].cells[0].main = true;
@@ -932,14 +933,15 @@ class Game {
 
             gameInfo.deltaTime = performance.now() - gameInfo.updateTime;
             gameInfo.updateTime = performance.now();
-            // console.log(gameInfo.deltaTime);
+            let delta = this.getTimeByDelta(gameInfo.deltaTime);
+
 
             this.spawnUnit();
             this.updateUnit();
             this.addGameState();
             this.spawnBots();
 
-            if (performance.now() - this.lastUpdateUnitsTime > 1000 / 20) {
+            // if (performance.now() - this.lastUpdateUnitsTime > 1000 / 60) {
                 let arr = [];
                 // console.log(JSON.stringify(arr));
                 for (let i = 0; i < this.playersArr.length; i++) {
@@ -962,7 +964,7 @@ class Game {
                 //     time: Date.now()
                 // });
                 this.lastUpdateUnitsTime = performance.now();
-            }
+            // }
             // console.log(performance.now() - time);
         }
 
@@ -1060,20 +1062,20 @@ class Game {
                     y: cell.y,
                     m: cell.mass, // mass
                     // tm: cell.toMass, // toMass
-                    ss: cell.spaceSin, // spaceSin
-                    sc: cell.spaceCos, // spaceCos
-                    sd: cell.spaceDistance,
-                    tsd: cell.totalSpaceDistane,
+                    // ss: cell.spaceSin, // spaceSin
+                    // sc: cell.spaceCos, // spaceCos
+                    // sd: cell.spaceDistance,
+                    // tsd: cell.totalSpaceDistane,
                     // ed: cell.engineDistance,
                     // es: cell.engineSin,
                     // ec: cell.engineCos,
-                    ic: cell.isConnect,
+                    // ic: cell.isConnect,
                     id: cell.id,
                     // c: cell.color,
-                    icl: cell.isCollising,
+                    // icl: cell.isCollising,
                     mn: cell.main,
-                    s: cell.sin,
-                    c: cell.cos
+                    // s: cell.sin,
+                    // c: cell.cos
                 };
                 if (!all) {
                     for (let key in objC) {

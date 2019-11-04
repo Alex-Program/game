@@ -3,7 +3,7 @@
 
 class Skin extends Model
 {
-    protected $table_name = "nicks";
+    protected $tableName = "nicks";
 
     public function __construct()
     {
@@ -19,6 +19,9 @@ class Skin extends Model
     `is_moder` tinyint(1) DEFAULT 0,
     `user_id` int(11) NOT NULL
 )";
+        $this->mysqli->query($sql);
+
+        $sql = "ALTER TABLE `nicks` ADD `time` bigint(32)";
         $this->mysqli->query($sql);
     }
 
@@ -42,14 +45,14 @@ class Skin extends Model
         return $arr;
     }
 
-    public function createNick($nick, $password, $skin_id, $user_id)
+    public function createNick($nick, $password, $skinId, $userId)
     {
         $nick = $this->mysqli->real_escape_string($nick);
         $password = $this->mysqli->real_escape_string($password);
-        $skin_id = $this->mysqli->real_escape_string($skin_id);
-        $user_id = $this->mysqli->real_escape_string($user_id);
+        $skinId = $this->mysqli->real_escape_string($skinId);
+        $userId = $this->mysqli->real_escape_string($userId);
 
-        $sql = "INSERT INTO `nicks` (`nick`, `time`, `skin_id`, `password`, `user_id`) VALUES ('" . $nick . "', " . time() . ", '" . $skin_id . "', '" . $password . "', '" . $user_id . "')";
+        $sql = "INSERT INTO `nicks` (`nick`, `time`, `skin_id`, `password`, `user_id`) VALUES ('" . $nick . "', " . time() . ", '" . $skinId . "', '" . $password . "', '" . $userId . "')";
         if ($this->mysqli->query($sql)) return $this->mysqli->insert_id;
 
         return false;

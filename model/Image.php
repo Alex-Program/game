@@ -42,6 +42,14 @@ class Image extends Model
         return $id;
     }
 
+    public function addImgByBase64($base64)
+    {
+        $img = Image::base64Decode($base64);
+        if (!$img) return false;
+
+        return $this->addImage($img);
+    }
+
     public function getPath($id)
     {
         $id = $this->mysqli->real_escape_string($id);

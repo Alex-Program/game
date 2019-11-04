@@ -1,97 +1,84 @@
-#main_container {
+#main_block {
     position: absolute;
     left: 50%;
-    top: 100px;
     transform: translate(-50%, 0);
-    background: aliceblue;
-    border-radius: 15px;
-    border: solid 1px grey;
-    display: flex;
-    flex-direction: row;
-    padding: 20px;
+    border-radius: 5px;
+    border: solid 3px gold;
+    padding: 30px;
 }
 
-#main_container > div {
-    flex-grow: 1;
-}
-
-#main_canvas {
-    /*margin-top: 10px;*/
-}
-
-#main_canvas.selected {
-    cursor: grab;
-}
-
-
-.label_params {
-    margin-bottom: 10px;
-    font: normal 13pt/15pt sans-serif;
-}
-
-#create_new_nick {
-    border-radius: 15px;
-    padding: 5px 15px;
+.user_skin {
+    transition: background 0.5s, border 0.5s;
+    padding: 10px;
+    border-radius: 5px;
+    border: solid 3px gold;
+    text-align: center;
+    color: gold;
+    background: red;
+    font: bold 12pt/12pt sans-serif;
+    margin: 10px 0;
     cursor: pointer;
 }
 
-#create_new_nick > span {
-    border-left: solid 1px black;
-    padding-left: 15px;
+.user_skin.selected {
+    background: lightseagreen;
+    border: solid 3px #1b9e96;
+}
+
+.label_info {
+    padding: 5px;
+    color: gold;
+    border-radius: 5px;
+    border: solid 3px gold;
+    font: bold 12pt/12pt sans-serif;
+    background: red;
+    margin-right: 10px;
+}
+
+#nick_info input {
+    width: 200px;
 }
 
 #nick_info {
-    transition: right 0.5s, opacity 0.5s;
-    position: fixed;
-    height: 100%;
-    background: aliceblue;
-    padding: 20px;
-    opacity: 1;
-    right: 0;
-    z-index: 1;
-    overflow: auto;
-    border-left: solid 3px black;
-}
-
-#nick_info.closed {
-    right: -100%;
-    opacity: 0;
-}
-
-#close_nick_info {
-    width: 35px;
-    position: absolute;
-    transform: translate(0, -10%);
-    cursor: pointer;
-}
-
-div.nick {
-    transition: background 0.5s;
-    font: bold 12pt/12pt sans-serif;
-    background: gold;
+    padding: 10px;
     border-radius: 5px;
+    border: solid 5px gold;
+}
+
+#nick_info > div:not(:first-child), #nick_info > button {
+    margin-top: 10px;
+}
+
+#sum {
     padding: 5px;
-    text-align: center;
-    cursor: pointer;
-    margin-bottom: 5px;
+    color: gold;
+    background: red;
+    font: bold 12pt/12pt sans-serif;
+    border-radius: 5px;
+    border: solid 2px gold;
+    margin-right: 10px;
 }
 
-div.nick:hover {
-    background: #cdaa00;
+#remove_image_button {
+    color: gold;
+    border: solid 2px gold;
+    background: red;
+    margin-left: 10px;
 }
 
-div.nick.selected {
-    background: #02c842;
+#add_image_button{
+    color: black;
+    border: solid 2px #1e9e96;
+    background: lightseagreen;
 }
 
-div.nick.selected:hover {
-    background: #02a53a;
-}
-
-#change_skin{
+#remove_image_button, #add_image_button {
     display: flex;
-}
-
-#change_skin.closed{
-    display: none;
+    justify-content: center;
+    align-items: center;
+    border-radius: 20px;
+    font: bold 20pt/14pt sans-serif;
+    width: 30px;
+    cursor: pointer;
+    padding: 5px;
 }

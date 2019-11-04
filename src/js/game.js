@@ -6,6 +6,7 @@
 
     function getAngle(sin, cos) {
         let angle = Math.asin(sin);
+        if (angle > Math.PI) angle = -(2 * Math.PI - angle);
         if (cos < 0) angle = Math.PI - angle;
 
         return {
@@ -19,6 +20,7 @@
     }
 
     function getTimeByDelta(delta) {
+        if (delta <= 0) return 1;
         return delta / gameInfo.perSecond;
     }
 
@@ -587,6 +589,13 @@
             this.isConnect = false;
             this.isCollising = false;
             this.isDraw = isDraw;
+            this.dX = 0;
+            this.dY = 0;
+            this.speedCoefficient = 1;
+            this.cX = 0;
+            this.cY = 0;
+            this.sX = 0;
+            this.sY = 0;
             setTimeout(() => this.isConnect = true, gameInfo.connectTime);
 
             this.updateDirection();
@@ -597,19 +606,27 @@
         }
 
         update(delta = 1) {
-
+            if(delta > 1) delta = 1;
             this.updateDirection();
             // let speed = Math.min(this.mouseDist, this.speed);
             let speed = this.speed;
-            if (this.spaceDistance === 0) {
-                this.x = roundFloor(this.x + this.cos * speed * delta, 2);
-                this.y = roundFloor(this.y + this.sin * speed * delta, 2);
+            if (this.spaceDistance === 0 || true) {
+                // this.x = roundFloor(this.x + this.cos * speed * delta * this.speedCoefficient, 2);
+                // this.y = roundFloor(this.y + this.sin * speed * delta * this.speedCoefficient, 2);
+                // this.x = roundFloor(delta * (this.sX - this.cX) + this.cX);
+                // this.y = roundFloor(delta * (this.sY - this.cY) + this.cY);
+                this.x = this.sX;
+                this.y = this.sY;
+                // [this.sX, this.sY, this.cX, this.cY] = [0, 0, 0, 0];
+                // console.log(this.dX);
+                // this.x = roundFloor(this.x + this.dX * delta, 2);
+                // this.y = roundFloor(this.y + this.dY * delta, 2);
             }
 
             if (Math.abs(this.toMass) > 0) {
                 let speed = this.toMass * delta / 5;
                 // let speed = this.toMass * delta;
-                // if (Math.abs(speed) < 1) speed = this.toMass >= 0 ? 1 : -1;
+                if (Math.abs(speed) < 1) speed = this.toMass >= 0 ? 1 : -1;
                 if (Math.abs(this.toMass) < Math.abs(speed)) speed = this.toMass;
 
                 this.mass = Math.round(this.mass + speed);
@@ -623,7 +640,7 @@
                 }
             }
 
-            if (Math.abs(this.spaceDistance > 0)) {
+            if (Math.abs(this.spaceDistance > 0) && false) {
                 if (this.spaceDistance <= this.totalSpaceDistane / 1.3) this.isCollising = true;
                 let speed = this.spaceDistance * delta / 15;
                 // let speed = this.spaceDistance * delta;
@@ -636,8 +653,8 @@
                 this.spaceDistance = roundFloor(this.spaceDistance - speed, 2);
             }
 
-            if (Math.abs(this.engineDistance > 0)) {
-                let speed = this.engineDistance * delta / 50;
+            if (Math.abs(this.engineDistance > 0) && false) {
+                let speed = this.engineDistance * delta / 25;
                 // let speed = this.engineDistance * delta;
                 if (Math.abs(speed) < 1) speed = this.engineDistance >= 0 ? 1 : -1;
                 // if (Math.abs(speed) > 30) speed = this.engineDistance >= 0 ? 30 : -30;
@@ -752,9 +769,9 @@
                             // let sin = differentY / c || 0;
                             // this.x = roundFloor(this.x + cos * different, 2);
                             // this.y = roundFloor(this.y + sin * different, 2);
-                            this.engineCos = differentX / c || 0;
-                            this.engineSin = differentY / c || 0;
-                            this.engineDistance = different;
+                            // this.engineCos = differentX / c || 0;
+                            // this.engineSin = differentY / c || 0;
+                            // this.engineDistance = different;
                             // this.x = roundFloor(this.x + different * cos, 2);
                             // this.y = roundFloor(this.y + different * sin, 2)
                         }
@@ -1007,16 +1024,45 @@
                     let dX = pCell.x - this.cells[cell.count].x;
                     let dY = pCell.y - this.cells[cell.count].y;
                     let c = Math.sqrt(dX ** 2 + dY ** 2);
+                    // if (c === 0) continue;
                     // if(c < 10) continue;
                     let sin = dY / c;
                     let cos = dX / c;
 
+
                     this.cells[cell.count].sin = pCell.sin;
                     this.cells[cell.count].cos = pCell.cos;
-                    if (c > 0) {
-                        // this.cells[cell.count].sin = sin;
-                        // this.cells[cell.count].cos = cos;
 
+                    this.cells[cell.count].sX = pCell.x;
+                    this.cells[cell.count].sY = pCell.y;
+                    this.cells[cell.count].cX = this.cells[cell.count].x;
+                    this.cells[cell.count].cY = this.cells[cell.count].y;
+
+
+                    let currentAngle = getAngle(pCell.sin, pCell.cos).degree;
+                    let deltaDegree = getAngle(sin, cos).degree - currentAngle;
+                    // console.log(deltaDegree);
+                    if (Math.abs(deltaDegree) > 90 && Math.abs(deltaDegree) < 270) {
+                        // this.cells[cell.count].speedCoefficient = 0.5;
+                        // console.log(currentAngle + " " + deltaDegree);
+                    } else if (Math.abs(deltaDegree) <= 90 || Math.abs(deltaDegree) >= 270) {
+                        // this.cells[cell.count].dX = dX / gameInfo.deltaTime;
+                        // this.cells[cell.count].dY = dY / gameInfo.deltaTime;
+                        let radians = degreeToRadians(currentAngle + deltaDegree / 5);
+                        // this.cells[cell.count].sin = Math.sin(radians);
+                        // this.cells[cell.count].cos = Math.cos(radians);
+                        // this.cells[cell.count].speedCoefficient = 1;
+                        // let delta = getTimeByDelta(gameInfo.deltaTime);
+                        // let thisX = this.cells[cell.count].x;
+                        // let thisY = this.cells[cell.count].y;
+                        // let byX = delta * (thisX - pCell.x);
+                        // let byY = delta * (thisY - pCell.y);
+                        // if (Math.abs(byX) > Math.abs(pCell.x - thisX)) byX = pCell.x - thisX;
+                        // if (Math.abs(byY) > Math.abs(pCell.y - thisY)) byY = pCell.y - thisY;
+                        // this.cells[cell.count].dX = byX;
+                        // this.cells[cell.count].dY = byY;
+                        // this.cells[cell.count].x = pCell.x + byX;
+                        // this.cells[cell.count].y = pCell.y + byY;
                     }
                     // if (this.cells[cell.count].toMass >= 0) {
                     this.cells[cell.count].toMass = pCell.mass - this.cells[cell.count].mass;
@@ -1031,11 +1077,13 @@
                     this.cells[cell.count].spaceCos = pCell.spaceCos;
                     this.cells[cell.count].spaceSin = pCell.spaceSin;
                     if (c > 10) {
-                        // console.log(c);
-                        this.cells[cell.count].engineCos = cos;
-                        this.cells[cell.count].engineSin = sin;
-                        this.cells[cell.count].engineDistance = c;
-                    }
+                        // this.cells[cell.count].sin = sin;
+                        // this.cells[cell.count].cos = cos;
+                        // this.cells[cell.count].speedCoefficient = 1.3;
+                        // this.cells[cell.count].engineCos = cos;
+                        // this.cells[cell.count].engineSin = sin;
+                        // this.cells[cell.count].engineDistance = c;
+                    } else this.cells[cell.count].speedCoefficient = 1;
                     this.cells[cell.count].isCollising = pCell.isCollising;
                     this.cells[cell.count].isConnect = pCell.isConnect;
                     this.cells[cell.count].main = pCell.main;
@@ -1207,7 +1255,7 @@
                 let delta = getTimeByDelta(gameInfo.deltaTime);
                 // console.log(differentStateTime);
                 // console.log(states.states.length);
-                if (performance.now() - lastStateTimeLocal >= differentStateTime) {
+                if (performance.now() - lastStateTimeLocal >= differentStateTime && false) {
                     // let k = performance.now() - lastStateTimeLocal;
                     let newTime = lastStateTime + performance.now() - lastStateTimeLocal - differentStateTime;
                     let state = lastStateTime ? states.getStateByTime(newTime) : states.getGameState();
@@ -1450,7 +1498,7 @@
                     updateHtml();
                     getTopPlayers();
                     isGame = true;
-                }, 10);
+                }, 0);
                 return true;
             }
             playersArr.push(unit);
@@ -1768,8 +1816,8 @@
 
         });
         ws.on("message", function (event) {
-            let data = event.data;
-            // let data = arrayBufferToString(event.data);
+            // let data = event.data;
+            let data = arrayBufferToString(event.data);
             try {
                 data = JSON.parse(data);
                 if (typeof (data) !== "object") throw("Error");
@@ -1827,16 +1875,21 @@
                 delete data.action;
 
                 // let delta = getTimeByDelta((performance.now() - startUpdateTime) / 2);
-                let players = data.u.p.map(player => getUnit(player));
-                let virus = data.u.v.map(virus => getUnit(virus));
+                // let players = data.u.p.map(player => getUnit(player));
+                for(let i = 0; i < data.u.p.length; i++){
+                    let p = getUnit(data.u.p[i]);
+                    let player = findPlayer(p.id);
+                    player.changePos(p);
+                }
+                // let virus = data.u.v.map(virus => getUnit(virus));
                 // console.log(states.states.length);
-                states.addGameState({time: data.time, players, virus});
-                if (lastStateTime) {
-                    states.removeBeforeState(lastStateTime + performance.now() - lastStateTimeLocal - differentStateTime);
-                }
-                if (states.states.length > 10 && !isGame) {
-
-                }
+                // states.addGameState({time: data.time, players, virus});
+                // if (lastStateTime) {
+                //     states.removeBeforeState(lastStateTime + performance.now() - lastStateTimeLocal - differentStateTime);
+                // }
+                // if (states.states.length > 10 && !isGame) {
+                //
+                // }
                 /*
                 let length = data.units.players.length;
                 for (let i = 0; i < length; i++) {
@@ -1927,7 +1980,7 @@
             // }
 
             if (data.action === "mouse_move") {
-                states.addGameCommand({time: data.time, command: "mouse_move", id: data.id, x: data.x, y: data.y});
+                // states.addGameCommand({time: data.time, command: "mouse_move", id: data.id, x: data.x, y: data.y});
 
                 return true;
             }
@@ -2000,8 +2053,8 @@
             }
 
             if (data.action === "destroy_unit") {
-                states.addGameCommand({time: data.time, type: data.type, id: data.id, command: "destroy_unit"});
-
+                // states.addGameCommand({time: data.time, type: data.type, id: data.id, command: "destroy_unit"});
+                destroyUnit(data.type, data.id);
                 return true;
             }
 

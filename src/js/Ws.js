@@ -19,26 +19,7 @@ class Ws {
     }
 
     setListeners() {
-        this.ws.onmessage = event => {
-            let message = arrayBufferToString(event.data);
-            // console.log(message);
-            try {
-                message = JSON.parse(message);
-                if (typeof message !== "object") throw("Error");
-
-                if(message.action === "s") this.isStart = true;
-                if(message.action === "e"){
-                    this.listeners.message({data: this.message});
-                    this.isStart = false;
-                    this.message = "";
-                }
-                return true;
-            } catch {
-            }
-
-            if(this.isStart) this.message += message;
-
-        };
+        this.ws.onmessage = this.listeners.message;
         this.ws.onopen = () => {
             this.isConnect = true;
             this.listeners.open();

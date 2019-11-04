@@ -318,19 +318,6 @@ body {
     background: #b60000;
 }
 
-input:not(.no_style) {
-    transition: border 0.5s;
-    border-radius: 15px;
-    border: solid 2px grey;
-    padding: 5px 10px;
-    width: 100%;
-    font: normal 12pt/20pt sans-serif;
-    /*box-shadow: inset 1px 1px 1px rgba(53, 53, 53, 0.4);*/
-}
-
-input:not(.no_style):focus {
-    border: solid 2px #eae006;
-}
 
 input:invalid {
     border: solid 2px red !important;
