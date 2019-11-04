@@ -17,7 +17,7 @@ let gameInfo = {
     connectTime: 1000,
     connectTimeMassCoefficient: 0.1,
     maxCells: 64,
-    botsCount: 10
+    botsCount: 0
 };
 
 
