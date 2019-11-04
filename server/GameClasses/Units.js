@@ -1114,6 +1114,13 @@ class Game {
             return obj;
         }
 
+        if(name === "virus"){
+            let obj = {
+                name: "v",
+                d: [unit.id, unit.x, unit.y, unit.mass].join(",") // id, x, y, mass
+            };
+            return obj;
+        }
         let obj = {
             name,
             id: unit.id,

@@ -492,16 +492,24 @@
             this.mass = mass;
             this.toMass = 0;
             this.color = color;
+
+            this.sX = 0;
+            this.sY = 0;
+            this.cX = 0;
+            this.cY = 0;
         }
 
         update(delta = 1) {
+            this.x = this.sX;
+            this.y = this.sY;
 
+            /*
             if (this.x <= 0 || this.x >= gameInfo.width) {
                 this.cos = -this.cos;
             }
             if (this.y <= 0 || this.y >= gameInfo.height) {
                 this.sin = -this.sin;
-            }
+            }*/
 
             if (Math.abs(this.toMass) > 0) {
                 let speed = this.toMass * delta / 2.5;
@@ -519,7 +527,7 @@
                     // )
                 }
             }
-
+            /*
             if (this.distance > 0) {
                 let speed = this.distance * delta / 10;
                 if (speed < 1) speed = 1;
@@ -552,6 +560,8 @@
                 this.cos = bullet.cos;
             }
 
+             */
+
             rendersArr.push(this);
 
         }
@@ -559,14 +569,20 @@
         changePos(virus) {
             this.toMass = virus.mass - this.mass;
 
-            let dX = virus.x - this.x;
-            let dY = virus.y - this.y;
-            let c = Math.sqrt(dX ** 2 + dY ** 2);
-            if (c <= 0) return true;
+            this.cY = this.y;
+            this.cX = this.x;
+            this.sX = virus.x;
+            this.sY = virus.y;
+            this.toMass = virus.mass - this.mass;
 
-            this.distance = c;
-            this.sin = dY / c;
-            this.cos = dX / c;
+            // let dX = virus.x - this.x;
+            // let dY = virus.y - this.y;
+            // let c = Math.sqrt(dX ** 2 + dY ** 2);
+            // if (c <= 0) return true;
+            //
+            // this.distance = c;
+            // this.sin = dY / c;
+            // this.cos = dX / c;
 
         }
 
@@ -1469,10 +1485,12 @@
 
             returned = bullet;
 
-        } else if (unit.name === "virus") {
-            let virus = new Virus(unit.x, unit.y, unit.sin, unit.cos, unit.distance, unit.mass, unit.color);
-            virus.toMass = unit.toMass;
-            virus.id = unit.id;
+        } else if (unit.name === "v") {
+            let data = unit.d.split(",");
+            let virus = new Virus(+data[1], +data[2], 0, 0, 0, +data[3], "#fff500");
+            virus.id = +data[0];
+            virus.sX = +data[1];
+            virus.sY = +data[2];
 
             returned = virus;
         }
@@ -1845,6 +1863,12 @@
                     if (!player) return true;
                     player.changePos(p);
                 }
+                for(let i = 0; i < data.u.v.length; i++){
+                    let v = getUnit(data.u.v[i]);
+                    let virus = findVirus(v.id);
+                    if(!virus) return true;
+                    virus.virus.changePos(v);
+                }
             }
 
             if (data.action === "load_game_settings") {
@@ -1858,8 +1882,8 @@
                 delete data.action;
                 let unit = getUnit(data);
 
-                if (!isGame) addUnit(unit, 1);
-                else states.addGameCommand({time: data.time, command: "spawn_unit", unit});
+                addUnit(unit, 1);
+                // else states.addGameCommand({time: data.time, command: "spawn_unit", unit});
 
 
                 return true;
