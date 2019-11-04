@@ -606,7 +606,7 @@
         }
 
         update(delta = 1) {
-            if(delta > 1) delta = 1;
+            if (delta > 1) delta = 1;
             this.updateDirection();
             // let speed = Math.min(this.mouseDist, this.speed);
             let speed = this.speed;
@@ -1419,26 +1419,27 @@
             player.stickerI = isEmpty(unit.stickerI) ? null : unit.stickerI;
             player.cellId = unit.ci;
 
-            let length = unit.c.length;
+            let cellsArr = unit.c.split(",");
+            let length = cellsArr.length;
             let arr = [];
-            for (let i = 0; i < length; i++) {
+            for (let i = 0; i < length; i += 5) {
 
-                let cell = unit.c[i];
-                let c = new Cell(cell.x || 0, cell.y || 0, cell.m || 0, cell.s || 0, cell.c || 0, cell.mn || false, player.color, player, cell.id || 0, 0);
+                // let cell = unit.c[i];
+                let c = new Cell(+cellsArr[i + 1] || 0, +cellsArr[i + 2] || 0, +cellsArr[i + 3] || 0, 0, 0, cellsArr[i + 4] === "t", player.color, player, +cellsArr[i] || 0, 0);
                 // c.engineSin = cell.es;
                 // c.engineCos = cell.ec;
                 // c.engineDistance = cell.ed;
                 c.engineSin = 0;
                 c.engineCos = 0;
                 c.engineDistance = 0;
-                c.spaceCos = cell.sc || 0;
-                c.spaceSin = cell.ss || 0;
-                c.spaceDistance = cell.sd || 0;
-                c.totalSpaceDistane = cell.tsd || 0;
+                c.spaceCos = 0;
+                c.spaceSin = 0;
+                c.spaceDistance = 0;
+                c.totalSpaceDistane = 0;
                 // c.toMass = cell.tm;
                 c.toMass = 0;
-                c.isConnect = cell.ic || 0;
-                c.isCollising = cell.icl || 0;
+                c.isConnect = 0;
+                c.isCollising = 0;
                 // c.updateDirection();
                 arr.push(c);
 
@@ -1825,6 +1826,19 @@
                 return true;
             }
 
+            if ("a" in data && data.a === "u") {
+                delete data.action;
+
+                // let delta = getTimeByDelta((performance.now() - startUpdateTime) / 2);
+                // let players = data.u.p.map(player => getUnit(player));
+                for (let i = 0; i < data.u.p.length; i++) {
+                    let p = getUnit(data.u.p[i]);
+                    let player = findPlayer(p.id);
+                    if(!player) return true;
+                    player.changePos(p);
+                }
+            }
+
             if (data.action === "load_game_settings") {
                 gameInfo.width = data.settings.width;
                 gameInfo.height = data.settings.height;
@@ -1876,7 +1890,7 @@
 
                 // let delta = getTimeByDelta((performance.now() - startUpdateTime) / 2);
                 // let players = data.u.p.map(player => getUnit(player));
-                for(let i = 0; i < data.u.p.length; i++){
+                for (let i = 0; i < data.u.p.length; i++) {
                     let p = getUnit(data.u.p[i]);
                     let player = findPlayer(p.id);
                     player.changePos(p);

@@ -2,26 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="011e9982-741d-4222-841e-091d212022f0" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/php.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/css/skin_editor.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/js/skin_editor.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/view/skin_editor.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controller/user_controller.php" beforeDir="false" afterPath="$PROJECT_DIR$/controller/user_controller.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/model/Image.php" beforeDir="false" afterPath="$PROJECT_DIR$/model/Image.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/model/Skin.php" beforeDir="false" afterPath="$PROJECT_DIR$/model/Skin.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/GameClasses/Units.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/GameClasses/Units.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/server.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/css/header.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/css/header.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/css/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/css/index.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/css/skins.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/css/skins.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/css/whole.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/css/whole.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/js/Ws.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/Ws.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/js/functions.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/functions.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/js/game.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/game.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/js/skins.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/skins.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/view/header.php" beforeDir="false" afterPath="$PROJECT_DIR$/view/header.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/view/skins.php" beforeDir="false" afterPath="$PROJECT_DIR$/view/skins.php" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -410,14 +394,7 @@
       <workItem from="1572579431122" duration="2307000" />
       <workItem from="1572656595642" duration="9339000" />
       <workItem from="1572744700598" duration="21411000" />
-      <workItem from="1572829717209" duration="10225000" />
-    </task>
-    <task id="LOCAL-00008" summary="fix bugs, for upload">
-      <created>1570235699109</created>
-      <option name="number" value="00008" />
-      <option name="presentableId" value="LOCAL-00008" />
-      <option name="project" value="LOCAL" />
-      <updated>1570235699109</updated>
+      <workItem from="1572829717209" duration="12285000" />
     </task>
     <task id="LOCAL-00009" summary="fix bugs, for upload">
       <created>1570236653606</created>
@@ -755,7 +732,14 @@
       <option name="project" value="LOCAL" />
       <updated>1572504286392</updated>
     </task>
-    <option name="localTasksCounter" value="57" />
+    <task id="LOCAL-00057" summary="new render">
+      <created>1572848707428</created>
+      <option name="number" value="00057" />
+      <option name="presentableId" value="LOCAL-00057" />
+      <option name="project" value="LOCAL" />
+      <updated>1572848707429</updated>
+    </task>
+    <option name="localTasksCounter" value="58" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

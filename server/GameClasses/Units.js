@@ -801,7 +801,7 @@ class Game {
         this.updatePlayerI = 0;
         this.onSpawnUnit = unit => "";
         this.onDestroyUnit = (type, id) => "";
-        this.wsMessage = (message, id = null, besidesId = null) => "";
+        this.wsMessage = (message, id = null, besidesId = null, isNeedTime) => "";
         this.lastUpdateUnitsTime = performance.now();
     }
 
@@ -942,28 +942,27 @@ class Game {
             this.spawnBots();
 
             // if (performance.now() - this.lastUpdateUnitsTime > 1000 / 60) {
-                let arr = [];
-                // console.log(JSON.stringify(arr));
-                for (let i = 0; i < this.playersArr.length; i++) {
-                    let player = this.playersArr[i];
-                    if (player.type === "bot") continue;
+            let arr = [];
+            // console.log(JSON.stringify(arr));
+            for (let i = 0; i < this.playersArr.length; i++) {
+                let player = this.playersArr[i];
+                if (player.type === "bot") continue;
 
-                    if (performance.now() - player.lastUpdateUnitsTime >= 100) {
-                        arr = this.getAllUnits(false);
-                        player.lastUpdateUnitsTime = performance.now();
-                    } else arr = this.getAllUnits(false, player.wsId);
-                    this.wsMessage({
-                        action: "u",
-                        u: arr,
-                        time: Date.now()
-                    }, player.wsId);
-                }
-                // this.wsMessage({
-                //     action: "u",
-                //     u: arr,
-                //     time: Date.now()
-                // });
-                this.lastUpdateUnitsTime = performance.now();
+                if (performance.now() - player.lastUpdateUnitsTime >= 100) {
+                    arr = this.getAllUnits(false);
+                    player.lastUpdateUnitsTime = performance.now();
+                } else arr = this.getAllUnits(false, player.wsId);
+                this.wsMessage({
+                    a: "u",
+                    u: arr
+                }, player.wsId, null, false);
+            }
+            // this.wsMessage({
+            //     action: "u",
+            //     u: arr,
+            //     time: Date.now()
+            // });
+            this.lastUpdateUnitsTime = performance.now();
             // }
             // console.log(performance.now() - time);
         }
@@ -1033,10 +1032,10 @@ class Game {
         if (name === "player") {
             let obj = {
                 name: "p",
-                c: [], // cells
-                ci: unit.cellId, // cellId
-                my: unit.mouse.y, // mouseY
-                mx: unit.mouse.x, // mouseX
+                c: "", // cells
+                // ci: unit.cellId, // cellId
+                // my: unit.mouse.y, // mouseY
+                // mx: unit.mouse.x, // mouseX
                 cl: unit.color, // color
                 id: unit.wsId,
                 nick: unit.nick,
@@ -1057,33 +1056,35 @@ class Game {
             let length = unit.cells.length;
             for (let i = 0; i < length; i++) {
                 let cell = unit.cells[i];
-                let objC = {
-                    x: cell.x,
-                    y: cell.y,
-                    m: cell.mass, // mass
-                    // tm: cell.toMass, // toMass
-                    // ss: cell.spaceSin, // spaceSin
-                    // sc: cell.spaceCos, // spaceCos
-                    // sd: cell.spaceDistance,
-                    // tsd: cell.totalSpaceDistane,
-                    // ed: cell.engineDistance,
-                    // es: cell.engineSin,
-                    // ec: cell.engineCos,
-                    // ic: cell.isConnect,
-                    id: cell.id,
-                    // c: cell.color,
-                    // icl: cell.isCollising,
-                    mn: cell.main,
-                    // s: cell.sin,
-                    // c: cell.cos
-                };
-                if (!all) {
-                    for (let key in objC) {
-                        if (!objC[key]) delete objC[key];
-                    }
-                }
-                obj.c.push(objC);
+                let objC = [cell.id, cell.x, cell.y, cell.mass, cell.main ? "t" : "f", ""].join(","); // id, x, y, mass, main
+                // let objC = {
+                //     x: cell.x,
+                //     y: cell.y,
+                //     m: cell.mass, // mass
+                //     // tm: cell.toMass, // toMass
+                //     // ss: cell.spaceSin, // spaceSin
+                //     // sc: cell.spaceCos, // spaceCos
+                //     // sd: cell.spaceDistance,
+                //     // tsd: cell.totalSpaceDistane,
+                //     // ed: cell.engineDistance,
+                //     // es: cell.engineSin,
+                //     // ec: cell.engineCos,
+                //     // ic: cell.isConnect,
+                //     id: cell.id,
+                //     // c: cell.color,
+                //     // icl: cell.isCollising,
+                //     mn: cell.main,
+                //     // s: cell.sin,
+                //     // c: cell.cos
+                // };
+                // if (!all) {
+                //     for (let key in objC) {
+                //         if (!objC[key]) delete objC[key];
+                //     }
+                // }
+                obj.c += objC;
             }
+            obj.c = obj.c.substring(0, obj.c.length - 1);
 
 
             return obj;

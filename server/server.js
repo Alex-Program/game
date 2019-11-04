@@ -22,8 +22,8 @@ const webSocketServer = new WebSocketServer.Server({
 });
 
 
-function wsMessage(message, id = null, besidesId = null) {
-    if (!message.time) message.time = Date.now();
+function wsMessage(message, id = null, besidesId = null, isNeedTime = true) {
+    if (!message.time && isNeedTime) message.time = Date.now();
     message = JSON.stringify(message);
     message = Functions.stringToArrayBuffer(message);
 
