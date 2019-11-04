@@ -283,6 +283,10 @@ webSocketServer.on('connection', function (ws, req) {
         action: "load_game_settings",
         settings: Units.game.exportGameSettings()
     }, id);
+    wsMessage({
+        action: "get_daily_top",
+        top: Units.game.exportDailyTop()
+    });
 
     ws.on('message', async function (data) {
         data = Functions.arrayBufferToString(data).split("").filter(val => val !== String.fromCharCode(0)).join("");

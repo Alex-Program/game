@@ -1,4 +1,11 @@
 (function () {
+    let dailyTop = {
+        nick: "",
+        skin: "",
+        mass: "",
+        skinId: ""
+    };
+
 
     function roundFloor(number, count = 2) {
         return Math.round(number * (10 ** count)) / (10 ** count);
@@ -171,8 +178,8 @@
 
             context.restore();
 
-            let isDrawText = ((gameSettings.isOptimization && this.drawableRadius / gameInfo.scale > 25) ||
-                (!gameSettings.isOptimization && this.drawableRadius / (gameInfo.scale) > 15));
+            let isDrawText = ((gameSettings.isOptimization && this.drawableRadius / gameInfo.scale > 40) ||
+                (!gameSettings.isOptimization && this.drawableRadius / (gameInfo.scale) > 25));
 
             if (name === "cell") {
                 let stickerI = this.owner.stickerI;
@@ -184,7 +191,7 @@
                 }
 
                 if (!gameSettings.isHideNick && isDrawText) {
-                    this.drawText(drawableX, drawableY, this.drawableRadius / (2 * gameInfo.scale), this.owner.nick, textColor, true, strokeTextColor);
+                    this.drawText(drawableX, drawableY, this.drawableRadius / (2.5 * gameInfo.scale), this.owner.nick, textColor, true, strokeTextColor);
                 }
                 drawableY += this.drawableRadius / (2 * gameInfo.scale);
                 if (gameSettings.isCellMass && isDrawText) {
@@ -355,7 +362,8 @@
         // };
 
         static drawCenter() {
-            if (!imagesArr["center"]) return true;
+            let image = isEmpty(dailyTop.skinId) ? imagesArr["center"] : imagesArr[dailyTop.skinId];
+            if (!image) return true;
 
             let drawableX = canvas.width / 2 + (gameInfo.width / 2 - gameInfo.centerX) / gameInfo.scale;
             let drawableY = canvas.height / 2 + (gameInfo.height / 2 - gameInfo.centerY) / gameInfo.scale;
@@ -370,7 +378,7 @@
             context.save();
             context.clip();
             context.globalCompositeOperation = "source-atop";
-            context.drawImage(imagesArr["center"], drawableX - gameInfo.centerImageRadius / gameInfo.scale, drawableY - gameInfo.centerImageRadius / gameInfo.scale, gameInfo.centerImageRadius * 2 / gameInfo.scale, gameInfo.centerImageRadius * 2 / gameInfo.scale);
+            context.drawImage(image, drawableX - gameInfo.centerImageRadius / gameInfo.scale, drawableY - gameInfo.centerImageRadius / gameInfo.scale, gameInfo.centerImageRadius * 2 / gameInfo.scale, gameInfo.centerImageRadius * 2 / gameInfo.scale);
             context.restore();
         }
 
@@ -1834,7 +1842,7 @@
                 for (let i = 0; i < data.u.p.length; i++) {
                     let p = getUnit(data.u.p[i]);
                     let player = findPlayer(p.id);
-                    if(!player) return true;
+                    if (!player) return true;
                     player.changePos(p);
                 }
             }
@@ -2070,6 +2078,11 @@
                 // states.addGameCommand({time: data.time, type: data.type, id: data.id, command: "destroy_unit"});
                 destroyUnit(data.type, data.id);
                 return true;
+            }
+
+            if (data.action === "get_daily_top") {
+                dailyTop = data.top;
+                loadImage(data.top.skinId, data.top.skin);
             }
 
         });

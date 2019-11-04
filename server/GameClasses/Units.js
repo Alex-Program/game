@@ -17,9 +17,16 @@ let gameInfo = {
     connectTime: 1000,
     connectTimeMassCoefficient: 0.1,
     maxCells: 64,
-    botsCount: 0
+    botsCount: 10
 };
 
+
+let dailyTop = {
+    mass: "",
+    nick: "",
+    skin: "",
+    skinId: ""
+};
 
 class Arc {
 
@@ -481,7 +488,7 @@ class Cell extends Arc {
                 }
                 if (game.playersArr[p].cells.length === 0) {
                     game.playersArr[p].isSpawned = false;
-                    // game.playersArr[p].destroy();
+                    game.playersArr[p].destroy();
                     // game.playersArr.splice(p, 1);
                     // p--;
                     // if (p <= game.updatePlayerI) game.updatePlayerI--;
@@ -779,7 +786,21 @@ class Player {
     }
 
     destroy() {
-        game.onDestroyUnit(this.constructor.name.toLowerCase(), this.wsId);
+        if (this.type === "player" && this.totalMass > dailyTop.mass) {
+            dailyTop.mass = this.totalMass;
+            dailyTop.nick = this.nick;
+            dailyTop.skin = this.skin || "";
+            dailyTop.skinId = this.skinId || "";
+            game.wsMessage({
+                action: "game_message",
+                message: "Новый ежедневный рекорд " + this.totalMass + " установлен игроком " + this.nick
+            });
+            game.wsMessage({
+                action: "get_daily_top",
+                top: dailyTop
+            });
+        }
+        // game.onDestroyUnit(this.constructor.name.toLowerCase(), this.wsId);
     }
 
 }
@@ -944,14 +965,17 @@ class Game {
             // if (performance.now() - this.lastUpdateUnitsTime > 1000 / 60) {
             let arr = [];
             // console.log(JSON.stringify(arr));
+            arr = this.getAllUnits(false);
+
             for (let i = 0; i < this.playersArr.length; i++) {
                 let player = this.playersArr[i];
                 if (player.type === "bot") continue;
 
-                if (performance.now() - player.lastUpdateUnitsTime >= 100) {
-                    arr = this.getAllUnits(false);
-                    player.lastUpdateUnitsTime = performance.now();
-                } else arr = this.getAllUnits(false, player.wsId);
+
+                // if (performance.now() - player.lastUpdateUnitsTime >= 100) {
+                //     arr = this.getAllUnits(false);
+                //     player.lastUpdateUnitsTime = performance.now();
+                // } else arr = this.getAllUnits(false, player.wsId);
                 this.wsMessage({
                     a: "u",
                     u: arr
@@ -1212,6 +1236,10 @@ class Game {
 
     exportGameSettings() {
         return gameInfo;
+    }
+
+    exportDailyTop(){
+        return dailyTop;
     }
 
 }
