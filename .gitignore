@@ -2,3 +2,5 @@
 model/db.php
 ./src/all_images
 src/all_images
+./src/users_img
+src/users_img
