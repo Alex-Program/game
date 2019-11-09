@@ -5,6 +5,7 @@
         mass: "",
         skinId: ""
     };
+    let isSpectate = false;
 
 
     function roundFloor(number, count = 2) {
@@ -66,6 +67,11 @@
 
         addGameState(state) {
             this.states.push(state);
+        }
+
+        getFirstState() {
+            if (this.states.length === 0) return null;
+            return this.states[0];
         }
 
         getGameState(time) {
@@ -167,16 +173,20 @@
 
             let radius = this.drawableRadius / gameInfo.scale;
             if (gameSettings.isDrawCellBorder) {
-                this.drawArc(drawableX, drawableY, radius, toChangeColor(color));
+                radius = (this.drawableRadius - 2.5) / gameInfo.scale;
+                if (radius < 2) radius = 2;
+                this.strokeArc(drawableX, drawableY, radius, toChangeColor(color), 5);
                 radius = (this.drawableRadius - 5) / gameInfo.scale;
                 if (radius < 2) radius = 2;
                 context.restore();
             }
             // let transparent = (name === "food" && imagesArr['food']);
             let transparent = false;
-            this.drawArc(drawableX, drawableY, radius, color, transparent);
 
-            context.restore();
+            if (name !== "cell") {
+                this.drawArc(drawableX, drawableY, radius, color, transparent);
+                context.restore();
+            }
 
             let isDrawText = ((gameSettings.isOptimization && this.drawableRadius / gameInfo.scale > 40) ||
                 (!gameSettings.isOptimization && this.drawableRadius / (gameInfo.scale) > 25));
@@ -184,10 +194,24 @@
             if (name === "cell") {
                 let stickerI = this.owner.stickerI;
                 let stickerSet = this.owner.stickersSet;
+
+
                 if (stickerI !== null && stickerI >= 0 && stickerSet && imagesArr[stickerSet[stickerI].image_id]) {
+
+                    this.drawArc(drawableX, drawableY, radius, color, transparent);
+                    context.restore();
+
                     this.drawImage(imagesArr[stickerSet[stickerI].image_id], drawableX, drawableY, radius);
                 } else if (imagesArr[this.owner.skinId]) {
+                    if (this.owner.isTransparentSkin) transparent = true;
+                    this.drawArc(drawableX, drawableY, radius, color, transparent);
+                    context.restore();
+
                     this.drawImage(imagesArr[this.owner.skinId], drawableX, drawableY, radius);
+                }
+                else {
+                    this.drawArc(drawableX, drawableY, radius, color, transparent);
+                    context.restore();
                 }
 
                 if (!gameSettings.isHideNick && isDrawText) {
@@ -201,7 +225,7 @@
             }
 
             if (name === "virus") {
-                if (imagesArr['virus_arrow']) {
+                if (!this.isFeeding && imagesArr['virus_arrow']) {
                     let q = (this.mass - 200) / 200;
                     this.drawImageByAngle(imagesArr['virus_arrow'], drawableX, drawableY, -225 + 270 * q);
                 }
@@ -241,6 +265,15 @@
             context.globalAlpha = 1;
         }
 
+        strokeArc(x, y, radius, color, strokeWidth) {
+            context.beginPath();
+            context.strokeStyle = color;
+            context.lineWidth = strokeWidth;
+            context.arc(x, y, radius, 0, 2 * Math.PI, false);
+            context.stroke();
+            context.closePath();
+        }
+
         drawImage(image, x, y, radius) {
             context.save();
             context.clip();
@@ -278,12 +311,14 @@
             context.textAlign = "center";
             context.textBaseline = "middle";
             context.font = "bold " + String(size) + "px " + font;
+            if (gameSettings.isAlphaText) context.globalAlpha = 0.4;
             context.fillText(String(value), x, y);
             if (isStroke) {
                 context.lineWidth = size / 50;
                 context.strokeStyle = strokeStyle;
                 context.strokeText(String(value), x, y);
             }
+            context.globalAlpha = 1;
             context.restore();
         }
 
@@ -481,7 +516,7 @@
 
     class Virus extends Arc {
 
-        constructor(x, y, sin, cos, distance = 0, mass = 200, color = "#fff500") {
+        constructor(x, y, sin, cos, distance = 0, mass = 200, color = "#fff500", isFeeding = false) {
             super();
 
             this.x = x;
@@ -492,6 +527,7 @@
             this.mass = mass;
             this.toMass = 0;
             this.color = color;
+            this.isFeeding = isFeeding;
 
             this.sX = 0;
             this.sY = 0;
@@ -519,12 +555,14 @@
                 this.mass = Math.round(this.mass + speed);
                 this.toMass = Math.round(this.toMass - speed);
 
-                if (this.mass > 400) {
-                    this.mass = 400;
-                    this.toMass = -200;
-                    // virusArr.push(
-                    //     new Virus(this.x, this.y, this.sin, this.cos, 200)
-                    // )
+                if (!this.isFeeding) {
+                    if (this.mass > 400) {
+                        this.mass = 400;
+                        this.toMass = -200;
+                        // virusArr.push(
+                        //     new Virus(this.x, this.y, this.sin, this.cos, 200)
+                        // )
+                    }
                 }
             }
             /*
@@ -927,10 +965,12 @@
         lastDeletedTime = performance.now();
         isSplit = false;
         isMouseMove = false;
+        isTransparentSkin = false;
 
-        constructor(x, y, mass, color = "#000000", current = false, id, nick, skin = "", skinId = "") {
+        constructor(x, y, mass, color = "#000000", current = false, id, nick, skin = "", skinId = "", isTransparentSkin = false) {
             this.skin = skin;
             this.skinId = skinId;
+            this.isTransparentSkin = isTransparentSkin;
 
             this.mouse = {
                 x: mouseCoords.x,
@@ -969,6 +1009,13 @@
         }
 
         update(delta = 1) {
+            if (this.current) {
+                if (this.cells.length === 0) {
+                    isSpectate = true;
+                    return true;
+                } else isSpectate = false;
+            }
+
             this.updateI = 0;
             let mass = 0;
             for (; this.updateI < this.cells.length; this.updateI++) {
@@ -1033,6 +1080,8 @@
                     c.isCollising = pCell.isCollising;
                     c.sin = pCell.sin;
                     c.cos = pCell.cos;
+                    c.sX = pCell.x;
+                    c.sY = pCell.y;
                     this.cells.push(c);
                     continue;
                 }
@@ -1207,6 +1256,8 @@
         centerImageRadius: 100,
         centerX: 0,
         centerY: 0,
+        byCenterX: 0,
+        byCenterY: 0,
         width: 1000,
         height: 1000,
         startMass: 500,
@@ -1279,10 +1330,11 @@
                 let delta = getTimeByDelta(gameInfo.deltaTime);
                 // console.log(differentStateTime);
                 // console.log(states.states.length);
-                if (performance.now() - lastStateTimeLocal >= differentStateTime && false) {
+                if (performance.now() - lastStateTimeLocal >= differentStateTime || true) {
                     // let k = performance.now() - lastStateTimeLocal;
                     let newTime = lastStateTime + performance.now() - lastStateTimeLocal - differentStateTime;
                     let state = lastStateTime ? states.getStateByTime(newTime) : states.getGameState();
+                    // let state = states.getFirstState();
                     // if(!state){
                     //     console.log("now " + performance.now());
                     //     console.log("lastlocal " + lastStateTimeLocal);
@@ -1354,6 +1406,19 @@
 
                     gameInfo.scale += speed;
                     gameInfo.byScale -= speed;
+                }
+
+                if (Math.abs(gameInfo.byCenterX) > 0 || Math.abs(gameInfo.byCenterY) > 0) {
+
+                    let c = Math.sqrt(gameInfo.byCenterX ** 2 + gameInfo.byCenterY ** 2);
+                    let sin = gameInfo.byCenterY / c;
+                    let cos = gameInfo.byCenterX / c;
+                    let byY = c * sin / 10;
+                    let byX = c * cos / 10;
+                    gameInfo.centerY += byY;
+                    gameInfo.centerX += byX;
+                    gameInfo.byCenterY -= byY;
+                    gameInfo.byCenterX -= byX;
                 }
 
                 rendersArr = [];
@@ -1434,7 +1499,7 @@
         let returned = null;
         if (unit.name === "p") {
             let current = unit.cr === "t";
-            let player = new Player(0, 0, 0, unit.cl, current, unit.id, unit.nick, "", "");
+            let player = new Player(0, 0, 0, unit.cl, current, unit.id, unit.nick, "", "", Boolean(+unit.its));
             player.mouse.x = unit.mx;
             player.mouse.y = unit.my;
             player.skin = unit.skin;
@@ -1446,27 +1511,29 @@
             let cellsArr = unit.c.split(",");
             let length = cellsArr.length;
             let arr = [];
-            for (let i = 0; i < length; i += 5) {
+            if (length >= 5) {
+                for (let i = 0; i < length; i += 5) {
 
-                // let cell = unit.c[i];
-                let c = new Cell(+cellsArr[i + 1] || 0, +cellsArr[i + 2] || 0, +cellsArr[i + 3] || 0, 0, 0, cellsArr[i + 4] === "t", player.color, player, +cellsArr[i] || 0, 0);
-                // c.engineSin = cell.es;
-                // c.engineCos = cell.ec;
-                // c.engineDistance = cell.ed;
-                c.engineSin = 0;
-                c.engineCos = 0;
-                c.engineDistance = 0;
-                c.spaceCos = 0;
-                c.spaceSin = 0;
-                c.spaceDistance = 0;
-                c.totalSpaceDistane = 0;
-                // c.toMass = cell.tm;
-                c.toMass = 0;
-                c.isConnect = 0;
-                c.isCollising = 0;
-                // c.updateDirection();
-                arr.push(c);
+                    // let cell = unit.c[i];
+                    let c = new Cell(+cellsArr[i + 1] || 0, +cellsArr[i + 2] || 0, +cellsArr[i + 3] || 0, 0, 0, cellsArr[i + 4] === "t", player.color, player, +cellsArr[i] || 0, 0);
+                    // c.engineSin = cell.es;
+                    // c.engineCos = cell.ec;
+                    // c.engineDistance = cell.ed;
+                    c.engineSin = 0;
+                    c.engineCos = 0;
+                    c.engineDistance = 0;
+                    c.spaceCos = 0;
+                    c.spaceSin = 0;
+                    c.spaceDistance = 0;
+                    c.totalSpaceDistane = 0;
+                    // c.toMass = cell.tm;
+                    c.toMass = 0;
+                    c.isConnect = 0;
+                    c.isCollising = 0;
+                    // c.updateDirection();
+                    arr.push(c);
 
+                }
             }
             player.cells = arr;
             returned = player;
@@ -1487,7 +1554,8 @@
 
         } else if (unit.name === "v") {
             let data = unit.d.split(",");
-            let virus = new Virus(+data[1], +data[2], 0, 0, 0, +data[3], "#fff500");
+            let isFeeding = data[4] === "t";
+            let virus = new Virus(+data[1], +data[2], 0, 0, 0, +data[3], "#fff500", isFeeding);
             virus.id = +data[0];
             virus.sX = +data[1];
             virus.sY = +data[2];
@@ -1525,7 +1593,7 @@
                     updateHtml();
                     getTopPlayers();
                     isGame = true;
-                }, 0);
+                }, 10);
                 return true;
             }
             playersArr.push(unit);
@@ -1553,6 +1621,7 @@
         let arr = playersArr.sort((a, b) => b.mass - a.mass);
         let html = "";
         for (let [key, player] of Object.entries(arr)) {
+            if (player.cells.length === 0) continue;
             if (key >= 10) break;
             let cl = "";
             if (player.current) cl = "current";
@@ -1635,6 +1704,11 @@
         if (event.code.toLowerCase() !== "enter") return true;
         event.preventDefault();
         sendChatMessage();
+        $(this).blur();
+    });
+
+    document.addEventListener("keypress", function (event) {
+        if (event.code.toLowerCase() === "enter") $("#message_text").focus();
     });
 
 
@@ -1652,7 +1726,11 @@
     window.addEventListener("keydown", function (event) {
         let code = event.code.toLowerCase();
         if (code in lastKeyPressTime) {
-            if (performance.now() - lastKeyPressTime[code] < 100) return true;
+            if (performance.now() - lastKeyPressTime[code] < 100) {
+                event.preventDefault();
+                event.stopPropagation();
+                return false;
+            }
         }
         lastKeyPressTime[code] = performance.now();
 
@@ -1722,6 +1800,8 @@
     });
     window.addEventListener("keyup", function (event) {
         let code = event.code.toLowerCase();
+        if (preventDefault.includes(code)) event.preventDefault();
+
         let i = keyPressed.indexOf(code);
         if (i < 0) return true;
         keyPressed.splice(i, 1);
@@ -1751,19 +1831,41 @@
 
     });
 
-    document.getElementById("into_game_button").addEventListener("click", function () {
-
+    function getSelectedServer() {
         let selected = $(".server.selected");
-        if (selected.length !== 1) return true;
+        if (selected.length !== 1) return false;
 
         let ip = selected.attr("data-ip");
         $("#main_menu").addClass("closed");
+        return ip;
+    }
+
+    document.getElementById("into_game_button").addEventListener("click", function () {
+
+        let ip = getSelectedServer();
+        if (!ip) return true;
+
         if (ws && ws.address === "ws://" + ip) {
+            if (isSpectate) {
+                ws.sendJson({
+                    action: "respawn_player"
+                });
+                isSpectate = false;
+            }
             changeNick($("#nick_for_game").val().trim(), $("#password_for_game").val().trim());
-            changeColor($("#select_color").val());
+            // changeColor($("#select_color").val());
             return true;
         }
         startGame(ip);
+    });
+
+    document.getElementById("spectate_button").addEventListener("click", function () {
+        let ip = getSelectedServer();
+        if (!ip) return true;
+
+        if (ws && ws.address === "ws://" + ip) return true;
+
+        startGame(ip, true);
     });
 
 
@@ -1817,7 +1919,18 @@
     let ping = $("#coords .ping .value");
     let startPingTime = 0;
 
-    function startGame(ip) {
+
+    /// spectator
+    $("body").on("click", function (e) {
+        if (!isSpectate) return true;
+
+        gameInfo.byCenterX = e.clientX - canvas.width / 2;
+        gameInfo.byCenterY = e.clientY - canvas.height / 2;
+    });
+
+
+    function startGame(ip, spect = false) {
+        isSpectate = spect;
         isGame = false;
         clearAll();
         try {
@@ -1834,7 +1947,8 @@
                 password: $("#password_for_game").val().trim(),
                 color: $("#select_color").val(),
                 token: getCookie("Token") || "",
-                userId: getCookie("User-Id") || ""
+                userId: getCookie("User-Id") || "",
+                type: spect ? "spectator" : "player"
             });
             ws.sendJson({action: "update_units"});
             startPingTime = performance.now();
@@ -1857,17 +1971,30 @@
 
                 // let delta = getTimeByDelta((performance.now() - startUpdateTime) / 2);
                 // let players = data.u.p.map(player => getUnit(player));
+                let players = [];
+                let virus = [];
                 for (let i = 0; i < data.u.p.length; i++) {
+                    players.push(getUnit(data.u.p[i]));
+                    continue;
+
                     let p = getUnit(data.u.p[i]);
                     let player = findPlayer(p.id);
                     if (!player) return true;
                     player.changePos(p);
                 }
-                for(let i = 0; i < data.u.v.length; i++){
-                    let v = getUnit(data.u.v[i]);
-                    let virus = findVirus(v.id);
-                    if(!virus) return true;
-                    virus.virus.changePos(v);
+                for (let i = 0; i < data.u.v.length; i++) {
+                    virus.push(getUnit(data.u.v[i]));
+                    continue;
+
+                    // let v = getUnit(data.u.v[i]);
+                    // let virus = findVirus(v.id);
+                    // if (!virus) return true;
+                    // virus.virus.changePos(v);
+                }
+                // states.removeFirstState();
+                states.addGameState({time: data.time, players, virus});
+                if (lastStateTime) {
+                    states.removeBeforeState(lastStateTime + performance.now() - lastStateTimeLocal - differentStateTime);
                 }
             }
 
@@ -1876,14 +2003,18 @@
                 gameInfo.height = data.settings.height;
                 gameInfo.connectTime = data.settings.connectTime;
                 gameInfo.maxCells = data.settings.maxCells;
+                if (isSpectate) {
+                    gameInfo.centerX = gameInfo.width / 2;
+                    gameInfo.centerY = gameInfo.height / 2;
+                }
             }
 
             if (data.action === "spawn_unit") {
                 delete data.action;
                 let unit = getUnit(data);
 
-                addUnit(unit, 1);
-                // else states.addGameCommand({time: data.time, command: "spawn_unit", unit});
+                if (!isGame) addUnit(unit, 1);
+                else states.addGameCommand({time: data.time, command: "spawn_unit", unit});
 
 
                 return true;
@@ -2099,8 +2230,8 @@
             }
 
             if (data.action === "destroy_unit") {
-                // states.addGameCommand({time: data.time, type: data.type, id: data.id, command: "destroy_unit"});
-                destroyUnit(data.type, data.id);
+                states.addGameCommand({time: data.time, type: data.type, id: data.id, command: "destroy_unit"});
+                // destroyUnit(data.type, data.id);
                 return true;
             }
 

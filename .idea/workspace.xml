@@ -1,10 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="011e9982-741d-4222-841e-091d212022f0" name="Default Changelist" comment="">
+    <list default="true" id="011e9982-741d-4222-841e-091d212022f0" name="Default Changelist" comment="new render">
+      <change afterPath="$PROJECT_DIR$/controller/prices_controller.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/model/Prices.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/server/GameClasses/Files.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/css/prices.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/js/prices.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/view/prices.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/stickers_controller.php" beforeDir="false" afterPath="$PROJECT_DIR$/controller/stickers_controller.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/user_controller.php" beforeDir="false" afterPath="$PROJECT_DIR$/controller/user_controller.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/Auth.php" beforeDir="false" afterPath="$PROJECT_DIR$/model/Auth.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/Skin.php" beforeDir="false" afterPath="$PROJECT_DIR$/model/Skin.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/Sticker.php" beforeDir="false" afterPath="$PROJECT_DIR$/model/Sticker.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/mvc.php" beforeDir="false" afterPath="$PROJECT_DIR$/public/mvc.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/GameClasses/Units.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/GameClasses/Units.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/functions.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/functions.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/all_images/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/src/all_images/1.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/all_images/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/src/all_images/2.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/all_images/23.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/all_images/24.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/all_images/25.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/all_images/26.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/all_images/27.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/all_images/28.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/all_images/29.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/all_images/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/src/all_images/3.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/all_images/30.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/all_images/31.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/all_images/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/src/all_images/4.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/css/header.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/css/header.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/css/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/css/index.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/css/skins.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/css/skins.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/css/stickers.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/css/stickers.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/css/whole.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/css/whole.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/images/verefied.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/js/functions.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/functions.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/js/game.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/game.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/js/header.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/header.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/js/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/js/skin_editor.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/skin_editor.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/js/skins.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/skins.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/js/stickers.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/stickers.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/users_img/1.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/users_img/1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/view/cabinet.php" beforeDir="false" afterPath="$PROJECT_DIR$/view/cabinet.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/view/header.php" beforeDir="false" afterPath="$PROJECT_DIR$/view/header.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/view/index.php" beforeDir="false" afterPath="$PROJECT_DIR$/view/index.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/view/skins.php" beforeDir="false" afterPath="$PROJECT_DIR$/view/skins.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/view/stickers.php" beforeDir="false" afterPath="$PROJECT_DIR$/view/stickers.php" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -78,12 +125,12 @@
     <property name="ts.external.directory.path" value="$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/jsLanguageServicesImpl/external" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$" />
-      <recent name="$PROJECT_DIR$/src/js" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/view" />
+      <recent name="$PROJECT_DIR$/src/js" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/src/js" />
     </key>
   </component>
@@ -393,14 +440,13 @@
       <workItem from="1572579431122" duration="2307000" />
       <workItem from="1572656595642" duration="9339000" />
       <workItem from="1572744700598" duration="21411000" />
-      <workItem from="1572829717209" duration="17559000" />
-    </task>
-    <task id="LOCAL-00012" summary="fix bugs, for upload">
-      <created>1570243015669</created>
-      <option name="number" value="00012" />
-      <option name="presentableId" value="LOCAL-00012" />
-      <option name="project" value="LOCAL" />
-      <updated>1570243015669</updated>
+      <workItem from="1572829717209" duration="18854000" />
+      <workItem from="1572914670698" duration="21347000" />
+      <workItem from="1572999378504" duration="9156000" />
+      <workItem from="1573025352851" duration="2964000" />
+      <workItem from="1573089013824" duration="24730000" />
+      <workItem from="1573174486570" duration="17913000" />
+      <workItem from="1573263709726" duration="11883000" />
     </task>
     <task id="LOCAL-00013" summary="fix bugs, for upload">
       <created>1570243098871</created>
@@ -738,7 +784,14 @@
       <option name="project" value="LOCAL" />
       <updated>1572857489382</updated>
     </task>
-    <option name="localTasksCounter" value="61" />
+    <task id="LOCAL-00061" summary="new render">
+      <created>1572862440777</created>
+      <option name="number" value="00061" />
+      <option name="presentableId" value="LOCAL-00061" />
+      <option name="project" value="LOCAL" />
+      <updated>1572862440777</updated>
+    </task>
+    <option name="localTasksCounter" value="62" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -774,5 +827,12 @@
     <MESSAGE value="fix bugs" />
     <MESSAGE value="new render" />
     <option name="LAST_COMMIT_MESSAGE" value="new render" />
+  </component>
+  <component name="XDebuggerManager">
+    <watches-manager>
+      <configuration name="mvc.php">
+        <watch expression="$sql" />
+      </configuration>
+    </watches-manager>
   </component>
 </project>

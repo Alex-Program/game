@@ -2,7 +2,7 @@
 
     class Skin {
 
-        constructor(id, nick, skinId, password = "", isAdmin = 0, isModer = 0, userId = getCookie("User-Id"), skin = "", count = 0) {
+        constructor(id, nick, skinId = "", password = "", isAdmin = 0, isModer = 0, userId = getCookie("User-Id"), skin = "", count = 0, isTransparentSkin = 0) {
             this.id = id;
             this.nick = escapeHtml(nick);
             this.skinId = skinId;
@@ -10,6 +10,7 @@
             this.isAdmin = isAdmin;
             this.isModer = isModer;
             this.userId = userId;
+            this.isTransparentSkin = +isTransparentSkin;
             this.skin = skin;
             this.count = count;
             this.image = null;
@@ -25,6 +26,7 @@
 
             $("input[data-name='password']").val(this.password);
             $("input[data-name='nick']").val(this.nick).prop("readonly", true);
+            $("input[data-name='is_transparent_skin']").prop("checked", Boolean(this.isTransparentSkin));
             // $("#remove_image_button").hide();
 
             if (this.skin) {
@@ -37,6 +39,13 @@
 
         }
 
+        getValue(name) {
+            if (name === "nick") return this.nick;
+            else if (name === "skin") return this.skin;
+            else if (name === "password") return this.password;
+            else if (name === "is_transparent_skin") return Boolean(this.isTransparentSkin);
+        }
+
         checkChanges(name, value) {
             let defaultValue = "";
             switch (name) {
@@ -46,13 +55,16 @@
                 case "nick":
                     defaultValue = this.nick;
                     break;
+                case "is_transparent_skin":
+                    defaultValue = this.isTransparentSkin;
+                    value = +value;
+                    break;
                 default:
                     defaultValue = this.id;
+                    value = +value;
             }
 
-            if (defaultValue !== value) return true;
-
-            return false;
+            return defaultValue !== value;
         }
 
         changeValue(name, value) {
@@ -60,6 +72,7 @@
             else if (name === "nick") this.nick = value;
             else if (name === "skin") this.skin = value;
             else if (name === "skin_id") this.skinId = value;
+            else if (name === "is_transparent_skin") this.isTransparentSkin = +value;
         }
 
     }
@@ -67,6 +80,9 @@
     class Canvas {
         canvas = document.getElementById("skin_canvas");
         context = this.canvas.getContext("2d");
+        /**
+         * @type {HTMLImageElement|null}
+         */
         image = null;
 
         constructor() {
@@ -144,9 +160,15 @@
 
         toDataUrl() {
             if (!this.image) return false;
-            this.clear();
-            this.context.drawImage(this.image, 0, 0, this.canvas.width, this.canvas.height);
-            let dataUrl = this.canvas.toDataURL("image/png", 1.0);
+            let c = document.createElement("canvas");
+            [c.width, c.height] = [512, 512];
+
+            let ctx = c.getContext("2d");
+            ctx.clearRect(0, 0, c.width, c.height);
+            ctx.drawImage(this.image, 0, 0, c.width, c.height);
+            // this.clear();
+            // this.context.drawImage(this.image, 0, 0, this.canvas.width, this.canvas.height);
+            let dataUrl = c.toDataURL("image/png", 1.0);
             this.drawImage();
             return dataUrl;
         }
@@ -159,6 +181,9 @@
     let isChangedSkin = false;
     let selectedSkinCount = null;
 
+    let isChanged = {};
+    let isCreated = {};
+
     function resetInputs() {
         $(".user_skin.selected").removeClass("selected");
         $("#nick_info input:not([type='checkbox'])").val("").prop("readonly", false);
@@ -170,6 +195,9 @@
         $("#remove_image_button").show();
         selectedSkinCount = null;
         isChangedSkin = false;
+        isCreated = {};
+        isChanged = {};
+        $("#sum span:eq(0)").text("0");
     }
 
     resetInputs();
@@ -183,7 +211,7 @@
 
                 let html = "";
                 for (let skin of data.data) {
-                    let s = new Skin(skin.id, skin.nick, skin.skin_id, skin.password, skin.is_admin, skin.is_moder, skin.user_id, skin.skin, skinsArr.length);
+                    let s = new Skin(skin.id, skin.nick, skin.skin_id, skin.password, skin.is_admin, skin.is_moder, skin.user_id, skin.skin, skinsArr.length, +skin.is_transparent_skin);
                     skinsArr.push(s);
                     html += s.renderHtml();
                 }
@@ -194,14 +222,44 @@
 
     getAllSkins();
 
+    let sum = 0;
+
+    function countSum() {
+        sum = 0;
+
+        for (let [name, obj] of Object.entries({isChanged, isCreated})) {
+
+            for (let changedKey in obj) {
+                if (!obj[changedKey]) continue;
+
+                let keysInPrice = {};
+                if (name === "isCreated") keysInPrice = createToPrices;
+                else if (name === "isChanged") keysInPrice = changeToPrices;
+
+                if (!(changedKey in keysInPrice)) continue;
+                let priceKey = keysInPrice[changedKey];
+                if (!(priceKey in prices)) continue;
+                sum += +prices[priceKey];
+            }
+
+        }
+
+
+        $("#sum span:eq(0)").text(sum);
+    }
+
     $("body").on("click", ".user_skin", function () {
         if ($(this).hasClass("selected")) return true;
+
 
         $(".user_skin.selected").removeClass("selected");
         $(this).addClass("selected");
 
         selectedSkinCount = $(this).attr("data-eq");
         skinsArr[selectedSkinCount].fillInputs();
+        $("#sum span:eq(0)").text("0");
+        isChanged = {};
+        isCreated = {};
     })
 
         .on("click", "#create_skin", () => resetInputs())
@@ -219,16 +277,26 @@
             };
             fileReader.readAsDataURL(this.files[0]);
 
-            if (selectedSkinCount !== null) isChangedSkin = true;
+            if (selectedSkinCount !== null) {
+                isChangedSkin = true;
+                if (!skinsArr[selectedSkinCount].getValue("skin")) isCreated.skin = true;
+                else isChanged.skin = true;
+            } else isCreated.skin = true;
+
             $(this).val("");
+
+            countSum();
         })
 
         .on("click", "#remove_image_button", function () {
+            isChanged.skin = false;
+            isCreated.skin = false;
+            countSum();
 
             if (selectedSkinCount === null) return canvas.removeImage();
 
             isChangedSkin = false;
-            if(!skinsArr[selectedSkinCount].image) return canvas.noSkinText();
+            if (!skinsArr[selectedSkinCount].image) return canvas.noSkinText();
             canvas.loadImage(skinsArr[selectedSkinCount].image);
         })
 
@@ -237,9 +305,9 @@
                 action: "create_nick"
             };
             $("#nick_info input").each(function (i, el) {
+                let type = $(el).attr("type");
                 let name = $(el).attr("data-name");
-                let val = $(el).val();
-                obj[name] = val;
+                obj[name] = type === "checkbox" ? +$(el).prop("checked") : $(el).val();
             });
             let skin = canvas.toDataUrl();
             if (skin) {
@@ -247,6 +315,7 @@
             }
 
             if ((isEmpty(obj.password) && isEmpty(obj.skin)) || isEmpty(obj.nick)) return true;
+            if (sum > user.balance) return new Notify("Создание ника", "Недостаточный баланс");
 
 
             sendRequest("api/user", obj)
@@ -269,8 +338,9 @@
 
             let obj = {};
             $("#nick_info input").each(function (i, el) {
+                let type = $(el).attr("type");
                 let name = $(el).attr("data-name");
-                let value = $(el).val();
+                let value = type === "checkbox" ? +$(el).prop("checked") : $(el).val();
                 if (!skinsArr[selectedSkinCount].checkChanges(name, value)) return true;
 
                 obj[name] = value;
@@ -282,6 +352,7 @@
             obj.action = "change_nick";
 
             if (("nick" in obj && isEmpty(obj.nick)) || (isEmpty(obj.password) && (obj.remove_skin || !skinsArr[selectedSkinCount].image))) return true;
+            if (sum > user.balance) return new Notify("Изменение ника", "Недостаточный баланс");
             if (obj.remove_skin) delete obj.skin;
 
             sendRequest("api/user", obj)
@@ -297,6 +368,32 @@
                     new Notify("Изменение ника", message);
 
                 });
+        })
+
+        .on("input", "#nick_info input", function () {
+            let name = $(this).attr("data-name");
+            let type = $(this).attr("type");
+            let value = type === "checkbox" ? $(this).prop("checked") : $(this).val();
+
+            if (selectedSkinCount !== null) {
+                let currentValue = skinsArr[selectedSkinCount].getValue(name);
+
+                if (isEmpty(currentValue) && !isEmpty(value)) isCreated[name] = true;
+                else if (!isEmpty(currentValue) && currentValue !== value) isChanged[name] = true;
+                else {
+                    isCreated[name] = false;
+                    isChanged[name] = false;
+                }
+            } else {
+                isCreated[name] = !isEmpty(value);
+            }
+
+            countSum();
+        })
+
+        .on("click", "#skin_canvas", function () {
+            if (!canvas.image) return true;
+            openImage(canvas.image.src);
         });
 
 })();

@@ -107,6 +107,7 @@ function isEmpty(val) {
     }
     if (typeof val === "number" || typeof val === "bigint" || typeof val === "symbol" || typeof val === "function") return false;
     if (typeof val === "string") return val === "";
+    if (typeof val === "boolean") return !val;
     if (typeof val === "undefined" || val === null || isNaN(val) || val === undefined) return true;
 
     return true;
@@ -192,10 +193,10 @@ function stringToArrayBuffer(str) {
 }
 
 function getRandomInt(min, max) {
-    return Math.round((max - min) * Math.random() + min);
+    return Math.round((max - min + 1) * Math.random() + min - 0.5);
 }
 
-function objectLength(obj){
+function objectLength(obj) {
     return Object.keys(obj).length;
 }
 

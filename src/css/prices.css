@@ -1,0 +1,29 @@
+#main_block {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, 0);
+    border-radius: 5px;
+    border: solid 3px gold;
+    padding: 50px;
+    background: aliceblue;
+    white-space: nowrap;
+}
+
+.price{
+    margin-top: 10px;
+}
+
+.price > span{
+    width: 350px;
+    text-align: center;
+    color: gold;
+    border-radius: 5px;
+    border: solid 2px gold;
+    padding: 10px;
+    font: bold 12pt/12pt sans-serif;
+    background: red;
+}
+
+.price > input, .price > button{
+    margin-left: 10px;
+}

@@ -1,3 +1,64 @@
+Array.prototype.toNumber = function () {
+    for (let i = 0; i < this.length; i++) {
+        this[i] = +this[i];
+    }
+    return this;
+};
+
+
+class User {
+    stickers = [];
+    name = "";
+    img = "";
+    isAdmin = false;
+    balance = 0;
+    level = 0;
+    experience = 0;
+
+    constructor() {
+    }
+
+    start() {
+        this.getUserInfo();
+    }
+
+    getUserInfo() {
+        sendRequest("api/user", {action: "get_user_info"})
+            .then(data => {
+                this.stickers = data.data.stickers.toNumber();
+                this.name = data.data.name;
+                this.img = data.data.img;
+                this.isAdmin = Boolean(+data.data.is_admin);
+                this.balance = +data.data.balance;
+                this.level = +data.data.level;
+                this.experience = +data.data.experience;
+            });
+    }
+
+}
+
+let user = new User();
+
+
+let prices = {};
+
+let createToPrices = {
+    password: "create_pass",
+    skin: "create_skin",
+    is_transparent_skin: "transparent_skin"
+};
+let changeToPrices = {
+    skin: "change_skin",
+    password: "change_pass",
+    is_transparent_skin: "transparent_skin"
+};
+
+function openImage(src) {
+    let image = $("#image_preview img")[0];
+    image.src = src;
+    $("#image_preview").removeClass("closed");
+}
+
 $(document).ready(function () {
     $.ajaxSetup({
         beforeSend: function (xhr) {
@@ -5,6 +66,22 @@ $(document).ready(function () {
             xhr.setRequestHeader("User-Id", getCookie("User-Id"));
         }
     });
+
+
+    {
+        let page = window.location.pathname.substring(1);
+        $(".menu_href[data-href='" + page + "']").addClass("selected");
+    }
+
+
+    sendRequest("api/user", {action: "get_all_prices"})
+        .then(data => {
+            for (let price of data.data) {
+                prices[price.name] = price.price;
+            }
+        });
+
+    user.start();
 
 
     function getMessage(data) {
@@ -113,6 +190,24 @@ $(document).ready(function () {
 
         .on("input", "input", function () {
             this.checkValidity();
+        })
+
+        .on("click", ".menu_href", function () {
+            window.location.pathname = $(this).attr("data-href");
+        })
+
+        .on("click", "#open_menu", function () {
+            $(this).addClass("closed");
+            $("#main_menu").removeClass("closed");
+        })
+
+        .on("mouseleave", "#main_menu", function () {
+            $(this).addClass("closed");
+            $('#open_menu').removeClass("closed");
+        })
+
+        .on("click", "#image_preview", function () {
+            $(this).addClass("closed");
         });
 
 

@@ -1,7 +1,7 @@
 const request = require("request");
 
 exports.getRandomInt = function (min, max) {
-    return Math.round((max - min) * Math.random() + min);
+    return Math.round((max - min + 1) * Math.random() + min - 0.5);
 };
 
 exports.roundFloor = function (number, count = 2) {

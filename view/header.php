@@ -41,8 +41,20 @@
 <!--        </div>-->
 <!--    </div>-->
 <!--</div>-->
-
+<div id="open_menu">
+    <img src="/src/images/burger.png">
+</div>
+<div id="main_menu" class="closed">
+    <div data-href="cabinet" class="menu_href">Личный кабинет</div>
+    <div data-href="skins" class="menu_href">Ники</div>
+    <div data-href="stickers" class="menu_href">Магазин стикеров</div>
+    <div data-href="skin_editor" class="menu_href">Редактор скинов</div>
+</div>
 
 <div id="preloader" class="closed">
     <div></div>
+</div>
+
+<div id="image_preview" class="flex_row closed">
+    <img src="" alt="">
 </div>

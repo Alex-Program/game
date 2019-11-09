@@ -3,6 +3,9 @@
     class Canvas {
         canvas = document.getElementById("canvas");
         context = this.canvas.getContext("2d");
+        /**
+         * @type {HTMLImageElement|null}
+         */
         image = null;
         x = 0;
         y = 0;
@@ -36,9 +39,22 @@
             this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
         }
 
+        getImageSize() {
+            if (!this.image) return true;
+            let dSize = this.image.naturalHeight / this.image.naturalWidth;
+            let width = dSize >= 1 ? this.canvas.width : this.canvas.width / dSize;
+            let height = width * dSize;
+            return {width, height};
+        }
+
         loadImage(image) {
-            [this.x, this.y, this.scale] = [0, 0, 1];
             this.image = image;
+            let size = this.getImageSize();
+            let dWidth = size.width > this.canvas.width ? (size.width - this.canvas.width) / 2 : 0;
+            let dHeight = size.height > this.canvas.height ? (size.height - this.canvas.height) / 2 : 0;
+
+
+            [this.x, this.y, this.scale] = [-dWidth, -dHeight, 1];
 
             this.drawImage();
         }
@@ -59,7 +75,10 @@
             this.context.clip();
 
             this.context.globalCompositeOperation = "source-atop";
-            this.context.drawImage(this.image, this.x, this.y, this.canvas.width * this.scale, this.canvas.height * this.scale);
+
+
+            let size = this.getImageSize();
+            this.context.drawImage(this.image, this.x, this.y, size.width * this.scale, size.height * this.scale);
             this.context.restore();
 
 
@@ -78,7 +97,8 @@
         toDataUrl() {
             if (!this.image) return true;
             this.clear();
-            this.context.drawImage(this.image, this.x, this.y, this.canvas.width * this.scale, this.canvas.height * this.scale);
+            let size = this.getImageSize();
+            this.context.drawImage(this.image, this.x, this.y, size.width * this.scale, size.height * this.scale);
 
             let dataUrl = this.canvas.toDataURL("image/png", 1);
 
@@ -113,7 +133,7 @@
             };
             fileReader.readAsDataURL(file);
 
-
+            $(this).val("");
         })
 
         .on("mousedown", "#canvas", function (event) {
@@ -139,7 +159,9 @@
 
         .on("click", "#save_image", function () {
             let link = document.createElement("a");
-            link.href = canvas.toDataUrl();
+            let href = canvas.toDataUrl();
+            if (!href) return true;
+            link.href = href;
             link.download = "skin.png";
             link.click();
         });

@@ -129,6 +129,11 @@ button, button:active, button:focus, input {
     animation-duration: 3s;
 }
 
+.gold_input:read-only{
+    /*color: #3e3e3e;*/
+    color: red;
+}
+
 @keyframes gold_input {
     0% {
         background: gold;

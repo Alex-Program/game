@@ -53,26 +53,59 @@ if ($request['action'] === "create_nick") {
         exit;
     }
 
+
     $skin = new Skin();
     if ($skin->getByNick($request['nick'])) {
         echo json_encode(["result" => "false", "data" => "exists"]);
         exit;
     }
 
+    $prices = new Prices();
+    $prices = $prices->getAllPriceToName();
+    $sum = 0;
+
+    $userInfo = $auth->getUserInfo(USER_ID);
+
+
+    $password = "";
+    if (!empty($request['password'])) {
+        $password = $request['password'];
+        $sum += (int)$prices['create_pass'];
+    }
+
+    $isTransparentSkin = 0;
+    if ($request['is_transparent_skin'] == 1) {
+        $sum += (int)$prices['transparent_skin'];
+        $isTransparentSkin = 1;
+    }
 
     $skinId = "";
-    if (!empty($request['skin'])) {
-        $image = new Image();
-        $skinId = $image->addImgByBase64($request['skin']);
 
-        if (!$skinId) {
-            echo json_encode(["result" => "false", "data" => "error"]);
-            exit;
+    if (!empty($request['skin'])) {
+        $sum += (int)$prices['create_skin'];
+        if ($userInfo['balance'] >= $sum) {
+            $image = new Image();
+            $skinId = $image->addImgByBase64($request['skin']);
+
+            if (!$skinId) {
+                echo json_encode(["result" => "false", "data" => "error"]);
+                exit;
+            }
         }
     }
 
 
-    if ($nickId = $skin->createNick($request['nick'], $request['password'], $skinId, USER_ID)) {
+    if ($userInfo['balance'] < $sum) {
+        echo json_encode(["result" => "false", "data" => "balance"], 256);
+        exit;
+    }
+    if (!$auth->updateColumn("balance", $userInfo['balance'] - $sum, USER_ID)) {
+        echo json_encode(["result" => "false", "data" => "error"], 256);
+        exit;
+    }
+
+
+    if ($nickId = $skin->createNick($request['nick'], $password, $skinId, USER_ID)) {
         echo json_encode(["result" => "true", "data" => $nickId], 256);
         exit;
     }
@@ -87,7 +120,7 @@ if ($request['action'] === "change_nick") {
         exit;
     }
 
-    $allowedToChange = ["password", "skin"]; // разрешено изменять
+    $allowedToChange = ["password", "skin", "is_transparent_skin"]; // разрешено изменять
 
     $id = $request['id'];
 
@@ -100,7 +133,7 @@ if ($request['action'] === "change_nick") {
         exit;
     }
 
-    if ((empty($nickInfo['password']) && $request['remove_skin'] == 1) || (empty($request['password']) && empty($nickInfo['skin_id']))) {
+    if ((empty($nickInfo['password']) && $request['remove_skin'] == 1) || (key_exists("password", $request) && empty($request['password']) && empty($nickInfo['skin_id']))) {
         echo json_encode(["result" => "false", "data" => "invalid_request"], 256);
         exit;
     }
@@ -110,22 +143,48 @@ if ($request['action'] === "change_nick") {
         if ($value == $nickInfo[$key] || !in_array($key, $allowedToChange)) unset($request[$key]);
     }
 
+
     if (!empty($request['nick']) && $skin->getByNick($request['nick'])) {
         echo json_encode(["result" => "false", "data" => "exists"], 256);
         exit;
     }
 
+    $prices = new Prices();
+    $prices = $prices->getAllPriceToName();
+    $userInfo = $auth->getUserInfo(USER_ID);
+    $sum = 0;
+
+    if (key_exists("password", $request) && !empty($nickInfo['password'])) $sum += (int)$prices['change_pass'];
+    else if (!empty($request['password'])) $sum += (int)$prices['create_pass'];
+
+    if (key_exists("is_transparent_skin", $request)) $sum += (int)$prices['transparent_skin'];
+
     if (!empty($request['skin'])) {
-        $image = new Image();
-        $skinId = $image->addImgByBase64($request['skin']);
-        if (!$skinId) {
-            echo json_encode(["result" => "false", "data" => "error"], 256);
-            exit;
+        if (empty($nickInfo['skin_id'])) $sum += (int)$prices['create_skin'];
+        else $sum += (int)$prices['change_skin'];
+
+        if ($sum <= $userInfo['balance']) {
+            $image = new Image();
+            $skinId = $image->addImgByBase64($request['skin']);
+            if (!$skinId) {
+                echo json_encode(["result" => "false", "data" => "error"], 256);
+                exit;
+            }
+            $request['skin_id'] = $skinId;
         }
-        $request['skin_id'] = $skinId;
 
     }
     unset($request['skin']);
+
+    if ($userInfo['balance'] < $sum) {
+        echo json_encode(["result" => "false", "data" => "balance"], 256);
+        exit;
+    }
+
+    if (!$auth->updateColumn("balance", $userInfo['balance'] - $sum, USER_ID)) {
+        echo json_encode(["result" => "false", "data" => "error"], 256);
+        exit;
+    }
 
     foreach ($request as $key => $value) {
         if (!$skin->updateColumn($key, $value, $id)) {
@@ -168,5 +227,12 @@ if ($request['action'] == "get_user_stickers") {
     $arr = $auth->getUserStickers(USER_ID);
 
     echo json_encode(["result" => "true", "data" => $arr], 256);
+    exit;
+}
+
+
+if ($request['action'] === "get_all_prices") {
+    $prices = new Prices();
+    echo json_encode(["result" => "true", "data" => $prices->getAllPrices()], 256);
     exit;
 }

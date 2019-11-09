@@ -136,7 +136,8 @@ class Command {
         mute: ["target_id"],
         kick: ["target_id"],
         ban_ip: ["target_id"],
-        ban_account: ["target_id"]
+        ban_account: ["target_id"],
+        tp_coords: ["target", "x", "y"]
     };
 
     constructor(command) {
@@ -409,6 +410,7 @@ class User {
         accountDiv.find(".user_name").text(this.name);
         accountDiv.find(".user_balance").text(this.balance + " snl");
         $("#login").hide();
+        $("#registration_div").hide();
         $("#account_div").show();
 
     }
@@ -419,7 +421,9 @@ class User {
                 let html = "";
                 for (let skin of data.data) {
                     this.userNicks.push(skin.nick.toLowerCase());
-                    html += "<div class='user_skin' data-password='" + skin.password + "' data-nick='" + skin.nick + "'><div class='skin'><img src='" + skin.skin + "'></div><span>" + skin.nick + "</span></div>";
+                    html += "<div class='user_skin' data-password='" + skin.password + "' data-nick='" + skin.nick + "'>";
+                    if(!isEmpty(skin.skin)) html += "<div class='skin'><img src='" + skin.skin + "'></div>";
+                    html += "<span>" + skin.nick + "</span></div>";
                 }
                 $("#select_nick .html.local .user_skin").each((i, element) => {
                     let nick = $(element).attr("data-nick").toLowerCase();
@@ -447,7 +451,7 @@ class User {
         let nicks = getLocalNicks() || [];
         let html = "";
         for (let skin of nicks) {
-            if (user && user.userNicks.includes(skin.nick.toLowerCase())) continue;
+            // if (user && user.userNicks.includes(skin.nick.toLowerCase())) continue;
             localNicks.push(skin.nick.toLowerCase());
             let info = await getNickInfo(skin.nick);
             if (!info) info = {skin: ""};
@@ -543,7 +547,10 @@ $("body").mouseup(() => {
 })
     .mousemove(function (event) {
         if (isMoveCoords) {
-            $("#coords").css({left: event.clientX - differentCoordsPosition.x, top: event.clientY - differentCoordsPosition.y});
+            $("#coords").css({
+                left: event.clientX - differentCoordsPosition.x,
+                top: event.clientY - differentCoordsPosition.y
+            });
             return true;
         }
         if (!resizeChat) return true;
@@ -696,6 +703,7 @@ $("body").mouseup(() => {
         let nick = parent.attr("data-nick");
         $("#nick_for_game").val(nick).trigger("input");
         $("#password_for_game").val(password);
+        setLocalNick(nick, password);
     })
 
     .on("click", ".server", function () {
@@ -892,6 +900,16 @@ $("body").mouseup(() => {
     .on("click", "#main_buttons > div", function () {
         let page = $(this).attr("data-page");
         window.open(page, "_blank");
+    })
+
+    .on("click", "#close_info", function () {
+        $("#coords").addClass("closed");
+        $("#open_info").removeClass("closed");
+    })
+
+    .on("click", "#open_info", function () {
+        $(this).addClass("closed");
+        $("#coords").removeClass("closed");
     });
 
 

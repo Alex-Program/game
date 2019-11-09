@@ -75,7 +75,8 @@ class Command {
         mute: this.mutePlayer,
         kick: this.kickPlayer,
         ban_ip: this.banIp,
-        ban_account: this.banAccount
+        ban_account: this.banAccount,
+        tp_coords: this.tpByCoords
     };
 
 
@@ -167,6 +168,12 @@ class Command {
         Functions.sendRequest("api/admin", obj);
     }
 
+    tpByCoords(id, params) {
+        if (Functions.isEmpty(params.target_id)) params.target_id = id;
+        if (!params.x) data.x = 0;
+        if (!params.y) data.y = 0;
+        Units.game.teleportByCoords(params.target_id, params.x, params.y);
+    }
 }
 
 let command = new Command();
@@ -210,10 +217,11 @@ function chatMessage(id, message, pm, pmId, isSecondary = false) {
     let json = {
         action: "chat_message",
         message: message,
-        nick: player.nick,
-        color: player.color,
-        isAdmin: player.isAdmin,
+        nick: player.isSpectator ? "Spectator" : player.nick,
+        color: (player.isSpectator || !player.isSpawned) ? "#b0b0b0" : player.color,
+        isAdmin: player.isSpectator ? 0 : player.isAdmin,
         isSecondary: +isSecondary,
+        isVerified: +player.isVerified,
         pm,
         id
     };
@@ -270,7 +278,6 @@ webSocketServer.on('connection', function (ws, req) {
         delete clients[id];
 
         Units.game.playerDisconnect(id);
-        wsMessage({action: "player_disconnect", id: id});
     });
 
 
@@ -297,12 +304,16 @@ webSocketServer.on('connection', function (ws, req) {
         }
 
         if (data.action === "player_connect") {
+            if (clients[id].isConnect) return true;
+            clients[id].isConnect = true;
+
             if (!data.color) data.color = Functions.rgbToHex(Functions.getRandomInt(0, 255), Functions.getRandomInt(0, 255), Functions.getRandomInt(0, 255));
+            if (data.type !== "player" && data.type !== "spectator") data.type = "player";
             let password = isEmpty(data.password) ? "" : data.password;
             let token = isEmpty(data.token) ? "" : data.token;
             let userId = isEmpty(data.userId) ? "" : data.userId;
             let nick = isEmpty(data.nick) ? "SandL" : data.nick;
-            Units.game.playerConnect(id, data.color, nick, password, token, userId);
+            Units.game.playerConnect(id, data.color, nick, password, token, userId, data.type);
 
             return true;
         }
@@ -315,6 +326,13 @@ webSocketServer.on('connection', function (ws, req) {
 
             return true;
         }
+
+        if (data.action === "respawn_player") {
+            Units.game.respawnPlayer(id);
+
+            return true;
+        }
+
         if (data.action === "mouse_move") {
             Units.game.mouseMove(id, data.x, data.y, data.time);
             // wsMessage({

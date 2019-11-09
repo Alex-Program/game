@@ -1,2 +1,4 @@
 ./model/db.php
 model/db.php
+./src/all_images
+src/all_images

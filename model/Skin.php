@@ -17,11 +17,14 @@ class Skin extends Model
     `password` text NOT NULL,
     `is_admin` tinyint(1) DEFAULT 0,
     `is_moder` tinyint(1) DEFAULT 0,
-    `user_id` int(11) NOT NULL
+    `user_id` int(11) NOT NULL,
+    `is_transparent_skin` TINYINT(1) DEFAULT 0
 )";
         $this->mysqli->query($sql);
 
         $sql = "ALTER TABLE `nicks` ADD `time` bigint(32)";
+        $this->mysqli->query($sql);
+        $sql = "ALTER TABLE `nicks` ADD `is_transparent_skin` TINYINT(1) DEFAULT 0";
         $this->mysqli->query($sql);
     }
 

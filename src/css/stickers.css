@@ -1,7 +1,7 @@
 #main_block {
     position: absolute;
-    top: 200px;
-    left: 50%;
+    top: 0;
+    left: 51%;
     transform: translate(-50%, 0);
     background: aliceblue;
     border: solid 1px black;
@@ -42,6 +42,7 @@ canvas {
     cursor: pointer;
     margin-top: 5px;
     margin-bottom: 5px;
+    width: 330px;
 }
 
 .sticker_group:hover, .sticker_set:hover {
@@ -52,31 +53,59 @@ canvas {
     background: lightseagreen;
 }
 
-.sticker_set{
+.sticker_set {
     display: flex;
     flex-direction: row;
+    align-items: center;
 }
 
-.sticker_set > img{
-    height: 25px;
+.sticker_set > img {
+    height: 40px;
     margin-left: 5px;
     border-radius: 20px;
 }
 
-.sticker_set > div{
+.sticker_set > div {
+    white-space: pre-line;
+    word-break: break-all;
     flex: 1 1 auto;
-    font-weight: bold;
+    font: bold 15pt/15pt sans-serif;
+    padding: 0 15px;
 }
 
-.sticker_set span, #price_of_sticker{
+.sticker_set span:not(.is_valid), #price_of_sticker {
     font-weight: bold;
     background: red;
     border-radius: 5px;
-    padding-right: 5px;
     color: gold;
+}
+
+#price_of_sticker {
+    padding-right: 5px;
     padding-left: 5px;
 }
-#price_of_sticker{
+
+.sticker_set span:not(.is_valid) {
+    padding: 5px;
+}
+
+span.is_valid {
+    padding: 10px;
+    margin-left: 5px;
+    border-radius: 20px;
+}
+
+span.is_valid.valid {
+    background: #00ca00;
+    border: solid 2px green;
+}
+
+span.is_valid.invalid {
+    background: red;
+    border: solid 2px #8e0000;
+}
+
+#price_of_sticker {
     padding: 5px;
 }
 
@@ -85,9 +114,4 @@ canvas {
     padding: 15px;
     border-left: solid 2px black;
     white-space: nowrap;
-}
-
-#add_stickers_div {
-    display: flex;
-    flex-direction: row;
 }

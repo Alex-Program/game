@@ -18,8 +18,12 @@
 
 </canvas>
 
+<div id="open_info" class="closed">
+    <img src="/src/images/information.png">
+</div>
 
 <div id="coords">
+    <div id="close_info">x</div>
     <div class="flex_row">
         <span class="label">Cells</span>
         <span class="value"></span>
@@ -136,7 +140,7 @@
             </div>
         </div>
     </div>
-    <div style="position: relative; display: flex; flex-direction: row; margin-left:10px; margin-right: 10px; z-index: 1;">
+    <div style="position: relative; display: flex; flex-direction: row; margin-left:10px; margin-right: 10px; z-index: 1; pointer-events: none;">
         <div class="triangle">
             <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 2000 2000">
                 <defs>
@@ -264,8 +268,9 @@
 
                 <div style="padding: 10px;">
 
-                    <div>
+                    <div class="flex_row">
                         <span id="into_game_button">PLAY</span>
+                        <span id="spectate_button">SPECTATE</span>
                     </div>
 
                 </div>
@@ -515,6 +520,17 @@
         <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
         <div class="tumbler">
             <input type="checkbox" class="toggle_settings" data-name="isBigText">
+            <div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <span class="label_settings">Полупрозрачный текст</span>
+        <!--        <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
+        <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
+        <div class="tumbler">
+            <input type="checkbox" class="toggle_settings" data-name="isAlphaText">
             <div>
                 <div></div>
             </div>

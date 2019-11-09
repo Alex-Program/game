@@ -99,6 +99,9 @@ class Auth extends Model
             unset($row['token']);
         }
 
+        if(empty($row['stickers'])) $row['stickers'] = [];
+        else $row['stickers'] = json_decode($row['stickers'], true);
+
         return $row;
     }
 

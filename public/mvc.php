@@ -33,7 +33,7 @@ $isAuth = false;
 require('../model/db.php');
 require('../controller/auth_controller.php');
 
-$forAdmin = ["servers"];
+$forAdmin = ["servers", "prices"];
 
 
 if ($api) {

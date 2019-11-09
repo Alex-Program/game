@@ -54,13 +54,18 @@ class Sticker extends Model
         return false;
     }
 
-    public function getStickersInGroup($groupId = 0)
+    public function getStickersInGroup($groupId = 0, $userId = USER_ID)
     {
         $groupId = $this->mysqli->real_escape_string($groupId);
+        $userId = $this->mysqli->real_escape_string($userId);
 
-        $sql = "SELECT * FROM `stickers` WHERE `is_valid`=1";
-        if ($groupId == 0) $sql .= " ORDER BY `id` DESC LIMIT 10";
-        else $sql .= " AND `group_id`=" . $groupId;
+        if ($groupId == -2) {
+            $sql = "SELECT * FROM `stickers` WHERE `account_id`=" . $userId;
+        } else {
+            $sql = "SELECT * FROM `stickers` WHERE `is_valid`=1";
+            if ($groupId == 0) $sql .= " ORDER BY `id` DESC LIMIT 10";
+            else $sql .= " AND `group_id`=" . $groupId;
+        }
 
         $result = $this->mysqli->query($sql);
         if ($result->num_rows === 0) return [];

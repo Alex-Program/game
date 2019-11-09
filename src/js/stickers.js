@@ -12,6 +12,8 @@
         }
 
         defaultText() {
+            this.image = null;
+
             this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
             this.context.fillStyle = "#000000";
             this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
@@ -43,6 +45,8 @@
         }
 
         selectImageText() {
+            this.image = null;
+
             this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
             this.context.fillStyle = "#000000";
             this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
@@ -72,11 +76,18 @@
         }
 
         saveImage() {
+            if (!this.image) return false;
+
             this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-            this.context.drawImage(this.image, 0, 0, this.canvas.width, this.canvas.height);
+            let c = document.createElement("canvas");
+            [c.width, c.height] = [512, 512];
+            let ctx = c.getContext("2d");
+            ctx.clearRect(0, 0, c.width, c.height);
+            ctx.drawImage(this.image, 0, 0, c.width, c.height);
+            // this.context.drawImage(this.image, 0, 0, this.canvas.width, this.canvas.height);
             // this.context.restore();
-            let base64 = this.canvas.toDataURL("image/png", 1.0);
+            let base64 = c.toDataURL("image/png", 1.0);
             this.drawImage();
             return base64;
         }
@@ -88,11 +99,6 @@
         canvasArr.push(new Canvas($(element)[0]));
     });
 
-    let userStickersId = [];
-    sendRequest("api/user", {action: "get_user_stickers"})
-        .then(data => {
-            for (let sticker of data.data) userStickersId.push(+sticker.id);
-        });
 
     function getAllGroups() {
         sendRequest("api/stickers", {action: "get_all_groups"})
@@ -113,10 +119,20 @@
         $("#all_stickers").empty();
         sendRequest("/api/stickers", {action: "get_group_stickers", group_id: groupId})
             .then(data => {
+                let groupId = +$(".sticker_group.selected:eq(0)").attr("data-id");
+                let html = "";
                 for (let stickerSet of data.data) {
-                    let html = "<div class='sticker_set' data-id='" + stickerSet.id + "' data-info='" + JSON.stringify(stickerSet) + "'><img src='" + stickerSet.stickers[0].src + "'><div>" + stickerSet.name + "</div><span>" + stickerSet.price + "</span></div>";
-                    $("#all_stickers").append(html);
+                    let price = user.stickers.includes(+stickerSet.id) ? "Куплено" : stickerSet.price;
+                    html += "<div class='sticker_set' data-id='" + stickerSet.id + "' data-info='" + JSON.stringify(stickerSet) + "'><img src='" + stickerSet.stickers[0].src + "'><div>" + stickerSet.name + "</div><span>" + price + "</span>";
+                    if (groupId === -2) {
+                        let cl = "invalid";
+                        if (+stickerSet.is_valid) cl = "valid";
+                        html += "<span class='is_valid " + cl + "'></span>";
+                    }
+                    html += "</div>";
                 }
+                $("#all_stickers").html(html);
+
 
             });
 
@@ -125,7 +141,12 @@
     // getStickersInGroup(0);
 
     $("body").on("click", "canvas", function () {
-        if (!isAddSticker) return true;
+        if (!isAddSticker) {
+            let eq = $(this).index("canvas");
+            let image = canvasArr[eq].image;
+            openImage(image.src);
+            return true;
+        }
         $(this).prev("input").click();
     })
 
@@ -154,6 +175,10 @@
             $("#buy_sticker_div").hide();
 
             let groupId = $(".sticker_group.selected:eq(0)").attr("data-id");
+
+            if (+groupId <= 0) $("#add_sticker").hide();
+            else $("#add_sticker").show();
+
             getStickersInGroup(groupId);
             for (let canvas of canvasArr) canvas.selectImageText();
         })
@@ -181,7 +206,9 @@
                 name
             };
             for (let canvas of canvasArr) {
-                obj.stickers.push(canvas.saveImage());
+                let saveImage = canvas.saveImage();
+                if (!saveImage) return false;
+                obj.stickers.push(saveImage);
             }
 
             sendRequest("/api/stickers", obj)
@@ -189,6 +216,7 @@
                     if (data.result !== "true") return new Notify("Создание стикеров", "Ошибка");
 
                     new Notify("Создание стикеров", "Стикеры успешно отправлены на модерацию");
+                    $(".sticker_group:eq(2)").click();
                 });
         })
 
@@ -196,14 +224,15 @@
             if ($(this).hasClass("selected")) return true;
 
 
-            $(".sticker_set.selected").not(this).removeClass("selected");
+            $(".sticker_set.selected").removeClass("selected");
             $(this).addClass("selected");
             let dataInfo = JSON.parse($(this).attr("data-info"));
+            let isValid = +dataInfo.is_valid;
 
             $("#price_of_sticker #price").text(dataInfo.price);
             isAddSticker = false;
             $("#add_stickers_div").hide();
-            if (!userStickersId.includes(+dataInfo.id)) {
+            if (!user.stickers.includes(+dataInfo.id) || !isValid < 0) {
                 $("#buy_sticker_div").css("display", "block");
             }
 
@@ -211,7 +240,32 @@
             for (let [i, canvas] of Object.entries(canvasArr)) {
                 canvas.loadImageBySrc(stickers[i].src);
             }
+        })
+
+        .on("click", "#buy_sticker_set", function () {
+            let id = +$(".sticker_set.selected:eq(0)").attr("data-id");
+            if (!id) return true;
+
+            let price = +$("#price").text();
+            if (user.balance < price) return new Notify("Покупка стикеров", "Недостаточный баланс");
+
+            let json = {
+                action: "buy_stickers",
+                id
+            };
+
+            sendRequest("api/stickers", json)
+                .then(data => {
+                    let message = "Ошибка";
+                    if (data.result === "true") {
+                        message = "Успешно";
+                    }
+
+                    new Notify("Покупка стикеров", message);
+                    $(".sticker_group:eq(2)").click();
+
+                });
         });
 
-    $(".sticker_group:eq(0)").click();
+    $(".sticker_group:eq(2)").click();
 })();

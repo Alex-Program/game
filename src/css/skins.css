@@ -33,6 +33,8 @@
     font: bold 12pt/12pt sans-serif;
     background: red;
     margin-right: 10px;
+    width: 200px;
+    text-align: center;
 }
 
 #nick_info input {
@@ -47,6 +49,10 @@
 
 #nick_info > div:not(:first-child), #nick_info > button {
     margin-top: 10px;
+}
+
+#nick_info > div {
+    justify-content: flex-start;
 }
 
 #sum {
@@ -66,7 +72,7 @@
     margin-left: 10px;
 }
 
-#add_image_button{
+#add_image_button {
     color: black;
     border: solid 2px #1e9e96;
     background: lightseagreen;
@@ -81,4 +87,9 @@
     width: 30px;
     cursor: pointer;
     padding: 5px;
+}
+
+
+#skin_canvas {
+    cursor: pointer;
 }
