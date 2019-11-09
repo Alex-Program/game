@@ -4,3 +4,5 @@ model/db.php
 src/all_images
 ./src/users_img
 src/users_img
+./.idea
+.idea
