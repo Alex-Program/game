@@ -31,6 +31,12 @@
         <button class="button button_primary save_button">Сохранить</button>
         <button class="button button_green cancel_button">Отмена</button>
     </div>
+    <div class="price flex_row" data-value="0" data-name="turning_skin">
+        <span>Поворачивающийся скин</span>
+        <input type="text" class="gold_input" value="0">
+        <button class="button button_primary save_button">Сохранить</button>
+        <button class="button button_green cancel_button">Отмена</button>
+    </div>
 </div>
 
 <script defer src="/src/js/prices.js"></script>

@@ -18,16 +18,17 @@ let gameInfo = {
     connectTime: 1000,
     connectTimeMassCoefficient: 0.1,
     maxCells: 64,
-    botsCount: 10,
+    maxCellMass: 100000,
+    botsCount: 0,
     feedingVirusCount: 1,
     feedingVirusStartMass: 400,
     feedingVirusMaxMass: 5000,
     feedingVirusInterval: 1000,
-    feedingVirusIntervalCoefficient: 0.005,
+    feedingVirusIntervalCoefficient: 0.01,
     feedingVirusShootCoefficient: 0.1
 };
 
-/// nick => {password, skin, skinId, isTransparentSkin}
+/// nick => {password, skin, skin_id, is_transparent_skin}
 let cachedNicks = {};
 
 function clearCachedNicks() {
@@ -259,8 +260,10 @@ class Virus extends Arc {
             game.bulletsArr.splice(i, 1);
             i--;
 
-            this.sin = bullet.sin;
-            this.cos = bullet.cos;
+            if (bullet.distance > 0) {
+                this.sin = bullet.sin;
+                this.cos = bullet.cos;
+            }
             this.isChanged = true;
         }
 
@@ -347,8 +350,8 @@ class Cell extends Arc {
 
             this.mass = Math.round(this.mass + speed);
             this.toMass = Math.round(this.toMass - speed);
-            if (this.mass >= 22500) {
-                this.mass = 22500;
+            if (this.mass >= gameInfo.maxCellMass) {
+                this.mass = gameInfo.maxCellMass;
                 this.toMass = 0;
             }
             if (this.mass <= 0) {
@@ -717,13 +720,14 @@ class Cell extends Arc {
 
 class Player {
 
-    constructor(wsId, x, y, mass, mouseX, mouseY, color = "#000000", nick, password = "", token = "", userId = "", type = "player", isSpectator, isTransparentSkin = false) {
+    constructor(wsId, x, y, mass, mouseX, mouseY, color = "#000000", nick, password = "", token = "", userId = "", type = "player", isSpectator, isTransparentSkin = false, isTurningSkin = false) {
         this.type = type;
         this.nick = nick;
         this.password = password;
         this.skin = "";
         this.skinId = 0;
         this.isTransparentSkin = isTransparentSkin;
+        this.isTurningSkin = isTurningSkin;
         this.isVerified = false;
         this.mouse = {
             x: mouseX,
@@ -818,7 +822,8 @@ class Player {
                     is_admin: +nickInfo.is_admin,
                     skin: nickInfo.skin,
                     skin_id: nickInfo.skin_id,
-                    is_transparent_skin: +nickInfo.is_transparent_skin
+                    is_transparent_skin: +nickInfo.is_transparent_skin,
+                    is_turning_skin: +nickInfo.is_turning_skin
                 };
             }
             if (!Functions.isEmpty(nickInfo.password) && String(this.password) !== String(nickInfo.password)) {
@@ -830,6 +835,7 @@ class Player {
                 this.isVerified = false;
                 this.isChanged = true;
                 this.isTransparentSkin = false;
+                this.isTurningSkin = false;
                 return true;
             }
             // this.nick = nickInfo.nick;
@@ -838,15 +844,17 @@ class Player {
             this.isAdmin = +nickInfo.is_admin;
             this.isModer = +nickInfo.is_moder;
             this.isTransparentSkin = Boolean(+nickInfo.is_transparent_skin);
+            this.isTurningSkin = Boolean(+nickInfo.is_turning_skin);
             this.isVerified = !Functions.isEmpty(nickInfo.password);
         } else {
-            if(!(this.nick.toLowerCase() in cachedNicks)) cachedNicks[this.nick.toLowerCase()] = false;
+            if (!(this.nick.toLowerCase() in cachedNicks)) cachedNicks[this.nick.toLowerCase()] = false;
             this.skin = "";
             this.skinId = "";
             this.isAdmin = 0;
             this.isModer = 0;
             this.isVerified = false;
             this.isTransparentSkin = false;
+            this.isTurningSkin = false;
         }
         this.isChanged = true;
     }
@@ -1189,7 +1197,7 @@ class Game {
             let time = Date.now();
             for (let i = 0; i < this.playersArr.length; i++) {
                 let player = this.playersArr[i];
-                if (player.type === "bot") continue;
+                // if (player.type === "bot") continue;
 
 
                 // if (performance.now() - player.lastUpdateUnitsTime >= 100) {
@@ -1284,8 +1292,8 @@ class Game {
                 name: "p",
                 c: "", // cells
                 // ci: unit.cellId, // cellId
-                // my: unit.mouse.y, // mouseY
-                // mx: unit.mouse.x, // mouseX
+                y: unit.mouse.y, // mouseY
+                x: unit.mouse.x, // mouseX
                 cl: unit.color, // color
                 id: unit.wsId,
                 nick: unit.nick,
@@ -1293,7 +1301,8 @@ class Game {
                 skinId: unit.skinId,
                 stickersSet: unit.stickersSet || "",
                 stickerI: Functions.isEmpty(unit.stickerI) ? "" : unit.stickerI,
-                its: +unit.isTransparentSkin
+                its: +unit.isTransparentSkin,
+                itrs: +unit.isTurningSkin
             };
             if (!all) {
                 // delete obj.mouseY;

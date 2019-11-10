@@ -95,7 +95,7 @@
         }
 
         toDataUrl() {
-            if (!this.image) return true;
+            if (!this.image) return false;
             this.clear();
             let size = this.getImageSize();
             this.context.drawImage(this.image, this.x, this.y, size.width * this.scale, size.height * this.scale);
@@ -172,11 +172,8 @@
         let delta = 0.03;
         let dX = (canvas.canvasX + canvas.canvas.width / 2 - event.pageX) * 0.1;
         let dY = (canvas.canvasY + canvas.canvas.height / 2 - event.pageY) * 0.1;
-        if (event.deltaY > 0) {
-            dX *= -1;
-            dY *= -1;
-            delta *= -1;
-        }
+        if (event.deltaY > 0) [dX, dY, delta] = [-dX, -dY, -delta];
+
         canvas.moveImage(dX, dY, delta);
     });
 

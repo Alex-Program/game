@@ -18,13 +18,16 @@ class Skin extends Model
     `is_admin` tinyint(1) DEFAULT 0,
     `is_moder` tinyint(1) DEFAULT 0,
     `user_id` int(11) NOT NULL,
-    `is_transparent_skin` TINYINT(1) DEFAULT 0
+    `is_transparent_skin` TINYINT(1) DEFAULT 0,
+    `is_turning_skin` TINYINT(1) DEFAULT 0
 )";
         $this->mysqli->query($sql);
 
         $sql = "ALTER TABLE `nicks` ADD `time` bigint(32)";
         $this->mysqli->query($sql);
         $sql = "ALTER TABLE `nicks` ADD `is_transparent_skin` TINYINT(1) DEFAULT 0";
+        $this->mysqli->query($sql);
+        $sql = "ALTER TABLE `nicks` ADD `is_turning_skin` TINYINT(1) DEFAULT 0";
         $this->mysqli->query($sql);
     }
 
@@ -48,14 +51,16 @@ class Skin extends Model
         return $arr;
     }
 
-    public function createNick($nick, $password, $skinId, $userId)
+    public function createNick($nick, $password, $skinId, $userId, $isTransparentSkin, $isTurningSkin)
     {
         $nick = $this->mysqli->real_escape_string($nick);
         $password = $this->mysqli->real_escape_string($password);
         $skinId = $this->mysqli->real_escape_string($skinId);
         $userId = $this->mysqli->real_escape_string($userId);
+        $isTransparentSkin = $this->mysqli->real_escape_string($isTransparentSkin);
+        $isTurningSkin = $this->mysqli->real_escape_string($isTurningSkin);
 
-        $sql = "INSERT INTO `nicks` (`nick`, `time`, `skin_id`, `password`, `user_id`) VALUES ('" . $nick . "', " . time() . ", '" . $skinId . "', '" . $password . "', '" . $userId . "')";
+        $sql = "INSERT INTO `nicks` (`nick`, `time`, `skin_id`, `password`, `user_id`, `is_transparent_skin`, `is_turning_skin`) VALUES ('" . $nick . "', " . time() . ", '" . $skinId . "', '" . $password . "', '" . $userId . "', " . $isTransparentSkin . ", " . $isTurningSkin . ")";
         if ($this->mysqli->query($sql)) return $this->mysqli->insert_id;
 
         return false;

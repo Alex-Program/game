@@ -12,6 +12,7 @@ const WebSocketServer = require('ws');
 const Functions = require('./functions.js');
 const {isEmpty} = Functions;
 const Units = require('./GameClasses/Units.js');
+
 // подключенные клиенты
 let clients = {};
 let bannedIP = [];
@@ -26,6 +27,7 @@ function wsMessage(message, id = null, besidesId = null, isNeedTime = true) {
     if (!message.time && isNeedTime) message.time = Date.now();
     message = JSON.stringify(message);
     message = Functions.stringToArrayBuffer(message);
+    // console.log(message.byteLength);
 
     if (id !== null) {
         if (!clients.hasOwnProperty(id)) return false;
@@ -424,6 +426,8 @@ webSocketServer.on('connection', function (ws, req) {
                 action: "change_nick",
                 id: player.wsId,
                 nick: player.nick,
+                isTransparentSkin: +player.isTransparentSkin,
+                isTurningSkin: +player.isTurningSkin,
                 skin: player.skin,
                 skinId: player.skinId
             });

@@ -2,7 +2,7 @@
 
     class Skin {
 
-        constructor(id, nick, skinId = "", password = "", isAdmin = 0, isModer = 0, userId = getCookie("User-Id"), skin = "", count = 0, isTransparentSkin = 0) {
+        constructor(id, nick, skinId = "", password = "", isAdmin = 0, isModer = 0, userId = getCookie("User-Id"), skin = "", count = 0, isTransparentSkin = 0, isTurningSkin = 0) {
             this.id = id;
             this.nick = escapeHtml(nick);
             this.skinId = skinId;
@@ -14,6 +14,7 @@
             this.skin = skin;
             this.count = count;
             this.image = null;
+            this.isTurningSkin = isTurningSkin;
         }
 
         renderHtml() {
@@ -27,6 +28,7 @@
             $("input[data-name='password']").val(this.password);
             $("input[data-name='nick']").val(this.nick).prop("readonly", true);
             $("input[data-name='is_transparent_skin']").prop("checked", Boolean(this.isTransparentSkin));
+            $("input[data-name='is_turning_skin']").prop("checked", Boolean(this.isTurningSkin));
             // $("#remove_image_button").hide();
 
             if (this.skin) {
@@ -44,6 +46,7 @@
             else if (name === "skin") return this.skin;
             else if (name === "password") return this.password;
             else if (name === "is_transparent_skin") return Boolean(this.isTransparentSkin);
+            else if (name === "is_turning_skin") return Boolean(this.isTurningSkin);
         }
 
         checkChanges(name, value) {
@@ -57,6 +60,10 @@
                     break;
                 case "is_transparent_skin":
                     defaultValue = this.isTransparentSkin;
+                    value = +value;
+                    break;
+                case "is_turning_skin":
+                    defaultValue = this.isTurningSkin;
                     value = +value;
                     break;
                 default:
@@ -73,6 +80,7 @@
             else if (name === "skin") this.skin = value;
             else if (name === "skin_id") this.skinId = value;
             else if (name === "is_transparent_skin") this.isTransparentSkin = +value;
+            else if (name === "is_turning_skin") this.isTurningSkin = +value;
         }
 
     }
@@ -211,7 +219,7 @@
 
                 let html = "";
                 for (let skin of data.data) {
-                    let s = new Skin(skin.id, skin.nick, skin.skin_id, skin.password, skin.is_admin, skin.is_moder, skin.user_id, skin.skin, skinsArr.length, +skin.is_transparent_skin);
+                    let s = new Skin(skin.id, skin.nick, skin.skin_id, skin.password, skin.is_admin, skin.is_moder, skin.user_id, skin.skin, skinsArr.length, +skin.is_transparent_skin, +skin.is_turning_skin);
                     skinsArr.push(s);
                     html += s.renderHtml();
                 }

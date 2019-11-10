@@ -29,6 +29,15 @@
                     </div>
                 </div>
             </div>
+            <div class="flex_row">
+                <span class="label_info">Поворачивающийся скин</span>
+                <div class="tumbler">
+                    <input type="checkbox" class="toggle_settings" data-name="is_turning_skin">
+                    <div>
+                        <div></div>
+                    </div>
+                </div>
+            </div>
 
             <div class="flex_row" style="justify-content: flex-start; padding-top: 10px; border-top: solid 3px gold;">
                 <span id="sum"><span>0</span><span> snl</span></span>

@@ -11,6 +11,6 @@
   "dependencies": {
     "perf_hooks": "0.0.1",
     "request": "^2.88.0",
-    "ws": "^7.1.2"
+    "ws": "^7.2.0"
   }
 }

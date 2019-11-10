@@ -79,6 +79,12 @@ if ($request['action'] === "create_nick") {
         $isTransparentSkin = 1;
     }
 
+    $isTurningSkin = 0;
+    if ($request['is_transparent_skin'] == 1) {
+        $sum += (int)$prices['turning_skin'];
+        $isTurningSkin = 1;
+    }
+
     $skinId = "";
 
     if (!empty($request['skin'])) {
@@ -105,7 +111,7 @@ if ($request['action'] === "create_nick") {
     }
 
 
-    if ($nickId = $skin->createNick($request['nick'], $password, $skinId, USER_ID)) {
+    if ($nickId = $skin->createNick($request['nick'], $password, $skinId, USER_ID, $isTransparentSkin, $isTurningSkin)) {
         echo json_encode(["result" => "true", "data" => $nickId], 256);
         exit;
     }
@@ -120,7 +126,7 @@ if ($request['action'] === "change_nick") {
         exit;
     }
 
-    $allowedToChange = ["password", "skin", "is_transparent_skin"]; // разрешено изменять
+    $allowedToChange = ["password", "skin", "is_transparent_skin", "is_turning_skin"]; // разрешено изменять
 
     $id = $request['id'];
 
@@ -157,7 +163,14 @@ if ($request['action'] === "change_nick") {
     if (key_exists("password", $request) && !empty($nickInfo['password'])) $sum += (int)$prices['change_pass'];
     else if (!empty($request['password'])) $sum += (int)$prices['create_pass'];
 
-    if (key_exists("is_transparent_skin", $request)) $sum += (int)$prices['transparent_skin'];
+    if (key_exists("is_transparent_skin", $request)){
+        $sum += (int)$prices['transparent_skin'];
+        $request['is_transparent_skin'] = (int)$request['is_transparent_skin'];
+    }
+    if(key_exists("is_turning_skin", $request)){
+        $sum += (int)$prices['turning_skin'];
+        $request['is_turning_skin'] = (int)$request['is_turning_skin'];
+    }
 
     if (!empty($request['skin'])) {
         if (empty($nickInfo['skin_id'])) $sum += (int)$prices['create_skin'];
