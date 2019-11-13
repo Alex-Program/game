@@ -36,6 +36,7 @@ exports.isEmpty = function (val) {
 };
 
 exports.rgbToHex = function (...rgb) {
+    rgb = Array.from(new Uint8ClampedArray(rgb));
     for (let i = 0; i < 3; i++) {
         let hex = Number(rgb[i]).toString(16);
         if (hex.length < 2) hex = "0" + hex;
@@ -89,4 +90,26 @@ exports.stringToArrayBuffer = function (str) {
 
 exports.getRandomColor = function () {
     return exports.rgbToHex(exports.getRandomInt(0, 255), exports.getRandomInt(0, 255), exports.getRandomInt(0, 255));
+};
+
+/**
+ * @param hex String
+ * @return {{r: Number, b: Number, brightness: Boolean, g: Number}|null}
+ */
+exports.hexToRgb = function(hex) {
+    let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    if (!result) return null;
+    let r = parseInt(result[1], 16);
+    let g = parseInt(result[2], 16);
+    let b = parseInt(result[3], 16);
+
+    let brightness = (r >= 200 || g >= 200 || b >= 200);
+
+    return {r, g, b, brightness};
+};
+
+exports.toSignNumber = function(number, sign){
+    number = Math.abs(number);
+    if(sign < 0) number *= -1;
+    return number;
 };

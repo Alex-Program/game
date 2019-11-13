@@ -17,6 +17,7 @@ class Auth extends Model
     `token` text NOT NULL,
     `name` text NOT NULL,
     `img` text NOT NULL,
+    `image_id` text NOT NULL,
     `stickers` text NOT NULL,
     `balance` int(11) default 0,
     `level` int(11) default 0,
@@ -33,6 +34,8 @@ class Auth extends Model
         $sql = "ALTER TABLE `users` ADD `is_admin`tinyint(1) default 0";
         $this->mysqli->query($sql);
         $sql = "ALTER TABLE `users` ADD `is_banned`tinyint(1) default 0";
+        $this->mysqli->query($sql);
+        $sql = "ALTER TABLE `users` ADD `image_id` tinyint(1) DEFAULT 0";
         $this->mysqli->query($sql);
     }
 
@@ -99,8 +102,13 @@ class Auth extends Model
             unset($row['token']);
         }
 
-        if(empty($row['stickers'])) $row['stickers'] = [];
+        if (empty($row['stickers'])) $row['stickers'] = [];
         else $row['stickers'] = json_decode($row['stickers'], true);
+
+        if (!empty($row['image_id'])) {
+            $image = new Image();
+            $row['img'] = $image->getPath($row['image_id']);
+        }
 
         return $row;
     }
@@ -119,9 +127,9 @@ class Auth extends Model
 
     public function getByUserName($name, $isAdmin = false)
     {
-        $name = $this->mysqli->real_escape_string($name);
+        $name = $this->mysqli->real_escape_string(mb_strtolower($name, "UTF-8"));
 
-        $sql = "SELECT * FROM `users` WHERE `name` LIKE '" . $name . "'";
+        $sql = "SELECT * FROM `users` WHERE LOWER(`name`) LIKE '" . $name . "'";
         $result = $this->mysqli->query($sql);
         if ($result->num_rows === 0) return false;
 
@@ -159,4 +167,16 @@ class Auth extends Model
 
         return $stickers;
     }
+
+    public function addBalance($sum, $userId)
+    {
+        $sum = $this->mysqli->real_escape_string($sum);
+        $userId = $this->mysqli->real_escape_string($userId);
+
+        $sql = "UPDATE `users` SET `balance`=`balance`+" . $sum . " WHERE `id`=" . $userId;
+        if ($this->mysqli->query($sql)) return true;
+
+        return false;
+    }
+
 }

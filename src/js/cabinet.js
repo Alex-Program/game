@@ -1,128 +1,181 @@
 (function () {
-    let canvas = document.getElementById("image_preview");
-    let context = canvas.getContext("2d");
 
-    $("body").on("click", "#main_header .user_img, #load_image_label, #image_preview", function () {
-        $("#image_select").click();
-    })
+    class Canvas {
+        /**
+         * @type {HTMLCanvasElement}
+         */
+        canvas = document.getElementById("user_image_canvas");
+        context = this.canvas.getContext("2d");
+        /**
+         * @type {null|HTMLImageElement}
+         */
+        image = null;
 
-        .on("change", "#image_select", function () {
-            let files = this.files;
-            if (files.length === 0) {
-                $("#image_preview").hide();
-                $("#main_header .user_img").show();
-                $("#save_image_button").hide();
-            }
+        constructor() {
+            let image = new Image();
+            image.onload = () => this.loadImage(image);
+            image.src = "/src/images/account.png";
+        }
 
-            context.clearRect(0, 0, canvas.width, canvas.height);
-            context.beginPath();
-            context.arc(canvas.width / 2, canvas.height / 2, canvas.width / 2, 0, Math.PI * 2, false);
-            context.fillStyle = "#FFFFFF";
-            context.fill();
-            context.closePath();
+        loadImage(image) {
+            if (this.image && image.src === "/src/images/account.png") return true;
 
-            $("#main_header .user_img").hide();
-            $(canvas).show();
+            this.image = image;
+            this.drawImage();
+        }
 
+        clear() {
+            this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        }
+
+
+        drawImage() {
+            if (!this.image) return false;
+
+            this.clear();
+            this.context.drawImage(this.image, 0, 0, this.canvas.width, this.canvas.height);
+        }
+
+        toDataUrl() {
+            if (!this.image) return null;
+
+            let c = document.createElement("canvas");
+            [c.width, c.height] = [512, 512];
+            let ctx = c.getContext("2d");
+            ctx.drawImage(this.image, 0, 0, c.width, c.height);
+            return c.toDataURL("image/png", 1);
+        }
+
+    }
+
+    let canvas = new Canvas();
+
+
+    function getUserInfo() {
+        user.getUserInfo().then(() => {
+            let image = new Image();
+            image.onload = () => canvas.loadImage(image);
+            image.src = user.img || "/src/images/account.png";
+
+            $("#user_name").val(user.name);
+            $("#user_balance span:eq(0)").text(user.balance);
+        });
+    }
+
+    getUserInfo();
+
+    let isChangeImage = false;
+
+    $("body").on("click", "#user_image", () => $("#image_input").click())
+
+        .on("change", "#image_input", function () {
+            if (this.files.length < 1) return true;
+
+            isChangeImage = true;
             let fileReader = new FileReader();
-            fileReader.onload = function (event) {
+            fileReader.onloadend = () => {
                 let image = new Image();
-                image.onload = function () {
-                    context.save();
-                    context.clip();
-                    context.globalCompositeOperation = "source-atop";
-                    context.drawImage(image, 0, 0, canvas.width, canvas.height);
-                    context.restore();
-                };
-                image.src = event.target.result;
+                image.onload = () => canvas.loadImage(image);
+                image.src = fileReader.result;
             };
+            fileReader.readAsDataURL(this.files[0]);
 
-            fileReader.readAsDataURL(files[0]);
-            $("#save_image_button").show();
+            $(this).val("");
         })
 
-        .on("click", "#save_image_button", function () {
-            let files = $("#image_select")[0].files;
-            if (files.length === 0) return false;
+        .on("click", "#save_user_image", function () {
+            if (!isChangeImage) return true;
 
-            let form = new FormData();
-            form.append("file", files[0]);
-            form.append("action", "change_user_img");
-            Preloader.start();
+            let dataUrl = canvas.toDataUrl();
+            if (!dataUrl) return true;
 
-            $.ajax({
-                method: "POST",
-                url: "api/user",
-                processData: false,
-                contentType: false,
-                data: form,
-                success: function (data) {
-                    try {
-                        data = JSON.parse(data);
-                        if (typeof (data) !== "object") throw("Error");
-                        if (data.result !== "true") throw("Error");
+            isChangeImage = false;
 
-                        let image = new Image();
-                        image.onload = () => $(".user_img").attr("src", image.src + "?" + performance.now());
-                        image.src = data.data;
-
-                        $("#save_image_button").hide();
-                        $(canvas).hide();
-                        $("#main_header .user_img").show();
-                        new Notify("Изменение профиля", "Изображение профиля изменено");
-                    } catch {
-                        new Notify("Изменение профиля", "Изображение не было загружено");
-                    }
-
-                    Preloader.stop();
-                }
-            });
-        })
-
-
-        .on("click", "#main_header .user_name", function () {
-            $("#user_name_input").val($(this).text());
-            $(this).hide();
-            $("#change_user_name").show();
-        })
-
-
-        .on("blur", "#user_name_input", function () {
-            let userNameInput = $("#user_name_input");
-            let name = userNameInput.val();
-            if (!name) return true;
-
-            Preloader.start();
-            sendRequest("/api/user", {action: "change_user_name", name})
+            let obj = {
+                action: "change_user_image",
+                img: dataUrl
+            };
+            sendRequest("api/user", obj)
                 .then(data => {
+                    let message = "Ошибка";
                     if (data.result === "true") {
-                        $(".user_name").text(data.data);
-                        new Notify("Изменение профиля", "Имя было обновлено");
-                        return true;
+                        message = "Успешно";
+                        getUserInfo();
                     }
 
-                    if (data.data === "exists") return new Notify("Изменение профиля", "Данное имя уже занято другим игроком");
-                    new Notify("Изменение профиля", "Имя не было обновлено. Попробуйте позже");
-                })
-                .finally(() => {
-                    $("#change_user_name").hide();
-                    $("#main_header .user_name").show();
-                    Preloader.stop()
+                    new Notify("Изменение профиля", message);
                 });
 
         })
 
-        .on("click", "#transfer_money", function () {
-            $("#right_menu").removeClass("closed");
+        .on("click", "#cancel_user_image", function () {
+            if (!isChangeImage) return true;
+            isChangeImage = false;
+            let image = new Image();
+            image.onload = () => canvas.loadImage(image);
+            image.src = user.img || "/src/images/account.png";
         })
 
+        .on("click", "#to_transfer", () => $("#transfer_div").removeClass("closed"))
 
-        .on("input", "#transfer_sum_input", function () {
-            if (!this.checkValidity()) return true;
-            let sum = +$(this).val();
-            let commission = Math.floor(sum * 0.1);
-            $("#commission").text(commission);
-            $("#total_sum").val(sum + commission);
-        });
+        .on("click", "#cancel_transfer", () => $("#transfer_div").addClass("closed"))
+
+        .on("input", "#transfer_sum", function () {
+            let val = $(this).val();
+            if (isNaN(val) || !Number.isInteger(+val)) return $("#total_transfer_sum").val(0);
+            $("#total_transfer_sum").val(Math.floor(1.1 * val));
+        })
+
+        .on("click", "#transfer_button", function () {
+            let recipientId = $("#recipient_id").val().trim();
+            let sum = $("#transfer_sum").val().trim();
+            if (isNaN(sum) || sum < 1 || isNaN(recipientId) || recipientId < 1) return true;
+            if (+recipientId === +getCookie("User-Id")) return new Notify("Перевод snl", "Вы указали свой ИД");
+
+            let json = {
+                action: "transfer_balance",
+                recipient_id: recipientId,
+                sum
+            };
+
+            sendRequest("api/user", json)
+                .then(data => {
+                    let message = "Ошибка";
+                    if (data.data === "invalid_data") message = "Неверный ИД";
+                    else if (data.result === "true") {
+                        message = "Успешно";
+                        getUserInfo();
+                    }
+
+                    new Notify("Перевод snl", message);
+                });
+
+
+        })
+
+        .on("click", "#save_user_name", function(){
+            let name = $("#user_name").val().trim();
+            if(isEmpty(name) || name === user.name) return true;
+
+            let json = {
+                action: "change_user_name",
+                name
+            };
+
+            sendRequest("api/user", json)
+                .then(data => {
+                    let message = "Ошибка";
+                    if(data.data === "exists") message = "Данное имя занято";
+                    else if(data.result === "true"){
+                        message = "Успешно";
+                        getUserInfo();
+                    }
+
+                    new Notify("Изменение профиля", message);
+                });
+
+        })
+
+        .on("click", "#cancel_user_name", () => $("#user_name").val(user.name));
 
 })();

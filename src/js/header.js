@@ -5,6 +5,13 @@ Array.prototype.toNumber = function () {
     return this;
 };
 
+$.ajaxSetup({
+    beforeSend: function (xhr) {
+        xhr.setRequestHeader("Token", getCookie("Token"));
+        xhr.setRequestHeader("User-Id", getCookie("User-Id"));
+    }
+});
+
 
 class User {
     stickers = [];
@@ -15,6 +22,10 @@ class User {
     level = 0;
     experience = 0;
 
+    /**
+     * @type {null|Promise}
+     */
+
     constructor() {
     }
 
@@ -23,7 +34,7 @@ class User {
     }
 
     getUserInfo() {
-        sendRequest("api/user", {action: "get_user_info"})
+        return sendRequest("api/user", {action: "get_user_info"})
             .then(data => {
                 this.stickers = data.data.stickers.toNumber();
                 this.name = data.data.name;
@@ -32,12 +43,14 @@ class User {
                 this.balance = +data.data.balance;
                 this.level = +data.data.level;
                 this.experience = +data.data.experience;
+                return data;
             });
     }
 
 }
 
 let user = new User();
+user.start();
 
 
 let prices = {};
@@ -46,13 +59,17 @@ let createToPrices = {
     password: "create_pass",
     skin: "create_skin",
     is_transparent_skin: "transparent_skin",
-    is_turning_skin: "turning_skin"
+    is_turning_skin: "turning_skin",
+    is_invisible_nick: "invisible_nick",
+    is_random_color: "random_color"
 };
 let changeToPrices = {
     skin: "change_skin",
     password: "change_pass",
     is_transparent_skin: "transparent_skin",
-    is_turning_skin: "turning_skin"
+    is_turning_skin: "turning_skin",
+    is_invisible_nick: "invisible_nick",
+    is_random_color: "random_color"
 };
 
 function openImage(src) {
@@ -62,12 +79,6 @@ function openImage(src) {
 }
 
 $(document).ready(function () {
-    $.ajaxSetup({
-        beforeSend: function (xhr) {
-            xhr.setRequestHeader("Token", getCookie("Token"));
-            xhr.setRequestHeader("User-Id", getCookie("User-Id"));
-        }
-    });
 
 
     {
@@ -82,8 +93,6 @@ $(document).ready(function () {
                 prices[price.name] = price.price;
             }
         });
-
-    user.start();
 
 
     function getMessage(data) {

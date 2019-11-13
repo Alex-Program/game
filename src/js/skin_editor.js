@@ -61,7 +61,6 @@
 
         drawImage() {
             if (!this.image) return true;
-
             this.clear();
             this.fillBlack();
 
@@ -80,8 +79,18 @@
             let size = this.getImageSize();
             this.context.drawImage(this.image, this.x, this.y, size.width * this.scale, size.height * this.scale);
             this.context.restore();
-
-
+            //
+            // let imageData = this.context.getImageData(0, 0, this.canvas.width, this.canvas.height);
+            // let pixels = imageData.data;
+            // for (let i = 0; i < pixels.length; i += 4) {
+            //     let r = pixels[i];
+            //     let g = pixels[i + 1];
+            //     let b = pixels[i + 2];
+            //     pixels[i] = (r * 0.393) + (g * 0.769) + (b * 0.189);
+            //     pixels[i + 1] = (r * 0.349) + (g * 0.686) + (b * 0.168);
+            //     pixels[i + 2] = (r * 0.272) + (g * 0.534) + (b * 0.131);
+            // }
+            // this.context.putImageData(imageData, 0, 0,);
         }
 
         moveImage(dX, dY, scale = 0) {

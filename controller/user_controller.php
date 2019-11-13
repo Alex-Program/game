@@ -12,6 +12,46 @@ if ($request['action'] == "get_user_info") {
     exit;
 }
 
+if ($request['action'] == "transfer_balance") {
+    if (empty($request['recipient_id']) || empty((int)$request['sum']) || $request['sum'] < 1) {
+        echo json_encode(["result" => "false", "data" => 'invalid_request'], 256);
+        exit;
+    }
+
+    if($request['recipient_id'] == USER_ID){
+        echo json_encode(["result" => "false", "data" => "invalid_data"], 256);
+        exit;
+    }
+
+    $targetUserInfo = $auth->getUserInfo($request['recipient_id']);
+    if (!$targetUserInfo) {
+        echo json_encode(["result" => "false", "data" => "invalid_data"], 256);
+        exit;
+    }
+
+    $transferSum = (int)$request['sum'];
+    $totalSum = floor($transferSum * 1.1);
+
+    $currentUserInfo = $auth->getUserInfo(USER_ID);
+    if ($currentUserInfo['balance'] < $totalSum) {
+        echo json_encode(["result" => "false", "data" => "balance"], 256);
+        exit;
+    }
+
+    if (!$auth->addBalance(-$totalSum, USER_ID)) {
+        echo json_encode(["result" => "false", "data" => "error"], 256);
+        exit;
+    }
+
+    if (!$auth->addBalance($transferSum, $request['recipient_id'])) {
+        echo json_encode(["result" => "false", "data" => "error"], 256);
+        exit;
+    }
+
+    echo json_encode(["result" => "true", "data" => $currentUserInfo['balance'] - $totalSum], 256);
+    exit;
+}
+
 if ($request['action'] == "change_user_name") {
     if (empty($request['name'])) {
         echo json_encode(["result" => "false", "data" => "invalid_request"], 256);
@@ -39,6 +79,28 @@ if ($request['action'] == "change_user_name") {
     exit;
 }
 
+if ($request['action'] == "change_user_image") {
+    if (empty($request['img'])) {
+        echo json_encode(["result" => "false", "data" => "invalid_request"], 256);
+        exit;
+    }
+
+    $image = new Image();
+    $imageId = $image->addImgByBase64($request['img']);
+    if (!$imageId) {
+        echo json_encode(["result" => "false", "data" => "error"], 256);
+        exit;
+    }
+
+    if (!$auth->updateColumn("image_id", $imageId, USER_ID)) {
+        echo json_encode(["result" => "false", "data" => "error"], 256);
+        exit;
+    }
+
+    echo json_encode(["result" => "true", "data" => $image->getPath($imageId)], 256);
+    exit;
+}
+
 if ($request['action'] == "get_user_skins") {
     $skin = new Skin();
 
@@ -46,6 +108,7 @@ if ($request['action'] == "get_user_skins") {
     echo json_encode(["result" => "true", "data" => $allSkins], 256);
     exit;
 }
+
 
 if ($request['action'] === "create_nick") {
     if (empty($request['nick']) || (empty($request['skin']) && empty($request['password']))) {
@@ -80,9 +143,21 @@ if ($request['action'] === "create_nick") {
     }
 
     $isTurningSkin = 0;
-    if ($request['is_transparent_skin'] == 1) {
+    if ($request['is_turning_skin'] == 1) {
         $sum += (int)$prices['turning_skin'];
         $isTurningSkin = 1;
+    }
+
+    $isInvisibleNick = 0;
+    if ($request['is_invisible_nick'] == 1) {
+        $sum += (int)$prices['invisible_nick'];
+        $isInvisibleNick = 1;
+    }
+
+    $isRandomColor = 0;
+    if($request['is_random_color'] == 1){
+        $sum += (int)$prices['random_color'];
+        $isRandomColor = 1;
     }
 
     $skinId = "";
@@ -111,7 +186,7 @@ if ($request['action'] === "create_nick") {
     }
 
 
-    if ($nickId = $skin->createNick($request['nick'], $password, $skinId, USER_ID, $isTransparentSkin, $isTurningSkin)) {
+    if ($nickId = $skin->createNick($request['nick'], $password, $skinId, USER_ID, $isTransparentSkin, $isTurningSkin, $isInvisibleNick, $isRandomColor)) {
         echo json_encode(["result" => "true", "data" => $nickId], 256);
         exit;
     }
@@ -126,7 +201,7 @@ if ($request['action'] === "change_nick") {
         exit;
     }
 
-    $allowedToChange = ["password", "skin", "is_transparent_skin", "is_turning_skin"]; // разрешено изменять
+    $allowedToChange = ["password", "skin", "is_transparent_skin", "is_turning_skin", "is_invisible_nick", "is_random_color"]; // разрешено изменять
 
     $id = $request['id'];
 
@@ -163,13 +238,21 @@ if ($request['action'] === "change_nick") {
     if (key_exists("password", $request) && !empty($nickInfo['password'])) $sum += (int)$prices['change_pass'];
     else if (!empty($request['password'])) $sum += (int)$prices['create_pass'];
 
-    if (key_exists("is_transparent_skin", $request)){
+    if (key_exists("is_transparent_skin", $request)) {
         $sum += (int)$prices['transparent_skin'];
         $request['is_transparent_skin'] = (int)$request['is_transparent_skin'];
     }
-    if(key_exists("is_turning_skin", $request)){
+    if (key_exists("is_turning_skin", $request)) {
         $sum += (int)$prices['turning_skin'];
         $request['is_turning_skin'] = (int)$request['is_turning_skin'];
+    }
+    if (key_exists("is_invisible_nick", $request)) {
+        $sum += (int)$prices['invisible_nick'];
+        $request['is_invisible_nick'] = (int)$request['is_invisible_nick'];
+    }
+    if(key_exists("is_random_color", $request)){
+        $sum += (int)$prices['random_color'];
+        $request['is_random_color'] = (int)$request['is_random_color'];
     }
 
     if (!empty($request['skin'])) {
@@ -207,31 +290,6 @@ if ($request['action'] === "change_nick") {
     }
 
     echo json_encode(["result" => "true", "data" => $id], 256);
-    exit;
-}
-
-if ($_POST['action'] == "change_user_img") {
-    if (empty($_FILES['file']['tmp_name'])) {
-        echo json_encode(["result" => "false", "data" => "invalid_request"], 256);
-        exit;
-    }
-
-    $ext = end(explode(".", $_FILES['file']['name']));
-
-    if (!is_dir("../src/users_img")) @mkdir("../src/users_img");
-
-    $name = USER_ID . "." . $ext;
-    if (!move_uploaded_file($_FILES['file']['tmp_name'], "../src/users_img/" . $name)) {
-        echo json_encode(["result" => "false", "data" => "error"], 256);
-        exit;
-    }
-
-    if (!$auth->updateUserInfo("img", "/src/users_img/" . $name, USER_ID)) {
-        echo json_encode(["result" => "false", "data" => "error"], 256);
-        exit;
-    }
-
-    echo json_encode(["result" => "true", "data" => "/src/users_img/" . $name]);
     exit;
 }
 

@@ -4,7 +4,7 @@ const {Performance: performance} = require("./Perfromance.js");
 let gameInfo = {
     width: 2500,
     height: 2500,
-    startMass: 500,
+    startMass: 5000,
     updateTime: 0,
     deltaTime: 0,
     perSecond: 1000 / 60,
@@ -376,7 +376,7 @@ class Cell extends Arc {
         if (Math.abs(this.engineDistance > 0)) {
             let speed = this.engineDistance * delta / 15;
             if (Math.abs(speed) < 1) speed = this.engineDistance >= 0 ? 1 : -1;
-            if (Math.abs(speed) > 30) speed = this.engineDistance >= 0 ? 30 : -30;
+            // if (Math.abs(speed) > 30) speed = this.engineDistance >= 0 ? 30 : -30;
             if (Math.abs(this.engineDistance) < Math.abs(speed)) speed = this.engineDistance;
 
             this.x = Functions.roundFloor(this.x + speed * this.engineCos * this.speed, 2);
@@ -559,16 +559,19 @@ class Cell extends Arc {
                         let differentX = this.x - cell.x;
                         let differentY = this.y - cell.y;
                         let c = Math.sqrt(differentX ** 2 + differentY ** 2);
-
+                        //
+                        // if (this.spaceDistance > 0 || cell.spaceDistance > 0 || this.engineDistance > 0 || cell.engineDistance > 0) {
                         this.engineCos = differentX / c || 0;
                         this.engineSin = differentY / c || 0;
-                        //
                         this.engineDistance = different;
+                        // } else {
+                        //     this.x = Functions.roundFloor(this.x + cos * different, 2);
+                        //     this.y = Functions.roundFloor(this.y + sin * different, 2);
+                        // }
                         this.owner.isChanged = true;
                         // let cos = differentX / c || 0;
                         // let sin = differentY / c || 0;
-                        // this.x = Functions.roundFloor(this.x + cos * different, 2);
-                        // this.y = Functions.roundFloor(this.y + sin * different, 2);
+
                         // this.x = roundFloor(this.x + different * cos, 2);
                         // this.y = roundFloor(this.y + different * sin, 2)
                     }
@@ -720,7 +723,7 @@ class Cell extends Arc {
 
 class Player {
 
-    constructor(wsId, x, y, mass, mouseX, mouseY, color = "#000000", nick, password = "", token = "", userId = "", type = "player", isSpectator, isTransparentSkin = false, isTurningSkin = false) {
+    constructor(wsId, x, y, mass, mouseX, mouseY, color = "#000000", nick, password = "", token = "", userId = "", type = "player", isSpectator, isTransparentSkin = false, isTurningSkin = false, isInvisibleNick = false, isRandomColor = false) {
         this.type = type;
         this.nick = nick;
         this.password = password;
@@ -728,6 +731,10 @@ class Player {
         this.skinId = 0;
         this.isTransparentSkin = isTransparentSkin;
         this.isTurningSkin = isTurningSkin;
+        this.isInvisibleNick = isInvisibleNick;
+        this.isRandomColor = true;
+        this.lastRandomColor = performance.now();
+
         this.isVerified = false;
         this.mouse = {
             x: mouseX,
@@ -746,6 +753,7 @@ class Player {
         this.y = y;
         this.mass = mass;
         this.color = color;
+        this.toColor = color;
         this.isAdmin = false;
         this.isModer = false;
         this.mass = 0;
@@ -760,7 +768,7 @@ class Player {
         this.lastShootTime = performance.now();
         this.isChanged = true;
         this.isSpawned = false;
-        this.lastUpdateUnitsTime = performance.now();
+        // this.lastUpdateUnitsTime = performance.now();
         this.isSpectator = isSpectator;
         this.isNeedSplit = false;
         this.isNeedShoot = false;
@@ -823,7 +831,9 @@ class Player {
                     skin: nickInfo.skin,
                     skin_id: nickInfo.skin_id,
                     is_transparent_skin: +nickInfo.is_transparent_skin,
-                    is_turning_skin: +nickInfo.is_turning_skin
+                    is_turning_skin: +nickInfo.is_turning_skin,
+                    is_invisible_nick: +nickInfo.is_invisible_nick,
+                    is_random_color: +nickInfo.is_random_color
                 };
             }
             if (!Functions.isEmpty(nickInfo.password) && String(this.password) !== String(nickInfo.password)) {
@@ -836,6 +846,8 @@ class Player {
                 this.isChanged = true;
                 this.isTransparentSkin = false;
                 this.isTurningSkin = false;
+                this.isInvisibleNick = false;
+                this.isRandomColor = false;
                 return true;
             }
             // this.nick = nickInfo.nick;
@@ -846,6 +858,8 @@ class Player {
             this.isTransparentSkin = Boolean(+nickInfo.is_transparent_skin);
             this.isTurningSkin = Boolean(+nickInfo.is_turning_skin);
             this.isVerified = !Functions.isEmpty(nickInfo.password);
+            this.isInvisibleNick = Boolean(+nickInfo.is_invisible_nick);
+            this.isRandomColor = Boolean(+nickInfo.is_random_color);
         } else {
             if (!(this.nick.toLowerCase() in cachedNicks)) cachedNicks[this.nick.toLowerCase()] = false;
             this.skin = "";
@@ -855,6 +869,8 @@ class Player {
             this.isVerified = false;
             this.isTransparentSkin = false;
             this.isTurningSkin = false;
+            this.isInvisibleNick = false;
+            this.isRandomColor = false;
         }
         this.isChanged = true;
     }
@@ -875,6 +891,30 @@ class Player {
 
     update(delta = 1) {
         if (!this.isSpawned) return true;
+
+        if (this.isRandomColor && this.color === this.toColor) {
+            this.toColor = Functions.getRandomColor();
+        }
+        if (this.color !== this.toColor) {
+            let currentColor = Functions.hexToRgb(this.color);
+            let targetColor = Functions.hexToRgb(this.toColor);
+            // console.log(targetColor + " " + this.toColor);
+            let dR = targetColor.r - currentColor.r;
+            let dG = targetColor.g - currentColor.g;
+            let dB = targetColor.b - currentColor.b;
+            let sR = Math.round(dR / 20);
+            let sG = Math.round(dG / 20);
+            let sB = Math.round(dB / 20);
+            if(Math.abs(sR) < 1) sR = Functions.toSignNumber(1, dR);
+            if(Math.abs(sG) < 1) sG = Functions.toSignNumber(1, dG);
+            if(Math.abs(sB) < 1) sB = Functions.toSignNumber(1, dB);
+            if(Math.abs(dR) < Math.abs(sR)) sR = dR;
+            if(Math.abs(dG) < Math.abs(sG)) sG = dG;
+            if(Math.abs(dB) < Math.abs(sB)) sB = dB;
+            // console.log(sR);
+            this.changeColor(Functions.rgbToHex(currentColor.r + sR, currentColor.g + sG, currentColor.b + sB));
+        }
+
         this.updateI = 0;
         let mass = 0;
 
@@ -1302,11 +1342,14 @@ class Game {
                 stickersSet: unit.stickersSet || "",
                 stickerI: Functions.isEmpty(unit.stickerI) ? "" : unit.stickerI,
                 its: +unit.isTransparentSkin,
-                itrs: +unit.isTurningSkin
+                itrs: +unit.isTurningSkin,
+                iin: +unit.isInvisibleNick
             };
             if (!all) {
                 // delete obj.mouseY;
                 // delete obj.mouseX;
+                delete obj.itrs;
+                delete obj.iin;
                 delete obj.its;
                 delete obj.nick;
                 delete obj.skin;

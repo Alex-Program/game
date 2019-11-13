@@ -428,6 +428,7 @@ webSocketServer.on('connection', function (ws, req) {
                 nick: player.nick,
                 isTransparentSkin: +player.isTransparentSkin,
                 isTurningSkin: +player.isTurningSkin,
+                isInvisibleNick: +player.isInvisibleNick,
                 skin: player.skin,
                 skinId: player.skinId
             });

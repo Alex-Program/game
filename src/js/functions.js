@@ -153,16 +153,11 @@ function hexToRgb(hex) {
 
 function toChangeColor(hex) {
     let rgb = hexToRgb(hex);
-    if (rgb.brightness) {
-        rgb.r = (rgb.r - 50) > 0 ? (rgb.r - 50) : 0;
-        rgb.g = (rgb.g - 50) > 0 ? (rgb.g - 50) : 0;
-        rgb.b = (rgb.b - 50) > 0 ? (rgb.b - 50) : 0;
-    } else {
-        rgb.r = (rgb.r + 50) > 255 ? 255 : (rgb.r + 50);
-        rgb.g = (rgb.g + 50) > 255 ? 255 : (rgb.g + 50);
-        rgb.b = (rgb.b + 50) > 255 ? 255 : (rgb.b + 50);
-    }
-    return rgbToHex(rgb.r, rgb.g, rgb.b);
+    let arr = [rgb.r, rgb.g, rgb.b];
+    if (rgb.brightness) arr = arr.map(v => v - 50);
+    else arr = arr.map(v => v + 50);
+    arr = new Uint8ClampedArray(arr);
+    return rgbToHex(...arr);
 }
 
 function rgbToHex(...rgb) {

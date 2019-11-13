@@ -19,7 +19,9 @@ class Skin extends Model
     `is_moder` tinyint(1) DEFAULT 0,
     `user_id` int(11) NOT NULL,
     `is_transparent_skin` TINYINT(1) DEFAULT 0,
-    `is_turning_skin` TINYINT(1) DEFAULT 0
+    `is_turning_skin` TINYINT(1) DEFAULT 0,
+    `is_invisible_nick` TINYINT(1) DEFAULT 0,
+    `is_random_color` TINYINT(1) DEFAULT 0
 )";
         $this->mysqli->query($sql);
 
@@ -28,6 +30,10 @@ class Skin extends Model
         $sql = "ALTER TABLE `nicks` ADD `is_transparent_skin` TINYINT(1) DEFAULT 0";
         $this->mysqli->query($sql);
         $sql = "ALTER TABLE `nicks` ADD `is_turning_skin` TINYINT(1) DEFAULT 0";
+        $this->mysqli->query($sql);
+        $sql = "ALTER TABLE `nicks` ADD `is_invisible_nick` TINYINT(1) DEFAULT 0";
+        $this->mysqli->query($sql);
+        $sql = "ALTER TABLE `nicks` ADD `is_random_color` TINYINT(1) DEFAULT 0";
         $this->mysqli->query($sql);
     }
 
@@ -51,7 +57,7 @@ class Skin extends Model
         return $arr;
     }
 
-    public function createNick($nick, $password, $skinId, $userId, $isTransparentSkin, $isTurningSkin)
+    public function createNick($nick, $password, $skinId, $userId, $isTransparentSkin, $isTurningSkin, $isInvisibleNick, $isRandomColor)
     {
         $nick = $this->mysqli->real_escape_string($nick);
         $password = $this->mysqli->real_escape_string($password);
@@ -59,8 +65,10 @@ class Skin extends Model
         $userId = $this->mysqli->real_escape_string($userId);
         $isTransparentSkin = $this->mysqli->real_escape_string($isTransparentSkin);
         $isTurningSkin = $this->mysqli->real_escape_string($isTurningSkin);
+        $isInvisibleNick = $this->mysqli->real_escape_string($isInvisibleNick);
+        $isRandomColor = $this->mysqli->real_escape_string($isRandomColor);
 
-        $sql = "INSERT INTO `nicks` (`nick`, `time`, `skin_id`, `password`, `user_id`, `is_transparent_skin`, `is_turning_skin`) VALUES ('" . $nick . "', " . time() . ", '" . $skinId . "', '" . $password . "', '" . $userId . "', " . $isTransparentSkin . ", " . $isTurningSkin . ")";
+        $sql = "INSERT INTO `nicks` (`nick`, `time`, `skin_id`, `password`, `user_id`, `is_transparent_skin`, `is_turning_skin`, `is_invisible_nick`, `is_random_color`) VALUES ('" . $nick . "', " . time() . ", '" . $skinId . "', '" . $password . "', '" . $userId . "', " . $isTransparentSkin . ", " . $isTurningSkin . ", " . $isInvisibleNick . ", " . $isRandomColor . ")";
         if ($this->mysqli->query($sql)) return $this->mysqli->insert_id;
 
         return false;
