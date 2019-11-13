@@ -1,10 +1,10 @@
 ./model/db.php
 model/db.php
 ./src/all_images
-src/all_images
-./src/users_img
-src/users_img
-./.idea
-.idea
-./server/node_modules
-server/node_modules
+src/all_images/
+./src/users_img/
+src/users_img/
+./.idea/
+.idea/
+./server/node_modules/
+server/node_modules/
