@@ -79,6 +79,7 @@
                 case "is_random_color":
                     defaultValue = this.isRandomColor;
                     value = +value;
+                    break;
                 default:
                     defaultValue = this.id;
                     value = +value;

@@ -1217,7 +1217,8 @@ class Game {
     }
 
     loop() {
-        while (performance.now() - gameInfo.updateTime >= gameInfo.perSecond) {
+        if(performance.now() - gameInfo.updateTime < gameInfo.perSecond) return setTimeout(() => this.loop(), 0);
+        // while (performance.now() - gameInfo.updateTime >= gameInfo.perSecond) {
             // let time = performance.now();
 
             gameInfo.deltaTime = performance.now() - gameInfo.updateTime;
@@ -1258,7 +1259,7 @@ class Game {
             this.lastUpdateUnitsTime = performance.now();
             // }
             // console.log(performance.now() - time);
-        }
+        // }
 
         // console.log(performance.now() - time);
         setTimeout(() => this.loop(), 0);
