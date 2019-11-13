@@ -173,11 +173,11 @@
 
             let radius = this.drawableRadius / gameInfo.scale;
             if (gameSettings.isDrawCellBorder) {
-                radius = this.drawableRadius / gameInfo.scale - 2.5;
-                if (radius < 2) radius = 2;
-                this.strokeArc(drawableX, drawableY, radius, toChangeColor(color), 5);
-                radius = this.drawableRadius / gameInfo.scale - 5;
-                if (radius < 2) radius = 2;
+                // radius = this.drawableRadius / gameInfo.scale - 2.5;
+                // if (radius < 2) radius = 2;
+                this.strokeArc(drawableX, drawableY, radius, toChangeColor(color), 6);
+                // radius = this.drawableRadius / gameInfo.scale - 5;
+                // if (radius < 2) radius = 2;
                 context.restore();
             }
             // let transparent = (name === "food" && imagesArr['food']);
@@ -195,6 +195,10 @@
                 let stickerI = this.owner.stickerI;
                 let stickerSet = this.owner.stickersSet;
 
+                if (this.owner.isTransparentSkin && gameSettings.isDrawBorderInvisible && !gameSettings.isDrawCellBorder) {
+                    this.strokeArc(drawableX, drawableY, radius, toChangeColor(color), 6);
+                    context.restore();
+                }
 
                 if (stickerI !== null && stickerI >= 0 && stickerSet && imagesArr[stickerSet[stickerI].image_id]) {
 
@@ -1347,192 +1351,191 @@
         // return true;
         new Promise(() => {
             // let time = performance.now();
-            while (performance.now() - gameInfo.updateTime >= gameInfo.perSecond) {
+            if (performance.now() - gameInfo.updateTime < gameInfo.perSecond) return renderVar = requestAnimationFrame(render);
 
-                gameInfo.deltaTime = performance.now() - gameInfo.updateTime;
-                gameInfo.updateTime = performance.now();
-                let delta = getTimeByDelta(gameInfo.deltaTime);
-                let fps = 1000 / gameInfo.deltaTime;
-                if (fps < 15 && !gameSettings.isDisableAutoClear) {
-                    for (let i = 0; i < foodsArr.length; i++) {
-                        foodsArr[i].clear();
-                    }
-                }
-                // console.log(differentStateTime);
-                // console.log(states.states.length);
-                if (performance.now() - lastStateTimeLocal >= differentStateTime || true) {
-                    // let k = performance.now() - lastStateTimeLocal;
-                    let newTime = lastStateTime + performance.now() - lastStateTimeLocal - differentStateTime;
-                    let state = lastStateTime ? states.getStateByTime(newTime) : states.getGameState();
-                    // let state = states.getFirstState();
-                    // if(!state){
-                    //     console.log("now " + performance.now());
-                    //     console.log("lastlocal " + lastStateTimeLocal);
-                    //     console.log("k " + k);
-                    //     console.log("laststate " + lastStateTime);
-                    //     console.log("states " + states.states[states.states.length - 1].time);
-                    //     console.log("differenstates " + (newTime - states.states[states.states.length - 1].time));
-                    //     console.log("deltatime " + gameInfo.deltaTime);
-                    //     return true;
+            // while (performance.now() - gameInfo.updateTime >= gameInfo.perSecond) {
+
+            gameInfo.deltaTime = performance.now() - gameInfo.updateTime;
+            gameInfo.updateTime = performance.now();
+            let delta = getTimeByDelta(gameInfo.deltaTime);
+            let fps = 1000 / gameInfo.deltaTime;
+            if (fps < 15 && !gameSettings.isDisableAutoClear) clearFood();
+               
+            // console.log(differentStateTime);
+            // console.log(states.states.length);
+            if (performance.now() - lastStateTimeLocal >= differentStateTime || true) {
+                // let k = performance.now() - lastStateTimeLocal;
+                let newTime = lastStateTime + performance.now() - lastStateTimeLocal - differentStateTime;
+                let state = lastStateTime ? states.getStateByTime(newTime) : states.getGameState();
+                // let state = states.getFirstState();
+                // if(!state){
+                //     console.log("now " + performance.now());
+                //     console.log("lastlocal " + lastStateTimeLocal);
+                //     console.log("k " + k);
+                //     console.log("laststate " + lastStateTime);
+                //     console.log("states " + states.states[states.states.length - 1].time);
+                //     console.log("differenstates " + (newTime - states.states[states.states.length - 1].time));
+                //     console.log("deltatime " + gameInfo.deltaTime);
+                //     return true;
+                // }
+                // if (!lastStateTime) states.removeFirstState();
+                // else states.removeBeforeState(newTime);
+
+                if (state) {
+                    states.executeCommands(lastStateTime);
+
+                    differentStateTime = lastStateTime ? (state.time - newTime) : 0;
+                    // console.log(differentStateTime);
+                    // delta = lastStateTime ? gameInfo.deltaTime / differentStateTime : 1;
+                    // if(!isFirstRender) delta = 1;
+                    // else{
+                    //     delta = (isFirstRender && !isSecondRender) ? 2 * gameInfo.deltaTime / differentStateTime : gameInfo.deltaTime / differentStateTime;
                     // }
-                    // if (!lastStateTime) states.removeFirstState();
-                    // else states.removeBeforeState(newTime);
+                    // if (differentStateTime){
+                    //     // delta = 2 * gameInfo.deltaTime / differentStateTime;
+                    //     delta = getTimeByDelta(differentStateTime / 2);
+                    // }
+                    delta = getTimeByDelta(gameInfo.deltaTime);
+                    lastStateTime = state.time;
+                    lastStateTimeLocal = performance.now();
 
-                    if (state) {
-                        states.executeCommands(lastStateTime);
+                    // let time = performance.now();
 
-                        differentStateTime = lastStateTime ? (state.time - newTime) : 0;
-                        // console.log(differentStateTime);
-                        // delta = lastStateTime ? gameInfo.deltaTime / differentStateTime : 1;
-                        // if(!isFirstRender) delta = 1;
-                        // else{
-                        //     delta = (isFirstRender && !isSecondRender) ? 2 * gameInfo.deltaTime / differentStateTime : gameInfo.deltaTime / differentStateTime;
-                        // }
-                        // if (differentStateTime){
-                        //     // delta = 2 * gameInfo.deltaTime / differentStateTime;
-                        //     delta = getTimeByDelta(differentStateTime / 2);
-                        // }
-                        delta = getTimeByDelta(gameInfo.deltaTime);
-                        lastStateTime = state.time;
-                        lastStateTimeLocal = performance.now();
+                    for (let i = 0; i < state.players.length; i++) {
+                        let sPlayer = state.players[i];
+                        if (!isFirstRender) delta = 1;
 
-                        // let time = performance.now();
-
-                        for (let i = 0; i < state.players.length; i++) {
-                            let sPlayer = state.players[i];
-                            if (!isFirstRender) delta = 1;
-
-                            let player = findPlayer(sPlayer.id);
-                            if (!player) continue;
-                            player.changePos(sPlayer);
-                        }
-
-                        for (let i = 0; i < state.virus.length; i++) {
-                            let sVirus = state.virus[i];
-                            let virus = findVirus(sVirus.id);
-                            if (!virus) continue;
-                            virus.virus.changePos(sVirus);
-                        }
-                        // console.log(performance.now() - time);
-                    }
-                }
-                // console.log(delta);
-
-                context.clearRect(0, 0, canvas.width, canvas.height);
-                // if(gameSettings.isGrayscale) context.filter = "grayscale(100%)";
-                let filter = "";
-                if(gameSettings.isGrayscale) filter += "grayscale(100%)";
-                if(gameSettings.isInvertColor) filter += " invert(100%)";
-                if(gameSettings.isBrigthness) filter += " brightness(150%)";
-                if(gameSettings.isSepia) filter += " sepia(100%)";
-                context.filter = filter || "none";
-
-                let backgroundColor = (gameSettings.isBackground && !isEmpty(gameSettings.background)) ? gameSettings.background : "#000000";
-                context.fillStyle = backgroundColor;
-                context.fillRect(0, 0, canvas.width, canvas.height);
-
-                let cellScale = calcScaleByCell();
-                if (!isEmpty(cellScale)) {
-                    gameInfo.byScale += cellScale - gameInfo.cellScale;
-                    gameInfo.cellScale = cellScale;
-                }
-
-                if (Math.abs(gameInfo.byScale) > 0) {
-                    let speed = gameInfo.byScale * (gameInfo.deltaTime / gameInfo.perSecond) / 30;
-                    if (Math.abs(speed) < 0.01) speed = gameInfo.byScale > 0 ? 0.01 : -0.01;
-                    if (Math.abs(gameInfo.byScale) < Math.abs(speed)) speed = gameInfo.byScale;
-
-                    gameInfo.scale += speed;
-                    gameInfo.byScale -= speed;
-                }
-
-                if (Math.abs(gameInfo.byCenterX) > 0 || Math.abs(gameInfo.byCenterY) > 0) {
-
-                    let c = Math.sqrt(gameInfo.byCenterX ** 2 + gameInfo.byCenterY ** 2);
-                    let sin = gameInfo.byCenterY / c;
-                    let cos = gameInfo.byCenterX / c;
-                    let byY = c * sin / 10;
-                    let byX = c * cos / 10;
-                    gameInfo.centerY += byY;
-                    gameInfo.centerX += byX;
-                    gameInfo.byCenterY -= byY;
-                    gameInfo.byCenterX -= byX;
-                }
-
-                rendersArr = [];
-
-                for (let i = 0; i < playersArr.length; i++) {
-                    playersArr[i].update(delta);
-                }
-
-                for (let i = 0; i < bulletsArr.length; i++) {
-                    bulletsArr[i].update(delta);
-                }
-
-                for (let i = 0; i < virusArr.length; i++) {
-                    virusArr[i].update(delta);
-                }
-
-
-                // for (let i = 0; i < foodsArr.length; i++) {
-                //     foodsArr[i].update();
-                // }
-
-                if (gameSettings.isGrid) {
-                    Arc.drawGrid();
-                }
-                Arc.drawCenter();
-
-                // let time = performance.now();
-                for (let i = 0; i < foodsArr.length; i++) {
-                    foodsArr[i].render();
-                }
-
-                rendersArr = rendersArr.sort((a, b) => a.drawableRadius - b.drawableRadius);
-                let renderLength = rendersArr.length;
-                for (let i = 0; i < renderLength; i += 2) {
-                    rendersArr[i].render();
-                    try {
-                        rendersArr[i + 1].render();
-                    } catch (e) {
+                        let player = findPlayer(sPlayer.id);
+                        if (!player) continue;
+                        player.changePos(sPlayer);
                     }
 
+                    for (let i = 0; i < state.virus.length; i++) {
+                        let sVirus = state.virus[i];
+                        let virus = findVirus(sVirus.id);
+                        if (!virus) continue;
+                        virus.virus.changePos(sVirus);
+                    }
+                    // console.log(performance.now() - time);
                 }
-
-                // let time = performance.now();
-                // if (gameSettings.isGrayscale) {
-                //     let imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-                //     let data = imageData.data;
-                //     let length = data.length;
-                //     context.clearRect(0, 0, canvas.width, canvas.height);
-                //     for (let i = 0; i < length; i += 4) {
-                //         let red = data[i];
-                //         let green = data[i + 1];
-                //         let blue = data[i + 2];
-                //         let average = (red + green + blue) / 3;
-                //         if(gameSettings.isInvertColor) average = 255 - average;
-                //         [data[i], data[i + 1], data[i + 2]] = [average, average, average];
-                //     }
-                //     imageData.data = data;
-                //     context.putImageData(imageData, 0, 0);
-                // }
-                // if(gameSettings.isInvertColor && !gameSettings.isGrayscale){
-                //     let imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-                //     context.clearRect(0, 0, canvas.width, canvas.height);
-                //     for (let i = 0; i < imageData.data.length; i += 4) {
-                //         let red = 255 - imageData.data[i];
-                //         let green = 255 -imageData.data[i + 1];
-                //         let blue = 255 - imageData.data[i + 2];
-                //         [imageData.data[i], imageData.data[i + 1], imageData.data[i + 2]] = [red, green, blue];
-                //     }
-                //     context.putImageData(imageData, 0, 0);
-                // }
-                // Arc.drawCompass();
-
-                // console.log(performance.now() - time);
-                if (isFirstRender) isSecondRender = true;
-                isFirstRender = true;
             }
+            // console.log(delta);
+
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            // if(gameSettings.isGrayscale) context.filter = "grayscale(100%)";
+            let filter = "";
+            if (gameSettings.isGrayscale) filter += "grayscale(100%)";
+            if (gameSettings.isInvertColor) filter += " invert(100%)";
+            if (gameSettings.isBrigthness) filter += " brightness(150%)";
+            if (gameSettings.isSepia) filter += " sepia(100%)";
+            context.filter = filter || "none";
+
+            let backgroundColor = (gameSettings.isBackground && !isEmpty(gameSettings.background)) ? gameSettings.background : "#000000";
+            context.fillStyle = backgroundColor;
+            context.fillRect(0, 0, canvas.width, canvas.height);
+
+            let cellScale = calcScaleByCell();
+            if (!isEmpty(cellScale)) {
+                gameInfo.byScale += cellScale - gameInfo.cellScale;
+                gameInfo.cellScale = cellScale;
+            }
+
+            if (Math.abs(gameInfo.byScale) > 0) {
+                let speed = gameInfo.byScale * (gameInfo.deltaTime / gameInfo.perSecond) / 30;
+                if (Math.abs(speed) < 0.01) speed = gameInfo.byScale > 0 ? 0.01 : -0.01;
+                if (Math.abs(gameInfo.byScale) < Math.abs(speed)) speed = gameInfo.byScale;
+
+                gameInfo.scale += speed;
+                gameInfo.byScale -= speed;
+            }
+
+            if (Math.abs(gameInfo.byCenterX) > 0 || Math.abs(gameInfo.byCenterY) > 0) {
+
+                let c = Math.sqrt(gameInfo.byCenterX ** 2 + gameInfo.byCenterY ** 2);
+                let sin = gameInfo.byCenterY / c;
+                let cos = gameInfo.byCenterX / c;
+                let byY = c * sin / 10;
+                let byX = c * cos / 10;
+                gameInfo.centerY += byY;
+                gameInfo.centerX += byX;
+                gameInfo.byCenterY -= byY;
+                gameInfo.byCenterX -= byX;
+            }
+
+            rendersArr = [];
+
+            for (let i = 0; i < playersArr.length; i++) {
+                playersArr[i].update(delta);
+            }
+
+            for (let i = 0; i < bulletsArr.length; i++) {
+                bulletsArr[i].update(delta);
+            }
+
+            for (let i = 0; i < virusArr.length; i++) {
+                virusArr[i].update(delta);
+            }
+
+
+            // for (let i = 0; i < foodsArr.length; i++) {
+            //     foodsArr[i].update();
+            // }
+
+            if (gameSettings.isGrid) {
+                Arc.drawGrid();
+            }
+            Arc.drawCenter();
+
+            // let time = performance.now();
+            for (let i = 0; i < foodsArr.length; i++) {
+                foodsArr[i].render();
+            }
+
+            rendersArr = rendersArr.sort((a, b) => a.drawableRadius - b.drawableRadius);
+            let renderLength = rendersArr.length;
+            for (let i = 0; i < renderLength; i += 2) {
+                rendersArr[i].render();
+                try {
+                    rendersArr[i + 1].render();
+                } catch (e) {
+                }
+
+            }
+
+            // let time = performance.now();
+            // if (gameSettings.isGrayscale) {
+            //     let imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+            //     let data = imageData.data;
+            //     let length = data.length;
+            //     context.clearRect(0, 0, canvas.width, canvas.height);
+            //     for (let i = 0; i < length; i += 4) {
+            //         let red = data[i];
+            //         let green = data[i + 1];
+            //         let blue = data[i + 2];
+            //         let average = (red + green + blue) / 3;
+            //         if(gameSettings.isInvertColor) average = 255 - average;
+            //         [data[i], data[i + 1], data[i + 2]] = [average, average, average];
+            //     }
+            //     imageData.data = data;
+            //     context.putImageData(imageData, 0, 0);
+            // }
+            // if(gameSettings.isInvertColor && !gameSettings.isGrayscale){
+            //     let imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+            //     context.clearRect(0, 0, canvas.width, canvas.height);
+            //     for (let i = 0; i < imageData.data.length; i += 4) {
+            //         let red = 255 - imageData.data[i];
+            //         let green = 255 -imageData.data[i + 1];
+            //         let blue = 255 - imageData.data[i + 2];
+            //         [imageData.data[i], imageData.data[i + 1], imageData.data[i + 2]] = [red, green, blue];
+            //     }
+            //     context.putImageData(imageData, 0, 0);
+            // }
+            // Arc.drawCompass();
+
+            // console.log(performance.now() - time);
+            if (isFirstRender) isSecondRender = true;
+            isFirstRender = true;
+            // }
             renderVar = requestAnimationFrame(render);
         });
 
@@ -1781,6 +1784,9 @@
     function clearFood() {
         for (let i = 0; i < foodsArr.length; i++) {
             foodsArr[i].clear();
+        }
+        for (let i = 0; i < bulletsArr.length; i++) {
+            bulletsArr[i].clear();
         }
     }
 

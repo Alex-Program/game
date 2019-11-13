@@ -512,7 +512,7 @@ function getNick(nick) {
         .then(data => {
             try {
                 if (data.result !== "true") throw("");
-                if (!+data.data.is_password) throw("");
+                // if (!+data.data.is_password) throw("");
 
                 if (+data.data.is_password) $("#password_for_game").addClass("required");
                 if (!isEmpty(data.data.skin)) {
