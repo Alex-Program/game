@@ -40,7 +40,7 @@ httpServer.on("request", function (request, response) {
         }
 
         if (data.action === "get_game_settings") {
-            const worker = new Worker("/var/www/game.pw/server/GameClasses/Worker.js");
+            const worker = new Worker("/var/www/" + Units.game.serverName + "/server/GameClasses/Worker.js");
             worker.on("message", data => {
                 response.write(JSON.stringify({result: "true", data}));
                 response.end();
@@ -52,7 +52,7 @@ httpServer.on("request", function (request, response) {
 
         if (data.action === "update_game_settings") {
             Units.game.stopGame();
-            const worker = new Worker("/var/www/game.pw/server/GameClasses/Worker.js");
+            const worker = new Worker("/var/www/" + Units.game.serverName + "/server/GameClasses/Worker.js");
             worker.on("message", () => {
                 response.write(JSON.stringify({result: "true", data: ""}));
                 response.end();
@@ -125,7 +125,7 @@ function nickInfo(wsId) {
     wsMessage(message, player.wsId);
 }
 
-function onChangeNick(id){
+function onChangeNick(id) {
     let player = Units.game.findPlayer(id);
     if (!player) return true;
 
@@ -166,7 +166,7 @@ class Command {
         let player = Units.game.findPlayer(id);
         if (!player) return false;
         player = player.player;
-        if(!player.isAdmin && !player.isModer) return false;
+        if (!player.isAdmin && !player.isModer) return false;
         if (command in this.adminsCommand && !player.isAdmin) return false;
 
         let allCommands = {...this.adminsCommand, ...this.modersCommand};
@@ -258,23 +258,23 @@ class Command {
         Units.game.teleportByCoords(params.target_id, params.x, params.y);
     }
 
-    setMass(id, params){
+    setMass(id, params) {
         const targetId = params.target_id;
         const mass = +params.mass;
-        if(isEmpty(targetId) || isEmpty(mass)) return false;
+        if (isEmpty(targetId) || isEmpty(mass)) return false;
 
         let currentPlayer = Units.game.findPlayer(id);
         let targetPlayer = Units.game.findPlayer(targetId);
-        if(!currentPlayer || !targetPlayer) return true;
+        if (!currentPlayer || !targetPlayer) return true;
         [currentPlayer, targetPlayer] = [currentPlayer.player, targetPlayer.player];
 
-        if(targetPlayer.isAdmin && !currentPlayer.isAdmin) return true;
+        if (targetPlayer.isAdmin && !currentPlayer.isAdmin) return true;
 
         Units.game.setMass(targetId, mass)
     }
 
-    async setNick(id, params){
-        if(Functions.isEmpty(params.target_id)) return true;
+    async setNick(id, params) {
+        if (Functions.isEmpty(params.target_id)) return true;
         let nick = params.nick || "SandL";
 
         await Units.game.changeNick(params.target_id, nick, "", "");
@@ -293,7 +293,7 @@ Units.game.onSpawnUnit = function (unit) {
         action: "spawn_unit",
         unit
     };
-    if (typeof(message.unit) !== "string" && message.unit.n === "p") {
+    if (typeof (message.unit) !== "string" && message.unit.n === "p") {
         message.unit.cr = "f";
         wsMessage(message, null, message.unit.id);
         message.unit.cr = "t";
@@ -537,7 +537,7 @@ webSocketServer.on('connection', function (ws, req) {
             if (Functions.isEmpty(data.number)) data.number = "";
 
             let player = Units.game.findPlayer(id);
-            if(!player || !player.player.stickersSet) return true;
+            if (!player || !player.player.stickersSet) return true;
 
             player.player.stickerI = isEmpty(data.number) ? null : data.number;
 
@@ -576,14 +576,20 @@ webSocketServer.on('connection', function (ws, req) {
             wsMessage({action: "ping"}, id);
         }
 
-        if(data.action === "report"){
-            if(isEmpty(data.targetId)) return true;
+        if (data.action === "report") {
+            if (isEmpty(data.targetId)) return true;
 
             let player = Units.game.findPlayer(id);
             let targetPlayer = Units.game.findPlayer(+data.targetId);
-            if(!player || !targetPlayer) return true;
+            if (!player || !targetPlayer) return true;
 
-            wsModerMessage({action: "report", id, nick: player.player.nick, targetId: targetPlayer.player.wsId, targetNick: targetPlayer.player.nick});
+            wsModerMessage({
+                action: "report",
+                id,
+                nick: player.player.nick,
+                targetId: targetPlayer.player.wsId,
+                targetNick: targetPlayer.player.nick
+            });
         }
 
     });

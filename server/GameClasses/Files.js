@@ -1,11 +1,12 @@
 let fs = require("fs");
+let {game} = require("./Units.js");
 
 exports.Files = class {
     src = "";
     encoding = "utf8";
 
     constructor(src, encoding = "utf8") {
-        this.src = "/var/www/game.pw/server/" + src;
+        this.src = "/var/www/" + game.serverName + "/server/" + src;
         this.encoding = encoding;
     }
 

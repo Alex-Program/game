@@ -115,7 +115,23 @@ if ($request['action'] == "update_nick") {
         exit;
     }
 
+    if (!empty($request['user_id']) && !$auth->getUserInfo($request['user_id'])) {
+        echo json_encode(["result" => "false", "data" => "invalid_user"], 256);
+        exit;
+    }
+
+    $isClan = $request['is_clan'] == 1;
+
     $skin = new Skin();
+
+    if (!empty($request['nick'])) {
+        $nickInfo = $skin->getByNick($request['nick'], true, $isClan);
+        if ($nickInfo && $nickInfo['id'] != $request['id']) {
+            echo json_encode(["result" => "false", "data" => "nick_exists"], 256);
+            exit;
+        }
+    }
+
     foreach ($request as $name => $value) {
         if (!$skin->updateColumn($name, $value, $id)) {
             echo json_encode(["result" => "false", "data" => "error"], 256);

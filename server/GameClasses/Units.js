@@ -1124,6 +1124,9 @@ class Game {
         this.isStart = false;
         this.isStop = false;
         this.isStart = false;
+
+        // this.serverName = "game.pw";
+        this.serverName = "sandl.pw";
     }
 
     clearAll() {
@@ -1155,7 +1158,7 @@ class Game {
     startGame() {
         if (this.isStop) return this.isStart = true;
         // return true;
-        let worker = new Worker("/var/www/game.pw/server/GameClasses/Worker.js");
+        let worker = new Worker("/var/www/" + this.serverName + "/server/GameClasses/Worker.js");
         worker.on("message", data => {
             gameInfo = data;
             gameInfo.updateTime = performance.now();
