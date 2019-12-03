@@ -7,8 +7,10 @@ if ($request['action'] == "get_nick") {
         exit;
     }
 
+    $isClan = $request['is_clan'] == 1;
+
     $skin = new Skin();
-    $nick = $skin->getByNick($request['nick'], true);
+    $nick = $skin->getByNick($request['nick'], true, $isClan);
     if (!$nick) {
         echo json_encode(["result" => "false", "data" => "invalid_data"], 256);
         exit;
@@ -87,4 +89,41 @@ if ($request['action'] == "ban_account") {
 
     echo json_encode(["result" => "false", "data" => "error"], 256);
     exit;
+}
+
+
+if ($request['action'] == "get_all_nicks") {
+    $skin = new Skin();
+    $arr = $skin->getAllNicks();
+    echo json_encode(["result" => "true", "data" => $arr], 256);
+    exit;
+}
+
+if ($request['action'] == "update_nick") {
+    if (empty($request['id'])) {
+        echo json_encode(["result" => "false", "data" => "invalid_request"], 256);
+        exit;
+    }
+
+    $allowedFields = ["nick", "password", "user_id", "is_admin", "is_moder", "is_helper", "is_gold", "is_transparent_skin", "is_turning_skin", "is_invisible_nick", "is_random_color", "is_violet"];
+    $id = $request['id'];
+    foreach ($request as $name => $value) {
+        if (!in_array($name, $allowedFields)) unset($request[$name]);
+    }
+    if (empty($request)) {
+        echo json_encode(["result" => "true", "data" => $id]);
+        exit;
+    }
+
+    $skin = new Skin();
+    foreach ($request as $name => $value) {
+        if (!$skin->updateColumn($name, $value, $id)) {
+            echo json_encode(["result" => "false", "data" => "error"], 256);
+            exit;
+        }
+    }
+
+    echo json_encode(["result" => "true", "data" => $id], 256);
+    exit;
+
 }

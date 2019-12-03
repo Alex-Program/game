@@ -3,11 +3,15 @@
  */
 let ws = undefined;
 let isGame = false;
-let gameSettings = {};
+let gameSettings = {
+    clanCellColor: "#FFD700",
+    isClanCellColor: 1
+};
 
 let hiddenUsersId = [];
 let highlightedUsersId = [];
 let isAdmin = false;
+let isModer = false;
 
 
 function loadImage(imageName, src) {
@@ -58,14 +62,21 @@ let imagesArr = {};
 
 class Message {
     static getNewMessage(data) {
-        let isAdmin = Number(data.isAdmin);
-        let isVerified = Number(data.isVerified);
+        let isAdmin = +data.isAdmin;
+        let isModer = +data.isModer;
+        let isVerified = +data.isVerified;
+        let isHelper = +data.isHelper;
+        let isGold = +data.isGold;
+        let isViolet = +data.isViolet;
 
         let cl = "no_icon";
 
-        if (isAdmin) {
-            cl = "admin";
-        } else if (isVerified) cl = "verified";
+        if (isAdmin) cl = "admin";
+        else if (isModer) cl = "moder";
+        else if (isHelper) cl = "verified helper";
+        else if (isGold) cl = "verified gold";
+        else if (isViolet) cl = "verified violet";
+        else if (isVerified) cl = "verified";
 
         if (+data.pm) cl += " pm";
         if (hiddenUsersId.includes(+data.id) && !isAdmin) cl += " hidden";
@@ -137,7 +148,9 @@ class Command {
         kick: ["target_id"],
         ban_ip: ["target_id"],
         ban_account: ["target_id"],
-        tp_coords: ["target", "x", "y"]
+        tp_coords: ["target", "x", "y"],
+        set_mass: ["target_id", "mass"],
+        set_nick: ["target_id", "nick"]
     };
 
     constructor(command) {
@@ -195,17 +208,18 @@ function changeColor(color) {
     });
 }
 
-function changeNick(nick, password = "") {
-    setLocalNick(nick, password);
+function changeNick(nick, password = "", clan = "") {
+    if (isEmpty(clan)) setLocalNick(nick, password);
 
     if (!ws) return true;
     ws.sendJson({
         action: "change_nick",
         nick,
-        password
+        password,
+        clan
     });
 
-    addLocalNick(nick, password);
+    if (isEmpty(clan)) addLocalNick(nick, password);
 }
 
 function addLocalNick(nick, password) {
@@ -283,7 +297,8 @@ function getSettings() {
 }
 
 function loadGameSettings() {
-    let settings = getSettings() || {};
+    let settings = getSettings() || gameSettings;
+
 
     for (let [key, value] of Object.entries(settings)) {
         if (!isNaN(+value)) gameSettings[key] = +value;
@@ -306,9 +321,9 @@ function setGameSetting(name, value) {
 }
 
 function fillGameSettings() {
-    let settings = getSettings() || {};
+    let settings = getSettings() || gameSettings;
 
-    for (let [key, value] of Object.entries(settings)) {
+    for (let [key, value] of Object.entries({...gameSettings, ...settings})) {
         let input = $("#game_settings input[data-name='" + key + "']");
         if (input.length < 1) continue;
 
@@ -324,6 +339,15 @@ function fillGameSettings() {
     let nick = getLocalNick();
     $("#nick_for_game").val(nick.nick).trigger("input");
     $("#password_for_game").val(nick.password);
+}
+
+
+function onNickInfo() {
+    if (isAdmin) $(".for_admin, .for_moder").show();
+    else if (isModer) {
+        $(".for_moder").show();
+        $(".for_admin").hide();
+    } else $(".for_moder, .for_admin").hide();
 }
 
 let user = null;
@@ -421,8 +445,8 @@ class User {
                 let html = "";
                 for (let skin of data.data) {
                     this.userNicks.push(skin.nick.toLowerCase());
-                    html += "<div class='user_skin' data-password='" + skin.password + "' data-nick='" + skin.nick + "'>";
-                    if(!isEmpty(skin.skin)) html += "<div class='skin'><img src='" + skin.skin + "'></div>";
+                    html += "<div class='user_skin' data-password='" + skin.password + "' data-nick='" + skin.nick + "' data-clan='" + skin.is_clan + "'>";
+                    if (!isEmpty(skin.skin)) html += "<div class='skin'><img src='" + skin.skin + "'></div>";
                     html += "<span>" + skin.nick + "</span></div>";
                 }
                 $("#select_nick .html.local .user_skin").each((i, element) => {
@@ -455,7 +479,7 @@ class User {
             localNicks.push(skin.nick.toLowerCase());
             let info = await getNickInfo(skin.nick);
             if (!info) info = {skin: ""};
-            html += "<div class='user_skin' data-password='" + skin.password + "' data-nick='" + skin.nick + "'>";
+            html += "<div class='user_skin' data-password='" + skin.password + "' data-nick='" + skin.nick + "' data-clan='0'>";
             if (!isEmpty(info.skin)) html += "<div class='skin'><img src='" + info.skin + "'></div>";
             html += "<span>" + skin.nick + "</span><span class='delete'>x</span></div>";
         }
@@ -464,6 +488,15 @@ class User {
     }
 
 }
+
+
+class Admin {
+    static addReport(currentId, currentNick, targetId, targetNick) {
+        let html = "<div>Игрок <span class='player current'>" + currentNick + " [" + currentId + "]</span> пожаловался на <span class='player target'>" + targetNick + " [" + targetId + "]</span></div>";
+        $("#report").append(html);
+    }
+}
+
 
 /**
  * @type {Promise|null}
@@ -507,8 +540,8 @@ document.getElementById("chat_service").addEventListener("transitionend", functi
 });
 
 
-function getNick(nick) {
-    sendRequest("api/registration", {action: "get_nick", nick})
+function getNick(nick, isClan = false) {
+    sendRequest("api/registration", {action: "get_nick", nick, is_clan: +isClan})
         .then(data => {
             try {
                 if (data.result !== "true") throw("");
@@ -533,6 +566,8 @@ let changeSettings = false;
 let isChangeColor = false;
 let isMoveCoords = false;
 let differentCoordsPosition = {x: 0, y: 0};
+
+let selectedAdminPanelPlayer = null;
 
 $("#resize_chat").mousedown(() => resizeChat = true);
 $("#coords").mousedown(event => {
@@ -627,6 +662,12 @@ $("body").mouseup(() => {
 
         navigator.clipboard.writeText(nick);
     })
+    .on("click", ".user_actions.user div:eq(6)", function () {
+        let id = $("#selected_chat_user").val().trim();
+        if (isEmpty(id) || !ws) return true;
+
+        ws.sendJson({action: "report", targetId: id});
+    })
 
 
     .on("click", ".user_actions.admin div:eq(1)", function () {
@@ -665,7 +706,7 @@ $("body").mouseup(() => {
     })
 
     .on("click", function () {
-        $(".user_actions, #select_nick, #controller_view, #select_music").addClass("closed");
+        $(".user_actions, #select_nick, #controller_view, #select_music, #admin_panel_action").addClass("closed");
     })
 
 
@@ -677,19 +718,21 @@ $("body").mouseup(() => {
         Message.selectPM(nick, id);
     })
 
-    .on("input", "#nick_for_game", function () {
+    .on("input", "#nick_for_game, #clan_for_game", function () {
         try {
             clearTimeout(getNickTimeOut);
         } catch {
         }
-        let nick = $(this).val().trim();
+        let nick = $("#nick_for_game").val().trim();
+        let clan = $("#clan_for_game").val().trim();
+        if (!isEmpty(clan)) nick = clan;
         if (!nick) {
             $("#skin_preview").addClass("closed");
             $("#password_for_game").removeClass("required");
             return true;
         }
 
-        getNickTimeOut = setTimeout(() => getNick(nick), 500);
+        getNickTimeOut = setTimeout(() => getNick(nick, !isEmpty(clan)), 500);
     })
 
     .on("click", "#nick_for_game", event => {
@@ -701,9 +744,13 @@ $("body").mouseup(() => {
         let parent = $(this).closest(".user_skin");
         let password = parent.attr("data-password") || "";
         let nick = parent.attr("data-nick");
+        let clan = "";
+        let isClan = +parent.attr("data-clan");
+        if (isClan) [nick, clan] = [$("#nick_for_game").val().trim(), nick];
         $("#nick_for_game").val(nick).trigger("input");
+        $("#clan_for_game").val(clan).trigger("input");
         $("#password_for_game").val(password);
-        setLocalNick(nick, password);
+        if (!isClan) setLocalNick(nick, password);
     })
 
     .on("click", ".server", function () {
@@ -877,9 +924,17 @@ $("body").mouseup(() => {
         if (!ws || $(this).hasClass("selected")) return true;
         $("#user_nicks .user_skin.selected").removeClass("selected");
         $(this).addClass("selected");
+        let clan = "";
         let nick = $(this).attr("data-nick");
         let password = $(this).attr("data-password");
-        changeNick(nick, password);
+        let isClan = +$(this).attr("data-clan");
+        if (isClan) {
+            [clan, nick] = [nick, $("#nick_for_game").val().trim()];
+        }
+        $("#nick_for_game").val(nick);
+        $("#password_for_game").val(password);
+        $("#clan_for_game").val(clan);
+        changeNick(nick, password, clan);
     })
 
     .on("click", "#user_nicks .user_sticker", function () {
@@ -910,7 +965,63 @@ $("body").mouseup(() => {
     .on("click", "#open_info", function () {
         $(this).addClass("closed");
         $("#coords").removeClass("closed");
-    });
+    })
+
+    .on("click", ".admin_tag", function () {
+        if ($(this).hasClass("selected")) return true;
+
+        let targetId = $(this).attr("data-id");
+        $(".admin_tag.selected").removeClass("selected");
+        $(this).addClass("selected");
+        $("#admin_data > div").hide();
+        $("#" + targetId).show();
+    })
+
+    .on("click", "#players_for_admin .player", function () {
+        selectedAdminPanelPlayer = +$(this).attr("data-id");
+    })
+
+    .on("click", "#players_for_admin .player span", function (e) {
+        let div = null;
+
+        if ($(this).hasClass("mass")) {
+            div = $("#admin_panel_action div[data-name='mass']");
+            let mass = $(this).text();
+            div.find("input").val(mass);
+        }
+        else if($(this).hasClass("nick")){
+            div = $("#admin_panel_action div[data-name='nick']");
+            let nick = $(this).text();
+            div.find("input").val(nick);
+        }
+
+        if (!div) return true;
+        $("#admin_panel_action").css({top: e.clientY, left: e.clientX}).removeClass("closed");
+        $("#admin_panel_action div").not(div).hide();
+        div.show();
+    })
+
+    .on("click", "#admin_change_mass", function () {
+        if (isEmpty(selectedAdminPanelPlayer) || !ws) return true;
+
+        let mass = +$(this).prev("input").val();
+        if (isEmpty(mass)) return true;
+
+        new Command("set_mass " + selectedAdminPanelPlayer + " " + mass);
+    })
+
+    .on("click", "#admin_change_nick", function(){
+        if(isEmpty(selectedAdminPanelPlayer) || !ws) return true;
+
+        let nick = $(this).prev("input").val();
+        if(isEmpty(nick)) return true;
+
+        new Command("set_nick " + selectedAdminPanelPlayer + " " + nick);
+    })
+
+    .on("click", "#admin_panel_action, #admin_panel", e => e.stopPropagation())
+
+    .on("click", "#to_admin_panel", () => $("#admin_panel").toggleClass("closed"));
 
 
 {

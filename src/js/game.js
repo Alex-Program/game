@@ -2,7 +2,7 @@
     let dailyTop = {
         nick: "",
         skin: "",
-        mass: "",
+        score: "",
         skinId: ""
     };
     let isSpectate = false;
@@ -95,11 +95,9 @@
         }
 
         removeBeforeState(time) {
-            // return;
-            // console.log(this.states[this.states.length - 1].time - time);
+
             for (let i = 0; i < this.states.length; i++) {
                 if (time < this.states[i].time) break;
-                // console.log(time - this.states[i].time);
                 this.states.splice(i, 1);
                 i--;
             }
@@ -137,6 +135,9 @@
 
 
             let color = this.color;
+            if (name === "cell" && gameSettings.isDisableColorAnim) {
+                color = this.owner.selectedColor;
+            }
             let shadowColor = "#000000";
 
             if (name === "cell" && gameSettings.isCellColor) {
@@ -151,9 +152,11 @@
                 if (!gameSettings.virusColor) color = "#000000";
                 else color = gameSettings.virusColor;
 
-            } else if (name === "bullet" && gameSettings.isBulletColor) {
+            } else if (name === "bullet" && !this.isDecreaseMass && gameSettings.isBulletColor) {
                 if (!gameSettings.bulletColor) color = "#000000";
                 else color = gameSettings.bulletColor;
+            } else if (name === "bullet" && this.isDecreaseMass && gameSettings.isDecreaseBulletColor) {
+                color = gameSettings.decreaseBulletColor || "#000000";
             }
 
 
@@ -161,6 +164,8 @@
             // let strokeTextColor = rgb.brightness ? "#FFFFFF" : "#000000";
 
             let textColor = "#FFFFFF";
+            let textCellColor = "#FFFFFF";
+            if (gameSettings.isCellNickColor && gameSettings.cellNickColor) textCellColor = gameSettings.cellNickColor;
             let strokeTextColor = "#000000";
 
             if (gameSettings.isShadowColor && gameSettings.shadowColor) shadowColor = gameSettings.shadowColor;
@@ -182,6 +187,10 @@
             }
             // let transparent = (name === "food" && imagesArr['food']);
             let transparent = false;
+            if (!gameSettings.isDisableTransparentSkin) {
+                if (name === "virus" && this.isFeeding && imagesArr['feeding_virus']) transparent = true;
+            }
+
 
             if (name !== "cell") {
                 this.drawArc(drawableX, drawableY, radius, color, transparent);
@@ -207,7 +216,7 @@
 
                     this.drawImage(imagesArr[stickerSet[stickerI].image_id], drawableX, drawableY, radius);
                 } else if (imagesArr[this.owner.skinId]) {
-                    if (this.owner.isTransparentSkin) transparent = true;
+                    if (this.owner.isTransparentSkin && !gameSettings.isDisableTransparentSkin) transparent = true;
                     this.drawArc(drawableX, drawableY, radius, color, transparent);
                     context.restore();
 
@@ -221,7 +230,19 @@
 
                 if (!gameSettings.isHideNick && isDrawText) {
                     if (!this.owner.isInvisibleNick || gameSettings.isShowInvisibleNick) {
-                        this.drawText(drawableX, drawableY, this.drawableRadius / (2.5 * gameInfo.scale), this.owner.nick, textColor, true, strokeTextColor);
+                        if (!isEmpty(this.owner.clan)) {
+                            let clanColor = textCellColor;
+                            if (gameSettings.isClanCellColor && gameSettings.clanCellColor) clanColor = gameSettings.clanCellColor;
+                            let r = this.drawableRadius / (3.5 * gameInfo.scale);
+                            let size = Arc.getTextSize(r, this.owner.clan + this.owner.nick);
+                            let clanSize = Arc.getTextSize(r, this.owner.clan);
+                            let nickSize = Arc.getTextSize(r, this.owner.nick);
+                            this.drawText(drawableX - size / 2 + clanSize / 2, drawableY, r, this.owner.clan, clanColor, true, "#000000");
+                            this.drawText(drawableX + size / 2 - nickSize / 2, drawableY, r, this.owner.nick, textCellColor, true, strokeTextColor);
+
+                        } else {
+                            this.drawText(drawableX, drawableY, this.drawableRadius / (3.5 * gameInfo.scale), this.owner.clan + " " + this.owner.nick, textCellColor, true, strokeTextColor);
+                        }
                     }
                 }
                 drawableY += this.drawableRadius / (2 * gameInfo.scale);
@@ -235,11 +256,21 @@
                 if (!this.isFeeding && imagesArr['virus_arrow']) {
                     let q = (this.mass - 200) / 200;
                     this.drawImageByAngle(imagesArr['virus_arrow'], drawableX, drawableY, -225 + 270 * q, this.drawableRadius / gameInfo.scale);
+                } else if (this.isFeeding && imagesArr['feeding_virus']) {
+                    this.drawImage(imagesArr['feeding_virus'], drawableX, drawableY, radius);
                 }
-                this.drawText(drawableX, drawableY, this.drawableRadius / (3 * gameInfo.scale), Math.floor(this.mass), textColor);
+                let virusMassColor = "#FFFFFF";
+                if (gameSettings.isVirusMassColor && gameSettings.virusMassColor) virusMassColor = gameSettings.virusMassColor;
+                this.drawText(drawableX, drawableY, this.drawableRadius / (2 * gameInfo.scale), Math.floor(this.mass), virusMassColor);
                 return true;
             }
 
+
+            if (name === "blackhole") {
+                if (imagesArr['black_hole']) {
+                    this.drawImage(imagesArr['black_hole'], drawableX, drawableY, radius);
+                }
+            }
             // if (name === "food" && imagesArr['food']) {
             //     this.drawImage(imagesArr['food'], drawableX, drawableY, radius * 2);
             // }
@@ -301,8 +332,19 @@
             context.restore();
         }
 
-        drawText(x, y, size, value, color = "#FFFFFF", isStroke = false, strokeStyle = "#000000", isShadow = false, shadowColor = "red") {
+        static getTextSize(size, text) {
             if (+gameSettings.isBigText) size *= 1.8;
+            else size *= 1.2;
+            if (gameSettings.isOptimization) size /= 1.7;
+            let font = gameSettings.isOptimization ? "'Open Sans'" : "'Caveat'";
+            context.font = "bold " + String(size) + "px " + font;
+            let measure = context.measureText(text);
+            return measure.width;
+        }
+
+        drawText(x, y, size, value, color = "#FFFFFF", isStroke = false, strokeStyle = "#000000", isShadow = false, shadowColor = "red") {
+            if (gameSettings.isBigText) size *= 1.8;
+            else if (gameSettings.isSmallText) size /= 1.3;
             else size *= 1.2;
             if (gameSettings.isOptimization) size /= 1.7;
 
@@ -333,20 +375,6 @@
             return Math.sqrt(this.mass / Math.PI) * 3;
         }
 
-
-        get radius() {
-            let toMass = this.toMass || 0;
-            return Math.sqrt((this.mass + toMass) / Math.PI) * 3;
-        }
-
-        set radius(val) {
-            this.mass = Math.round(val * 10);
-        }
-
-        get speed() {
-            return 20 / this.drawableRadius;
-        }
-
         get mouseAngle() {
             let dX = this.owner.mouse.x - this.x;
             let dY = this.owner.mouse.y - this.y;
@@ -355,63 +383,9 @@
             return getAngle(dY / c, dX / c).degree;
         }
 
-
-        get mouseDist() {
-            let differentX = this.owner.mouse.x - this.x;
-            let differentY = this.owner.mouse.y - this.y;
-            return Math.sqrt(differentX ** 2 + differentY ** 2);
-        }
-
-        get timeRatio() {
-            return gameInfo.deltaTime / gameInfo.perSecond
-        }
-
         outOfBorder() {
             return (this.x <= 0 || this.x >= gameInfo.width || this.y <= 0 || this.y >= gameInfo.height);
         }
-
-        // static drawCompass() {
-        //     let tg = gameInfo.centerY / gameInfo.centerX;
-        //     let fY = tg * (x - gameInfo.centerX) + gameInfo.centerY;
-        //     y = 0;
-        //     x = 0;
-        //     let intersectionTop = {
-        //         y: 0,
-        //         x: -gameInfo.centerY / tg + gameInfo.centerX
-        //     };
-        //     let intersectionLeft = {
-        //         x: 0,
-        //         y: -gameInfo.centerX * tg + gameInfo.centerY
-        //     };
-        //     let borderLeftX = gameInfo.centerX - canvas.width * gameInfo.scale / 2;
-        //
-        //     let intersection = {
-        //         x: intersectionTop.x < borderLeftX ? 0 : intersectionTop.x,
-        //         y: intersectionLeft.y < 0 ? 0 : intersectionLeft.y
-        //     };
-        //     context.beginPath();
-        //     context.moveTo(canvas.width / 2, canvas.height / 2);
-        //     context.lineTo(intersection.x, intersection.y);
-        //     context.lineWidth = 10;
-        //     context.stroke();
-        //     context.closePath();
-        // }
-        //
-        // static drawBorder() {
-        //     let arr = [
-        //         [0, 0],
-        //         [gameInfo.width, 0],
-        //         [gameInfo.width, gameInfo.height],
-        //         [0, gameInfo.height]
-        //     ];
-        //
-        //     context.beginPath();
-        //     for (let [x, y] of arr) {
-        //         let width = (x - gameInfo.centerX) / gameInfo.scale;
-        //         let height = (y - gameInfo.centerY) / gameInfo.scale;
-        //     }
-        //
-        // };
 
         static drawCenter() {
             let image = isEmpty(dailyTop.skinId) ? imagesArr["center"] : imagesArr[dailyTop.skinId];
@@ -450,11 +424,8 @@
 
             let dY = (gameInfo.centerY - canvas.height) % 20;
             for (let y = 20 - dY; y < canvas.height; y += 20) {
-                // context.beginPath();
                 context.moveTo(0, y);
                 context.lineTo(canvas.width, y);
-                // context.stroke();
-                // context.closePath();
             }
             context.stroke();
             context.closePath();
@@ -486,7 +457,7 @@
 
     class Bullet extends Arc {
 
-        constructor(x, y, sin, cos, mass, distance, color = "#ff0400") {
+        constructor(x, y, sin, cos, mass, distance, color = "#ff0400", isDecreaseMass = false) {
             super();
 
             this.x = x;
@@ -496,6 +467,7 @@
             this.mass = mass;
             this.distance = distance;
             this.color = color;
+            this.isDecreaseMass = isDecreaseMass;
         }
 
         update(delta = 1) {
@@ -557,14 +529,6 @@
             this.x = this.sX;
             this.y = this.sY;
 
-            /*
-            if (this.x <= 0 || this.x >= gameInfo.width) {
-                this.cos = -this.cos;
-            }
-            if (this.y <= 0 || this.y >= gameInfo.height) {
-                this.sin = -this.sin;
-            }*/
-
             if (Math.abs(this.toMass) > 0) {
                 let speed = this.toMass * delta / 2.5;
                 if (Math.abs(speed) < 1) speed = this.toMass >= 0 ? 1 : -1;
@@ -573,50 +537,7 @@
                 this.mass = Math.round(this.mass + speed);
                 this.toMass = Math.round(this.toMass - speed);
 
-                // if (!this.isFeeding) {
-                //     if (this.mass > 400) {
-                //         this.mass = 400;
-                //         this.toMass = -200;
-                //         // virusArr.push(
-                //         //     new Virus(this.x, this.y, this.sin, this.cos, 200)
-                //         // )
-                //     }
-                // }
             }
-            /*
-            if (this.distance > 0) {
-                let speed = this.distance * delta / 10;
-                if (speed < 1) speed = 1;
-                if (this.distance < speed) speed = this.distance;
-
-                this.x = roundFloor(this.x + speed * this.cos, 2);
-                this.y = roundFloor(this.y + speed * this.sin, 2);
-
-                if (this.x < 0) this.x = 0;
-                else if (this.x > gameInfo.width) this.x = gameInfo.width;
-
-                if (this.y < 0) this.y = 0;
-                else if (this.y > gameInfo.height) this.y = gameInfo.height;
-
-                this.distance = roundFloor(this.distance - speed, 2);
-            }
-
-
-            for (let i = 0; i < bulletsArr.length; i++) {
-                let bullet = bulletsArr[i];
-
-                let c = Math.sqrt((this.x - bullet.x) ** 2 + (this.y - bullet.y) ** 2);
-                if (c > this.drawableRadius + bullet.drawableRadius + 3) continue;
-
-                this.toMass += bullet.mass;
-                bulletsArr.splice(i, 1);
-                i--;
-
-                this.sin = bullet.sin;
-                this.cos = bullet.cos;
-            }
-
-             */
 
             rendersArr.push(this);
 
@@ -631,54 +552,66 @@
             this.sY = virus.y;
             this.toMass = virus.mass - this.mass;
 
-            // let dX = virus.x - this.x;
-            // let dY = virus.y - this.y;
-            // let c = Math.sqrt(dX ** 2 + dY ** 2);
-            // if (c <= 0) return true;
-            //
-            // this.distance = c;
-            // this.sin = dY / c;
-            // this.cos = dX / c;
-
         }
 
     }
 
-    class Cell extends Arc {
+    class BlackHole extends Arc {
 
-        constructor(x, y, mass, sin, cos, main = false, color = "#000000", owner, id, spaceDistance = 0, isDraw = false) {
+        constructor(x, y, mass, angle, color) {
             super();
 
             this.x = x;
             this.y = y;
             this.mass = mass;
-            this.sin = sin;
-            this.cos = cos;
+            this.angle = angle;
+            this.color = color;
+
+            this.cX = 0;
+            this.cY = 0;
+            this.sX = 0;
+            this.sY = 0;
+        }
+
+        update() {
+            this.x = this.sX;
+            this.y = this.sY;
+
+            rendersArr.push(this);
+        }
+
+        changePos(blackHole) {
+            this.cX = this.x;
+            this.cY = this.y;
+
+            this.sX = blackHole.x;
+            this.sY = blackHole.y;
+            this.angle = blackHole.a;
+            this.mass = blackHole.mass;
+
+        }
+
+    }
+
+
+    class Cell extends Arc {
+
+        constructor(id, owner, x, y, mass, main = false, color = "#000000") {
+            super();
+
+            this.x = x;
+            this.y = y;
+            this.mass = mass;
             this.main = main;
             this.owner = owner;
             this.color = color;
             this.id = id;
             this.toMass = 0;
-            this.spaceSin = this.sin;
-            this.spaceCos = this.cos;
-            this.spaceDistance = spaceDistance;
-            this.totalSpaceDistane = this.spaceDistance;
-            this.engineDistance = 0;
-            this.engineSin = 0;
-            this.engineCos = 0;
-            this.isConnect = false;
-            this.isCollising = false;
-            this.isDraw = isDraw;
-            this.dX = 0;
-            this.dY = 0;
-            this.speedCoefficient = 1;
             this.cX = 0;
             this.cY = 0;
-            this.sX = 0;
-            this.sY = 0;
-            setTimeout(() => this.isConnect = true, gameInfo.connectTime);
+            this.sX = x;
+            this.sY = y;
 
-            this.updateDirection();
         }
 
         setColor(color) {
@@ -687,222 +620,24 @@
 
         update(delta = 1) {
             if (delta > 1) delta = 1;
-            this.updateDirection();
-            // let speed = Math.min(this.mouseDist, this.speed);
-            let speed = this.speed;
-            if (this.spaceDistance === 0 || true) {
-                // this.x = roundFloor(this.x + this.cos * speed * delta * this.speedCoefficient, 2);
-                // this.y = roundFloor(this.y + this.sin * speed * delta * this.speedCoefficient, 2);
-                // this.x = roundFloor(delta * (this.sX - this.cX) + this.cX);
-                // this.y = roundFloor(delta * (this.sY - this.cY) + this.cY);
-                this.x = this.sX;
-                this.y = this.sY;
-                // [this.sX, this.sY, this.cX, this.cY] = [0, 0, 0, 0];
-                // console.log(this.dX);
-                // this.x = roundFloor(this.x + this.dX * delta, 2);
-                // this.y = roundFloor(this.y + this.dY * delta, 2);
-            }
+
+            this.x = this.sX;
+            this.y = this.sY;
+
 
             if (Math.abs(this.toMass) > 0) {
                 let speed = this.toMass * delta / 5;
-                // let speed = this.toMass * delta;
                 if (Math.abs(speed) < 1) speed = this.toMass >= 0 ? 1 : -1;
                 if (Math.abs(this.toMass) < Math.abs(speed)) speed = this.toMass;
 
                 this.mass = Math.round(this.mass + speed);
                 this.toMass = Math.round(this.toMass - speed);
-                // if (this.main && this.owner.current) {
-                //     gameInfo.byScale += speed / 40000;
-                // }
-                // if (this.mass >= 22500) {
-                //     this.mass = 22500;
-                //     this.toMass = 0;
-                // }
+
             }
 
-            // if (Math.abs(this.spaceDistance > 0) && false) {
-            //     if (this.spaceDistance <= this.totalSpaceDistane / 1.3) this.isCollising = true;
-            //     let speed = this.spaceDistance * delta / 15;
-            //     // let speed = this.spaceDistance * delta;
-            //     if (Math.abs(speed) < 1) speed = this.spaceDistance >= 0 ? 1 : -1;
-            //     // if (Math.abs(speed) > 10) speed = this.spaceDistance >= 0 ? 10 : -10;
-            //     if (Math.abs(this.spaceDistance) < Math.abs(speed)) speed = this.spaceDistance;
-            //
-            //     this.x = roundFloor(this.x + speed * this.spaceCos * this.speed, 2);
-            //     this.y = roundFloor(this.y + speed * this.spaceSin * this.speed, 2);
-            //     this.spaceDistance = roundFloor(this.spaceDistance - speed, 2);
-            // }
-            //
-            // if (Math.abs(this.engineDistance > 0) && false) {
-            //     let speed = this.engineDistance * delta / 25;
-            //     // let speed = this.engineDistance * delta;
-            //     if (Math.abs(speed) < 1) speed = this.engineDistance >= 0 ? 1 : -1;
-            //     // if (Math.abs(speed) > 30) speed = this.engineDistance >= 0 ? 30 : -30;
-            //     if (Math.abs(this.engineDistance) < Math.abs(speed)) speed = this.engineDistance;
-            //
-            //     // this.x = roundFloor(this.x + speed * this.engineCos * this.speed, 2);
-            //     this.x = roundFloor(this.x + speed * this.engineCos, 2);
-            //     // this.y = roundFloor(this.y + speed * this.engineSin * this.speed, 2);
-            //     this.y = roundFloor(this.y + speed * this.engineSin, 2);
-            //     this.engineDistance = roundFloor(this.engineDistance - speed, 2);
-            // }
-
-            // if (this.isCollising) {
-            // for (let i = 0; i < bulletsArr.length; i++) {
-            //     let bullet = bulletsArr[i];
-            //     let c = Math.sqrt((this.x - bullet.x) ** 2 + (this.y - bullet.y) ** 2);
-            //     if (this.drawableRadius >= c) {
-            //         this.toMass += bullet.mass * gameInfo.bulletEatenCoefficient;
-            //         bulletsArr.splice(i, 1);
-            //         i--;
-            //     }
-            // }
-
-            // for (let i = 0; i < virusArr.length; i++) {
-            //     if (this.mass < 250) break;
-            //
-            //     let virus = virusArr[i];
-            //
-            //     let c = Math.sqrt((this.x - virus.x) ** 2 + (this.y - virus.y) ** 2);
-            //     if (c > this.drawableRadius - 0.5 * virus.drawableRadius) continue;
-            //
-            //     this.owner.isSplit = true;
-            //
-            //     let count = Math.min(Math.floor((this.mass / 2) / 50), gameInfo.maxCells - this.owner.cells.length);
-            //     let mass = Math.floor((this.mass / 2) / count);
-            //     let angleStep = 180 / count;
-            //     let angle = getAngle(this.sin, this.cos);
-            //
-            //     this.isCollising = true;
-            //
-            //     let currentAngle = angle.degree - 90;
-            //
-            //     while (count > 0) {
-            //         let sin = Math.sin(degreeToRadians(currentAngle));
-            //         let cos = Math.cos(degreeToRadians(currentAngle));
-            //
-            //         let distance = this.radius + mass / 10 + 5;
-            //         this.owner.cells.push(
-            //             new Cell(this.x + distance * cos, this.y + distance * sin, mass, sin, cos, false, this.color, this.owner, ++this.owner.cellId, 50, true)
-            //         );
-            //         currentAngle += angleStep;
-            //         count--;
-            //         // if (this.owner.current) gameInfo.byScale += 0.05;
-            //     }
-            //
-            //     this.toMass -= this.mass / 2;
-            //     virusArr.splice(i, 1);
-            //     i--;
-            //
-            //     this.owner.isSplit = false;
-            // }
-
-            // for (let i = 0; i < foodsArr.length; i++) {
-            //     let food = foodsArr[i];
-            //     let c = Math.sqrt((this.x - food.x) ** 2 + (this.y - food.y) ** 2);
-            //     if (c > this.drawableRadius + food.drawableRadius + 1) continue;
-            //
-            //     this.toMass += food.mass;
-            //     foodsArr.splice(i, 1);
-            //     i--;
-            // }
-            // }
-
-            // if (this.x < 0) this.x = 0;
-            // else if (this.x > gameInfo.width) this.x = gameInfo.width;
-            //
-            // if (this.y < 0) this.y = 0;
-            // else if (this.y > gameInfo.height) this.y = gameInfo.height;
-            //
-            // if (this.engineDistance <= 0) {
-            //     this.engineSin = 0;
-            //     this.engineCos = 0;
-            // }
-            // if (this.x <= 0 || this.x >= gameInfo.width) {
-            //     this.engineCos = -this.cos;
-            //     this.engineDistance = this.x <= 0 ? -this.x : this.x - gameInfo.width;
-            // }
-            // if (this.y <= 0 || this.y >= gameInfo.height) {
-            //     this.engineSin = -this.sin;
-            //     this.engineDistance = this.y <= 0 ? -this.y : this.y - gameInfo.height;
-            // }
-
-            // for (let p = 0; p < playersArr.length; p++) {
-            //
-            //     for (let i = 0; i < playersArr[p].cells.length; i++) {
-            //
-            //         let cell = playersArr[p].cells[i];
-            //         if (cell.id === this.id && this.owner.id === playersArr[p].id) continue;
-            //
-            //         let distance = roundFloor(Math.sqrt((cell.x - this.x) ** 2 + (cell.y - this.y) ** 2), 2);
-            //         // if (this.mass < cell.mass) continue;
-            //         if (this.owner.id === playersArr[p].id) {
-            //             if (!cell.isCollising || !this.isCollising) continue;
-            //             let different = roundFloor(this.drawableRadius + cell.drawableRadius - distance, 2);
-            //
-            //             if (different > 0 && (!this.isConnect || !cell.isConnect)) {
-            //                 let differentX = this.x - cell.x;
-            //                 let differentY = this.y - cell.y;
-            //                 let c = Math.sqrt(differentX ** 2 + differentY ** 2);
-            //
-            //                 // let cos = differentX / c || 0;
-            //                 // let sin = differentY / c || 0;
-            //                 // this.x = roundFloor(this.x + cos * different, 2);
-            //                 // this.y = roundFloor(this.y + sin * different, 2);
-            //                 // this.engineCos = differentX / c || 0;
-            //                 // this.engineSin = differentY / c || 0;
-            //                 // this.engineDistance = different;
-            //                 // this.x = roundFloor(this.x + different * cos, 2);
-            //                 // this.y = roundFloor(this.y + different * sin, 2)
-            //             }
-            //
-            //             continue;
-            //             if (Math.abs(this.spaceDistance) > 0 || this.mass < cell.mass || !this.isConnect || !cell.isConnect) continue;
-            //             if (distance <= roundFloor(this.drawableRadius - cell.drawableRadius / 2, 2)) {
-            //                 this.toMass = roundFloor(this.toMass + cell.mass, 2);
-            //                 this.main = cell.main || this.main;
-            //                 playersArr[p].cells.splice(i, 1);
-            //                 i--;
-            //
-            //                 if (playersArr[p].updateI >= i) {
-            //                     playersArr[p].updateI--;
-            //                 }
-            //
-            //             }
-            //             continue;
-            //         }
-            //
-            //         // if (this.mass < 1.25 * cell.mass) continue;
-            //         // if (distance > roundFloor(this.drawableRadius - cell.drawableRadius / 2, 2)) continue;
-            //         // this.toMass = roundFloor(this.toMass + cell.mass, 2);
-            //         // playersArr[p].cells.splice(i, 1);
-            //         // i--;
-            //         //
-            //         // if (playersArr[p].updateI >= i) {
-            //         //     playersArr[p].updateI--;
-            //         // }
-            //         // if (playersArr[p].cells.length === 0) continue;
-            //         // if (cell.main) playersArr[p].cells[0].main = true;
-            //
-            //     }
-            // }
 
             this.updateCenterDrawable();
             rendersArr.push(this);
-        }
-
-        updateDirection() {
-            // if (!this.owner.isMouseMove) return true;
-            return true;
-            let differentX = this.owner.mouse.x - this.x;
-            let differentY = this.owner.mouse.y - this.y;
-
-            if (Math.abs(differentY) < 1) differentY = 0;
-            if (Math.abs(differentX) < 1) differentX = 0;
-
-            let c = Math.sqrt(differentX ** 2 + differentY ** 2);
-            this.sin = roundFloor(differentY / c, 2) || -1;
-            this.cos = roundFloor(differentX / c, 2) || 0;
         }
 
         updateCenterDrawable() {
@@ -912,10 +647,8 @@
 
             let differentX = this.x - gameInfo.centerX;
             let differentY = this.y - gameInfo.centerY;
-            // if(Math.abs(differentX) < 10) differentX = 0;
-            // if(Math.abs(differentY) < 10) differentY = 0;
+
             let distance = Math.sqrt(differentX ** 2 + differentY ** 2);
-            // if(distance < 10) return true;
             let sin = differentY / distance || 0;
             let cos = differentX / distance || 0;
 
@@ -931,63 +664,23 @@
             gameInfo.centerY = roundFloor(gameInfo.centerY + height, 2);
         }
 
-
-        split() {
-            this.isCollising = true;
-            let mass = this.mass + this.toMass;
-            if (this.owner.cells.length === gameInfo.maxCells || mass <= 250) return true;
-
-            let speed = Math.min(this.mouseDist, this.speed);
-
-            this.x = roundFloor(this.x - this.cos * speed, 2);
-            this.y = roundFloor(this.y - this.sin * speed, 2);
-
-            this.isConnect = false;
-            setTimeout(() => this.isConnect = true, gameInfo.connectTime);
-
-            let height = this.radius * this.sin * 1.1;
-            let width = this.radius * this.cos * 1.1;
-
-            this.toMass = Math.floor(this.toMass - mass / 2);
-
-            let distance = 50000 / mass + mass / 10;
-
-            let c = new Cell(roundFloor(this.x + width, 2), roundFloor(this.y + height, 2), mass / 2, this.sin, this.cos, false, this.color, this.owner, ++this.owner.cellId, distance);
-            c.isCollising = false;
-
-            this.owner.cells.push(c);
-
-        }
-
-
-        shoot() {
-            if (this.mass + this.toMass < 250) return true;
-
-            bulletsArr.push(
-                new Bullet(this.x + (this.radius + 5) * this.cos, this.y + (this.radius + 5) * this.sin, this.sin, this.cos, 50, 100, this.color)
-            );
-            this.toMass -= 50;
-        }
-
     }
 
 
     class Player {
         skinId = null;
-        cellId = 0;
         ids = [];
         totalMass = 0;
         mass = 0;
+        score = 0;
         stickersSet = null;
         stickerI = null;
-        lastDeletedTime = performance.now();
-        isSplit = false;
-        isMouseMove = false;
         isTransparentSkin = false;
         isTurningSkin = false;
         isInvisibleNick = false;
+        clan = "";
 
-        constructor(x, y, mass, color = "#000000", current = false, id, nick, skin = "", skinId = "", isTransparentSkin = false, isTurningSkin = false, isInvisibleNick = false) {
+        constructor(x, y, mass, color = "#000000", current = false, id, nick, skin = "", skinId = "", isTransparentSkin = false, isTurningSkin = false, isInvisibleNick = false, clan = "") {
             this.skin = skin;
             this.skinId = skinId;
             this.isTransparentSkin = isTransparentSkin;
@@ -1000,13 +693,17 @@
             };
 
             this.cells = [
-                new Cell(x, y, mass, null, null, current, color, this, 0, 0, true)
+                new Cell(0, this, x, y, mass, current, color)
             ];
             this.current = current;
             this.updateI = 0;
             this.id = id;
             this.nick = nick;
+            this.clan = clan;
             this.color = color;
+            this.selectedColor = color;
+            this.x = x;
+            this.y = y;
 
             this.loadImage();
         }
@@ -1018,18 +715,27 @@
             }
         }
 
+        findMainCell() {
+            for (let i = 0; i < this.cells.length; i++) {
+                if (this.cells[i].main) return this.cells[i];
+            }
+
+            return null;
+        }
+
         loadImage() {
             if (isEmpty(this.skin) || isEmpty(this.skinId)) return false;
             loadImage(this.skinId, this.skin);
         }
 
-        setNick(nick, skin, skinId, isTransparentSkin, isTurningSkin, isInvisibleNick) {
+        setNick(nick, skin, skinId, isTransparentSkin, isTurningSkin, isInvisibleNick, clan = "") {
             this.nick = nick;
             this.skin = skin;
             this.skinId = skinId;
             this.isTransparentSkin = isTransparentSkin;
             this.isTurningSkin = isTurningSkin;
             this.isInvisibleNick = isInvisibleNick;
+            this.clan = clan;
             this.loadImage();
         }
 
@@ -1046,46 +752,27 @@
             for (; this.updateI < this.cells.length; this.updateI++) {
                 this.cells[this.updateI].update(delta);
                 try {
-                    mass = (mass + this.cells[this.updateI].mass) || mass;
+                    mass = (mass + this.cells[this.updateI].mass + this.cells[this.updateI].toMass) || mass;
                 } catch {
                 }
-                // rendersArr.push(this.cells[this.updateI]);
             }
             if (mass > this.totalMass) this.totalMass = mass;
             this.mass = mass;
-            this.isMouseMove = false;
-        }
 
-
-        split() {
-            this.isSplit = true;
-            let length = this.cells.length;
-            for (let i = 0; i < length; i++) {
-                this.cells[i].split();
-            }
-
-            this.isSplit = false;
-        }
-
-        shoot() {
-            let length = this.cells.length;
-            for (let i = 0; i < length; i++) {
-                this.cells[i].shoot();
-            }
+            const mainCell = this.findMainCell();
+            [this.x, this.y] = [mainCell.x, mainCell.y];
         }
 
         mouseMove(x, y) {
             [this.mouse.x, this.mouse.y] = [x, y];
-            this.isMouseMove = true;
         }
 
 
         changePos(player) {
             this.color = player.color;
+            this.score = player.score;
             this.mouseMove(player.mouse.x, player.mouse.y);
-            if (!this.isSplit) {
-                this.cellId = player.cellId;
-            }
+
             let length = player.cells.length;
             this.ids = [];
             for (let i = 0; i < length; i++) {
@@ -1093,100 +780,18 @@
                 let pCell = player.cells[i];
                 this.ids.push(+pCell.id);
                 if (!cell) {
-                    if (this.isSplit) continue;
-                    // console.log("cell");
-                    let c = new Cell(pCell.x, pCell.y, pCell.mass, pCell.sin, pCell.cos, pCell.main, this.color, this, pCell.id, pCell.spaceDistance, true);
-                    c.spaceSin = pCell.spaceSin;
-                    c.spaceCos = pCell.spaceCos;
-                    c.engineSin = pCell.engineSin;
-                    c.engineCos = pCell.engineCos;
-                    c.engineDistance = pCell.engineDistance;
-                    c.toMass = pCell.toMass;
-                    c.totalSpaceDistane = pCell.totalSpaceDistane;
-                    c.isConnect = pCell.isConnect;
-                    c.isCollising = pCell.isCollising;
-                    c.sin = pCell.sin;
-                    c.cos = pCell.cos;
-                    c.sX = pCell.x;
-                    c.sY = pCell.y;
+                    let c = new Cell(pCell.id, this, pCell.x, pCell.y, pCell.mass, pCell.main, this.color);
                     this.cells.push(c);
                     continue;
                 }
 
-                // if (Math.abs(cell.spaceDistance) > 0) continue;
                 try {
-                    // if (Math.abs(this.cells[i].engineDistance) > 0) continue;
-                    // this.cells[cell.count].x = player.cells[i].x;
-                    // this.cells[cell.count].y = player.cells[i].y;
-                    // this.cells[cell.count].mass = player.cells[i].mass;
-                    // continue;
-                    // this.cells[i].toMass = player.cells[i].toMass;
-                    let dX = pCell.x - this.cells[cell.count].x;
-                    let dY = pCell.y - this.cells[cell.count].y;
-                    let c = Math.sqrt(dX ** 2 + dY ** 2);
-                    // if (c === 0) continue;
-                    // if(c < 10) continue;
-                    let sin = dY / c;
-                    let cos = dX / c;
-
-
-                    this.cells[cell.count].sin = sin;
-                    this.cells[cell.count].cos = cos;
-                    this.cells[cell.count].color = this.color;
-
+                    // this.cells[cell.count].color = this.color;
                     this.cells[cell.count].sX = pCell.x;
                     this.cells[cell.count].sY = pCell.y;
                     this.cells[cell.count].cX = this.cells[cell.count].x;
                     this.cells[cell.count].cY = this.cells[cell.count].y;
-
-                    //
-                    // let currentAngle = getAngle(pCell.sin, pCell.cos).degree;
-                    // let deltaDegree = getAngle(sin, cos).degree - currentAngle;
-                    // // console.log(deltaDegree);
-                    // if (Math.abs(deltaDegree) > 90 && Math.abs(deltaDegree) < 270) {
-                    //     // this.cells[cell.count].speedCoefficient = 0.5;
-                    //     // console.log(currentAngle + " " + deltaDegree);
-                    // } else if (Math.abs(deltaDegree) <= 90 || Math.abs(deltaDegree) >= 270) {
-                    //     // this.cells[cell.count].dX = dX / gameInfo.deltaTime;
-                    //     // this.cells[cell.count].dY = dY / gameInfo.deltaTime;
-                    //     let radians = degreeToRadians(currentAngle + deltaDegree / 5);
-                    //     // this.cells[cell.count].sin = Math.sin(radians);
-                    //     // this.cells[cell.count].cos = Math.cos(radians);
-                    //     // this.cells[cell.count].speedCoefficient = 1;
-                    //     // let delta = getTimeByDelta(gameInfo.deltaTime);
-                    //     // let thisX = this.cells[cell.count].x;
-                    //     // let thisY = this.cells[cell.count].y;
-                    //     // let byX = delta * (thisX - pCell.x);
-                    //     // let byY = delta * (thisY - pCell.y);
-                    //     // if (Math.abs(byX) > Math.abs(pCell.x - thisX)) byX = pCell.x - thisX;
-                    //     // if (Math.abs(byY) > Math.abs(pCell.y - thisY)) byY = pCell.y - thisY;
-                    //     // this.cells[cell.count].dX = byX;
-                    //     // this.cells[cell.count].dY = byY;
-                    //     // this.cells[cell.count].x = pCell.x + byX;
-                    //     // this.cells[cell.count].y = pCell.y + byY;
-                    // }
-                    // if (this.cells[cell.count].toMass >= 0) {
                     this.cells[cell.count].toMass = pCell.mass - this.cells[cell.count].mass;
-                    // }
-                    // this.cells[cell.count].mass = pCell.mass;
-
-                    // this.cells[cell.count].x = pCell.x;
-                    // this.cells[cell.count].y = pCell.y;
-
-
-                    this.cells[cell.count].spaceDistance = pCell.spaceDistance;
-                    this.cells[cell.count].spaceCos = pCell.spaceCos;
-                    this.cells[cell.count].spaceSin = pCell.spaceSin;
-                    if (c > 10) {
-                        // this.cells[cell.count].sin = sin;
-                        // this.cells[cell.count].cos = cos;
-                        // this.cells[cell.count].speedCoefficient = 1.3;
-                        // this.cells[cell.count].engineCos = cos;
-                        // this.cells[cell.count].engineSin = sin;
-                        // this.cells[cell.count].engineDistance = c;
-                    } else this.cells[cell.count].speedCoefficient = 1;
-                    this.cells[cell.count].isCollising = pCell.isCollising;
-                    this.cells[cell.count].isConnect = pCell.isConnect;
                     this.cells[cell.count].main = pCell.main;
                 } catch (e) {
                 }
@@ -1196,8 +801,6 @@
         }
 
         deleteCells() {
-            // if (performance.now() - this.lastDeletedTime < 10000 || this.isSplit) return true;
-            this.lastDeletedTime = performance.now();
             for (let i = 0; i < this.cells.length; i++) {
                 if (this.ids.includes(this.cells[i].id)) continue;
 
@@ -1261,10 +864,6 @@
         mouseCoords.x = gameInfo.centerX - canvas.width * gameInfo.scale / 2 + event.clientX * gameInfo.scale;
         mouseCoords.y = gameInfo.centerY - canvas.height * gameInfo.scale / 2 + event.clientY * gameInfo.scale;
 
-        // if (playersArr.length > 0) {
-        //     playersArr[0].mouse.x = mouseCoords.x;
-        //     playersArr[0].mouse.y = mouseCoords.y;
-        // }
         if (!ws) return true;
 
         ws.sendJson({
@@ -1272,9 +871,6 @@
             x: mouseCoords.x,
             y: mouseCoords.y
         });
-        // if (playersArr.length > 0 && playersArr[0].current) {
-        //     playersArr[0].mouseMove(mouseCoords.x, mouseCoords.y);
-        // }
 
     });
     ///////////////
@@ -1305,17 +901,18 @@
     };
 
 
-    // loadImage("virus", "/src/images/virus_arrow.png");
     loadImage("virus_arrow", "/src/images/virus_arrow1.png");
+    loadImage("feeding_virus", "/src/images/feeding_virus.png");
     loadImage("center", "/src/images/logo.png");
     loadImage("food", "/src/images/star.png");
-    // loadImage("virus", "https://avatars.mds.yandex.net/get-pdb/939186/3e8700ba-511c-45e1-b9fb-dc3f02e88ca4/s1200");
+    loadImage("black_hole", "/src/images/black_hole.png");
 
 
     let rendersArr = [];
     let bulletsArr = [];
     let virusArr = [];
     let foodsArr = [];
+    let blackHoleArr = [];
     let playersArr = [];
     let states = new GameStates();
 
@@ -1328,13 +925,11 @@
         return 0.01 * (player.player.cells.length - 1);
     }
 
-    let startUpdateTime = 0;
     let lastStateTime = 0;
     let differentStateTime = 1;
     let lastStateTimeLocal = 0;
 
     let isFirstRender = false;
-    let isSecondRender = false;
 
 
     function getCurrentPlayer() {
@@ -1348,58 +943,31 @@
 
 
     function render() {
-        // return true;
         new Promise(() => {
-            // let time = performance.now();
             if (performance.now() - gameInfo.updateTime < gameInfo.perSecond) return renderVar = requestAnimationFrame(render);
 
-            // while (performance.now() - gameInfo.updateTime >= gameInfo.perSecond) {
 
             gameInfo.deltaTime = performance.now() - gameInfo.updateTime;
             gameInfo.updateTime = performance.now();
             let delta = getTimeByDelta(gameInfo.deltaTime);
             let fps = 1000 / gameInfo.deltaTime;
             if (fps < 15 && !gameSettings.isDisableAutoClear) clearFood();
-               
-            // console.log(differentStateTime);
-            // console.log(states.states.length);
+
+
             if (performance.now() - lastStateTimeLocal >= differentStateTime || true) {
-                // let k = performance.now() - lastStateTimeLocal;
                 let newTime = lastStateTime + performance.now() - lastStateTimeLocal - differentStateTime;
                 let state = lastStateTime ? states.getStateByTime(newTime) : states.getGameState();
-                // let state = states.getFirstState();
-                // if(!state){
-                //     console.log("now " + performance.now());
-                //     console.log("lastlocal " + lastStateTimeLocal);
-                //     console.log("k " + k);
-                //     console.log("laststate " + lastStateTime);
-                //     console.log("states " + states.states[states.states.length - 1].time);
-                //     console.log("differenstates " + (newTime - states.states[states.states.length - 1].time));
-                //     console.log("deltatime " + gameInfo.deltaTime);
-                //     return true;
-                // }
-                // if (!lastStateTime) states.removeFirstState();
-                // else states.removeBeforeState(newTime);
+
 
                 if (state) {
                     states.executeCommands(lastStateTime);
 
                     differentStateTime = lastStateTime ? (state.time - newTime) : 0;
-                    // console.log(differentStateTime);
-                    // delta = lastStateTime ? gameInfo.deltaTime / differentStateTime : 1;
-                    // if(!isFirstRender) delta = 1;
-                    // else{
-                    //     delta = (isFirstRender && !isSecondRender) ? 2 * gameInfo.deltaTime / differentStateTime : gameInfo.deltaTime / differentStateTime;
-                    // }
-                    // if (differentStateTime){
-                    //     // delta = 2 * gameInfo.deltaTime / differentStateTime;
-                    //     delta = getTimeByDelta(differentStateTime / 2);
-                    // }
+
                     delta = getTimeByDelta(gameInfo.deltaTime);
                     lastStateTime = state.time;
                     lastStateTimeLocal = performance.now();
 
-                    // let time = performance.now();
 
                     for (let i = 0; i < state.players.length; i++) {
                         let sPlayer = state.players[i];
@@ -1416,13 +984,17 @@
                         if (!virus) continue;
                         virus.virus.changePos(sVirus);
                     }
-                    // console.log(performance.now() - time);
+
+                    for (let i = 0; i < state.blackHole.length; i++) {
+                        let sBlackHole = state.blackHole[i];
+                        let blackHole = findBlackHole(sBlackHole.id);
+                        if (!blackHole) continue;
+                        blackHole.blackHole.changePos(sBlackHole);
+                    }
                 }
             }
-            // console.log(delta);
 
             context.clearRect(0, 0, canvas.width, canvas.height);
-            // if(gameSettings.isGrayscale) context.filter = "grayscale(100%)";
             let filter = "";
             if (gameSettings.isGrayscale) filter += "grayscale(100%)";
             if (gameSettings.isInvertColor) filter += " invert(100%)";
@@ -1460,6 +1032,23 @@
                 gameInfo.centerX += byX;
                 gameInfo.byCenterY -= byY;
                 gameInfo.byCenterX -= byX;
+
+                if (gameInfo.centerY < 0) {
+                    gameInfo.centerY = 0;
+                    gameInfo.byCenterY = 0;
+                } else if (gameInfo.centerY > gameInfo.height) {
+                    gameInfo.centerY = gameInfo.height;
+                    gameInfo.byCenterY = 0;
+                }
+
+                if (gameInfo.centerX < 0) {
+                    gameInfo.centerX = 0;
+                    gameInfo.byCenterX = 0;
+                } else if (gameInfo.centerX > gameInfo.width) {
+                    gameInfo.centerX = gameInfo.width;
+                    gameInfo.byCenterX = 0;
+                }
+
             }
 
             rendersArr = [];
@@ -1476,17 +1065,15 @@
                 virusArr[i].update(delta);
             }
 
-
-            // for (let i = 0; i < foodsArr.length; i++) {
-            //     foodsArr[i].update();
-            // }
+            for (let i = 0; i < blackHoleArr.length; i++) {
+                blackHoleArr[i].update();
+            }
 
             if (gameSettings.isGrid) {
                 Arc.drawGrid();
             }
             Arc.drawCenter();
 
-            // let time = performance.now();
             for (let i = 0; i < foodsArr.length; i++) {
                 foodsArr[i].render();
             }
@@ -1502,40 +1089,11 @@
 
             }
 
-            // let time = performance.now();
-            // if (gameSettings.isGrayscale) {
-            //     let imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-            //     let data = imageData.data;
-            //     let length = data.length;
-            //     context.clearRect(0, 0, canvas.width, canvas.height);
-            //     for (let i = 0; i < length; i += 4) {
-            //         let red = data[i];
-            //         let green = data[i + 1];
-            //         let blue = data[i + 2];
-            //         let average = (red + green + blue) / 3;
-            //         if(gameSettings.isInvertColor) average = 255 - average;
-            //         [data[i], data[i + 1], data[i + 2]] = [average, average, average];
-            //     }
-            //     imageData.data = data;
-            //     context.putImageData(imageData, 0, 0);
-            // }
-            // if(gameSettings.isInvertColor && !gameSettings.isGrayscale){
-            //     let imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-            //     context.clearRect(0, 0, canvas.width, canvas.height);
-            //     for (let i = 0; i < imageData.data.length; i += 4) {
-            //         let red = 255 - imageData.data[i];
-            //         let green = 255 -imageData.data[i + 1];
-            //         let blue = 255 - imageData.data[i + 2];
-            //         [imageData.data[i], imageData.data[i + 1], imageData.data[i + 2]] = [red, green, blue];
-            //     }
-            //     context.putImageData(imageData, 0, 0);
-            // }
+
             // Arc.drawCompass();
 
-            // console.log(performance.now() - time);
-            if (isFirstRender) isSecondRender = true;
             isFirstRender = true;
-            // }
+
             renderVar = requestAnimationFrame(render);
         });
 
@@ -1551,10 +1109,9 @@
         let player = getCurrentPlayer();
 
         if (player) {
-            for (let [key, value] of Object.entries([player.player.cells.length, player.player.mass, "x: " + Math.floor(gameInfo.centerX * 10) + " y: " + Math.floor(gameInfo.centerY * 10)])) {
+            for (let [key, value] of Object.entries([player.player.cells.length, Math.floor(player.player.mass), "x: " + Math.floor(gameInfo.centerX * 10) + " y: " + Math.floor(gameInfo.centerY * 10)])) {
                 coordsHtml.find(".value:eq(" + key + ")").text(value);
             }
-            // coordsHtml.text("Cells: " + player.player.cells.length + " Mass: " + player.player.mass + " X: " + Math.floor(gameInfo.centerX * 10) + " Y: " + Math.floor(gameInfo.centerY * 10));
         }
         if (performance.now() - lastFpsUpdate > 1000 && gameInfo.deltaTime) {
             fps.text(Math.round(1000 / gameInfo.deltaTime));
@@ -1564,18 +1121,42 @@
     }
 
 
+    let allPlayersTimeout = null;
+
+    function getAllPlayers() {
+        if (!isAdmin && !isModer) return true;
+
+        let html = "";
+        for (let i = 0; i < playersArr.length; i++) {
+            let player = playersArr[i];
+            html += "<div class='flex_row player' data-id='" + player.id + "'><span class='id'>" + player.id + "</span><span class='nick' style='color: " + player.selectedColor + ";'>" + player.nick + "</span><span class='mass'>" + Math.floor(player.mass) + "</span></div>";
+        }
+        $("#players_for_admin .data").html(html);
+
+        allPlayersTimeout = setTimeout(getAllPlayers, 2000);
+    }
+
+    if (isAdmin || isModer) {
+        allPlayersTimeout = setTimeout(getAllPlayers, 2000);
+    }
+
     function getUnit(unit) {
         let returned = null;
-        if (unit.name === "p") {
+        if (typeof (unit) === "string") unit = unit.split(",");
+        let name = Array.isArray(unit) ? unit[0] : unit.n;
+
+        if (name === "p") {
             let current = unit.cr === "t";
-            let player = new Player(0, 0, 0, unit.cl, current, unit.id, unit.nick, "", "", Boolean(+unit.its), Boolean(+unit.itrs), Boolean(+unit.iin));
+            let player = new Player(0, 0, 0, unit.cl, current, unit.id, unit.nick, "", "", Boolean(+unit.its), Boolean(+unit.itrs), Boolean(+unit.iin), unit.cn);
             player.mouse.x = unit.x;
             player.mouse.y = unit.y;
             player.skin = unit.skin;
             player.skinId = unit.skinId;
-            player.stickersSet = unit.stickersSet || null;
+            player.stickersSet = null;
+            if (!isEmpty(unit.stickersSet)) player.loadStickers(unit.stickersSet);
             player.stickerI = isEmpty(unit.stickerI) ? null : unit.stickerI;
-            player.cellId = unit.ci;
+            player.selectedColor = unit.s;
+            player.score = unit.sc;
 
             let cellsArr = unit.c.split(",");
             let length = cellsArr.length;
@@ -1583,23 +1164,7 @@
             if (length >= 5) {
                 for (let i = 0; i < length; i += 5) {
 
-                    // let cell = unit.c[i];
-                    let c = new Cell(+cellsArr[i + 1] || 0, +cellsArr[i + 2] || 0, +cellsArr[i + 3] || 0, 0, 0, cellsArr[i + 4] === "t", player.color, player, +cellsArr[i] || 0, 0);
-                    // c.engineSin = cell.es;
-                    // c.engineCos = cell.ec;
-                    // c.engineDistance = cell.ed;
-                    c.engineSin = 0;
-                    c.engineCos = 0;
-                    c.engineDistance = 0;
-                    c.spaceCos = 0;
-                    c.spaceSin = 0;
-                    c.spaceDistance = 0;
-                    c.totalSpaceDistane = 0;
-                    // c.toMass = cell.tm;
-                    c.toMass = 0;
-                    c.isConnect = 0;
-                    c.isCollising = 0;
-                    // c.updateDirection();
+                    let c = new Cell(+cellsArr[i], player, +cellsArr[i + 1] || 0, +cellsArr[i + 2] || 0, +cellsArr[i + 3] || 0, cellsArr[i + 4] === "t", player.color);
                     arr.push(c);
 
                 }
@@ -1607,29 +1172,35 @@
             player.cells = arr;
             returned = player;
 
-        } else if (unit.name === "food") {
-            let food = new Food(unit.x, unit.y, unit.mass, unit.color);
-            food.toMass = unit.toMass;
-            food.id = unit.id;
+        } else if (name === "f") {
+            let food = new Food(+unit[2], +unit[3], +unit[4], unit[5]);
+            food.toMass = 0;
+            food.id = +unit[1];
 
             returned = food;
 
-        } else if (unit.name === "bullet") {
-            let bullet = new Bullet(unit.x, unit.y, unit.sin, unit.cos, unit.mass, unit.distance, unit.color);
-            bullet.toMass = unit.toMass;
-            bullet.id = unit.id;
+        } else if (name === "b") {
+            let bullet = new Bullet(+unit[2], +unit[3], +unit[4], +unit[5], +unit[6], +unit[7], unit[8], unit[9] === "t");
+            bullet.toMass = 0;
+            bullet.id = +unit[1];
 
             returned = bullet;
 
-        } else if (unit.name === "v") {
-            let data = unit.d.split(",");
-            let isFeeding = data[4] === "t";
-            let virus = new Virus(+data[1], +data[2], 0, 0, 0, +data[3], "#fff500", isFeeding);
-            virus.id = +data[0];
-            virus.sX = +data[1];
-            virus.sY = +data[2];
+        } else if (name === "v") {
+            let virus = new Virus(+unit[2], +unit[3], 0, 0, 0, +unit[4], "#fff500", unit[5] === "t");
+            virus.id = +unit[1];
+            virus.sX = +unit[2];
+            virus.sY = +unit[3];
 
             returned = virus;
+
+        } else if (name === "bh") {
+            let blackHole = new BlackHole(+unit[2], +unit[3], +unit[4], +unit[5], "#000000");
+            blackHole.id = +unit[1];
+            blackHole.sX = +unit[2];
+            blackHole.sY = +unit[3];
+
+            returned = blackHole;
         }
 
         return returned;
@@ -1649,13 +1220,13 @@
 
                 ws.sendJson({action: "update_units"});
                 ws.sendJson({action: "get_all_units"});
-                setTimeout(function () {
-                    ws.sendJson({
-                        action: "mouse_move",
-                        x: playersArr[0].mouse.x,
-                        y: playersArr[0].mouse.y
-                    });
-                }, 1000);
+                // setTimeout(function () {
+                //     ws.sendJson({
+                //         action: "mouse_move",
+                //         x: playersArr[0].mouse.x,
+                //         y: playersArr[0].mouse.y
+                //     });
+                // }, 1000);
                 setTimeout(function () {
                     gameInfo.updateTime = performance.now();
                     render();
@@ -1683,18 +1254,25 @@
             return true;
         }
 
+        if (name === "blackhole") {
+            blackHoleArr.push(unit);
+            return true;
+        }
+
     }
 
 
     function getTopPlayers() {
-        let arr = playersArr.sort((a, b) => b.mass - a.mass);
+        let arr = playersArr.sort((a, b) => b.score - a.score);
         let html = "";
-        for (let [key, player] of Object.entries(arr)) {
+        let top = 0;
+        for (let player of arr) {
             if (player.cells.length === 0) continue;
-            if (key >= 10) break;
             let cl = "";
             if (player.current) cl = "current";
-            html += "<div class='flex_row " + cl + "'><span class='number'>" + (+key + 1) + "</span><span class='nick'>" + player.nick + "</span><span class='mass'>" + Math.floor(player.mass) + "</span></div>";
+            html += "<div class='flex_row " + cl + "'><span class='number'>" + (+top + 1) + "</span><span class='nick'>" + player.nick + "</span><span class='mass'>" + Math.floor(player.score) + "</span></div>";
+            top++;
+            if (top === 10) break;
         }
         $("#top_players").html(html);
         setTimeout(getTopPlayers, 2000);
@@ -1834,7 +1412,6 @@
             if (typeof ws !== "undefined") {
                 ws.sendJson({action: "player_shoot"});
             }
-            // playersArr[0].shoot();
             return true;
         }
 
@@ -1844,7 +1421,6 @@
                     action: "player_split"
                 });
             }
-            // playersArr[0].split();
             return true;
         }
 
@@ -1924,8 +1500,7 @@
                 });
                 isSpectate = false;
             }
-            changeNick($("#nick_for_game").val().trim(), $("#password_for_game").val().trim());
-            // changeColor($("#select_color").val());
+            changeNick($("#nick_for_game").val().trim(), $("#password_for_game").val().trim(), $("#clan_for_game").val().trim());
             return true;
         }
         startGame(ip);
@@ -1952,12 +1527,6 @@
         });
         document.getElementById("game_settings").addEventListener("wheel", event => event.stopPropagation());
     }
-
-    // function fps(){
-    //     console.log(1000 / gameInfo.deltaTime);
-    //     requestAnimationFrame(fps);
-    // }
-    // fps();
 
     function clearAll() {
         try {
@@ -1988,6 +1557,22 @@
     }
 
 
+    function findBlackHole(id) {
+        id = +id;
+        let count = 0;
+        let blackHole = null;
+        for (let i = 0; i < blackHoleArr.length; i++) {
+            if (+blackHoleArr[i].id === id) {
+                blackHole = blackHoleArr[i];
+                count = i;
+                break;
+            }
+        }
+
+        if (!blackHole) return null;
+        return {blackHole, count};
+    }
+
     let ping = $("#coords .ping .value");
     let startPingTime = 0;
 
@@ -2015,6 +1600,7 @@
         ws.on("open", function () {
             ws.sendJson({
                 action: "player_connect",
+                clan: $("#clan_for_game").val().trim().substr(0, 15) || "",
                 nick: $("#nick_for_game").val().trim().substr(0, 15) || "SandL",
                 password: $("#password_for_game").val().trim(),
                 color: $("#select_color").val(),
@@ -2022,10 +1608,8 @@
                 userId: getCookie("User-Id") || "",
                 type: spect ? "spectator" : "player"
             });
-            ws.sendJson({action: "update_units"});
             startPingTime = performance.now();
             ws.sendJson({action: "ping"});
-            // setInterval(() => ws.sendJson({action: "update_units"}), 50);
 
         });
         ws.on("message", function (event) {
@@ -2041,30 +1625,20 @@
             if ("a" in data && data.a === "u") {
                 delete data.action;
 
-                // let delta = getTimeByDelta((performance.now() - startUpdateTime) / 2);
-                // let players = data.u.p.map(player => getUnit(player));
+
                 let players = [];
                 let virus = [];
-                for (let i = 0; i < data.u.p.length; i++) {
-                    players.push(getUnit(data.u.p[i]));
-                    continue;
-
-                    let p = getUnit(data.u.p[i]);
-                    let player = findPlayer(p.id);
-                    if (!player) return true;
-                    player.changePos(p);
+                let blackHole = [];
+                for (let i = 0; i < data.u.length; i++) {
+                    let unit = getUnit(data.u[i]);
+                    let name = unit.constructor.name.toLowerCase();
+                    if (name === "player") players.push(unit);
+                    else if (name === "virus") virus.push(unit);
+                    else if (name === "blackhole") blackHole.push(unit);
                 }
-                for (let i = 0; i < data.u.v.length; i++) {
-                    virus.push(getUnit(data.u.v[i]));
-                    continue;
 
-                    // let v = getUnit(data.u.v[i]);
-                    // let virus = findVirus(v.id);
-                    // if (!virus) return true;
-                    // virus.virus.changePos(v);
-                }
                 // states.removeFirstState();
-                states.addGameState({time: data.time, players, virus});
+                states.addGameState({time: data.time, players, virus, blackHole});
                 if (lastStateTime) {
                     states.removeBeforeState(lastStateTime + performance.now() - lastStateTimeLocal - differentStateTime);
                 }
@@ -2083,7 +1657,7 @@
 
             if (data.action === "spawn_unit") {
                 delete data.action;
-                let unit = getUnit(data);
+                let unit = getUnit(data.unit);
 
                 if (!isGame) addUnit(unit, 1);
                 else states.addGameCommand({time: data.time, command: "spawn_unit", unit});
@@ -2093,17 +1667,14 @@
             }
 
             if (data.action === "get_all_units") {
-                let arr = [...data.u.p, ...data.u.foods, ...data.u.v, ...data.u.bullets];
+                let arr = data.u;
                 let length = arr.length;
 
                 for (let i = 0; i < length; i++) {
                     let unit = getUnit(arr[i]);
                     addUnit(unit);
                 }
-                setTimeout(function () {
-                    startUpdateTime = performance.now();
-                    ws.sendJson({action: "update_units"});
-                }, 0);
+
                 return true;
             }
 
@@ -2114,122 +1685,6 @@
                     playersArr.splice(i, 1);
                     break;
                 }
-
-                return true;
-            }
-
-            if (data.action === "u") {
-                // if (!isGame) return true;
-                // console.log(Date.now() - data.time);
-                delete data.action;
-
-                // let delta = getTimeByDelta((performance.now() - startUpdateTime) / 2);
-                // let players = data.u.p.map(player => getUnit(player));
-                for (let i = 0; i < data.u.p.length; i++) {
-                    let p = getUnit(data.u.p[i]);
-                    let player = findPlayer(p.id);
-                    player.changePos(p);
-                }
-                // let virus = data.u.v.map(virus => getUnit(virus));
-                // console.log(states.states.length);
-                // states.addGameState({time: data.time, players, virus});
-                // if (lastStateTime) {
-                //     states.removeBeforeState(lastStateTime + performance.now() - lastStateTimeLocal - differentStateTime);
-                // }
-                // if (states.states.length > 10 && !isGame) {
-                //
-                // }
-                /*
-                let length = data.units.players.length;
-                for (let i = 0; i < length; i++) {
-                    let unit = getUnit(data.units.players[i]);
-                    // if (name === "player") {
-                    // if (playersArr.length > 0 && +unit.id === playersArr[0].id) {
-                    // unit.current = true;
-                    // pArr.unshift(unit);
-                    // pArr[0].update(getTimeByDelta(Date.now() - data.time));
-                    // console.log(unit.cells[0].x + " " + playersArr[0].cells[0].x);
-                    // continue;
-                    // }
-                    // unit.update(delta);
-                    let player = findPlayer(unit.id);
-                    if (player !== null) {
-                        player.changePos(unit);
-                    }
-                    // pArr.push(unit);
-                    // let player = findPlayer(unit.id);
-                    // let delta = getTimeByDelta(Date.now() - data.time);
-                    // player.updateByDelta(unit.cells, delta);
-                    // continue;
-                    // }
-                    // if (name === "food") {
-                    //     fArr.push(unit);
-                    //     continue;
-                    // }
-                    // if (name === "virus") {
-                    //     vArr.push(unit);
-                    //     continue;
-                    // }
-                    // if (name === "bullet") {
-                    //     bArr.push(unit);
-                    //     continue;
-                    // }
-                }
-                length = data.units.virus.length;
-                for (let i = 0; i < length; i++) {
-                    let pVirus = getUnit(data.units.virus[i]);
-                    // pVirus.update(delta);
-
-                    let virus = findVirus(pVirus.id);
-                    if (!virus) {
-                        continue;
-                        let v = new Virus(pVirus.x, pVirus.y, pVirus.sin, pVirus.cos, pVirus.distance, pVirus.mass);
-                        v.toMass = pVirus.toMass;
-                        virusArr.push(v);
-                        continue;
-                    }
-
-                    if (virus.virus.distance <= 0) {
-                        let dX = pVirus.x - virus.virus.x;
-                        let dY = pVirus.y - virus.virus.y;
-                        let c = Math.sqrt(dX ** 2 + dY ** 2);
-                        let sin = dY / c;
-                        let cos = dX / c;
-                        virusArr[virus.count].sin = sin;
-                        virusArr[virus.count].cos = cos;
-                        virusArr[virus.count].distance = c;
-                    }
-
-                    virusArr[virus.count].toMass = pVirus.toMass + pVirus.mass - virusArr[virus.count].mass;
-                }
-*/
-
-                // cancelAnimationFrame(renderVar);
-                // playersArr = pArr;
-                // virusArr = vArr;
-                // bulletsArr = bArr;
-                // foodsArr = fArr;
-                // gameInfo.updateTime -= Date.now() - data.time;
-                // renderVar = requestAnimationFrame(render);
-                // setTimeout(function () {
-                //     startUpdateTime = performance.now();
-                // ws.sendJson({action: "update_units"});
-                // }, 0);
-
-                return true;
-            }
-
-            // if (data.action === "player_split") {
-            //     let player = findPlayer(data.id);
-            //     if (!player) return true;
-            //     //
-            //     player.split();
-            //     // playersArr[0].split(1);
-            //     return true;
-            // }
-
-            if (data.action === "mouse_move") {
-                // states.addGameCommand({time: data.time, command: "mouse_move", id: data.id, x: data.x, y: data.y});
 
                 return true;
             }
@@ -2252,6 +1707,15 @@
 
             if (data.action === "nick_info") {
                 isAdmin = +data.is_admin;
+                isModer = +data.is_moder;
+                try {
+                    clearTimeout(allPlayersTimeout);
+                } catch {
+                }
+                onNickInfo();
+                if (isAdmin || isModer) {
+                    allPlayersTimeout = setTimeout(getAllPlayers, 2000);
+                }
                 return true;
             }
 
@@ -2277,7 +1741,7 @@
                 let player = findPlayer(data.id);
                 if (!player) return true;
 
-                player.setNick(data.nick, data.skin, data.skinId, Boolean(+data.isTransparentSkin), Boolean(+data.isTurningSkin), Boolean(+data.isInvisibleNick));
+                player.setNick(data.nick, data.skin, data.skinId, Boolean(+data.isTransparentSkin), Boolean(+data.isTurningSkin), Boolean(+data.isInvisibleNick), data.clan);
 
                 return true;
             }
@@ -2310,6 +1774,11 @@
             if (data.action === "get_daily_top") {
                 dailyTop = data.top;
                 loadImage(data.top.skinId, data.top.skin);
+            }
+
+            if (data.action === "report") {
+                Admin.addReport(+data.id, data.nick, +data.targetId, data.targetNick);
+                return true;
             }
 
         });

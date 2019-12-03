@@ -18,7 +18,7 @@ if ($request['action'] == "transfer_balance") {
         exit;
     }
 
-    if($request['recipient_id'] == USER_ID){
+    if ($request['recipient_id'] == USER_ID) {
         echo json_encode(["result" => "false", "data" => "invalid_data"], 256);
         exit;
     }
@@ -115,10 +115,12 @@ if ($request['action'] === "create_nick") {
         echo json_encode(["result" => "false", "data" => "invalid_request"], 256);
         exit;
     }
-
+    $isClan = false;
+    if (key_exists("is_clan", $request) && $request['is_clan'] == 1) $isClan = true;
+    $clanPrice = $isClan ? "clan_" : "";
 
     $skin = new Skin();
-    if ($skin->getByNick($request['nick'])) {
+    if ($skin->getByNick($request['nick'], false, $isClan)) {
         echo json_encode(["result" => "false", "data" => "exists"]);
         exit;
     }
@@ -128,43 +130,43 @@ if ($request['action'] === "create_nick") {
     $sum = 0;
 
     $userInfo = $auth->getUserInfo(USER_ID);
-
+    $totalBalance = $userInfo['balance'] + $userInfo['bonus_balance'];
 
     $password = "";
     if (!empty($request['password'])) {
         $password = $request['password'];
-        $sum += (int)$prices['create_pass'];
+        $sum += (int)$prices[$clanPrice . 'create_pass'];
     }
 
     $isTransparentSkin = 0;
     if ($request['is_transparent_skin'] == 1) {
-        $sum += (int)$prices['transparent_skin'];
+        $sum += (int)$prices[$clanPrice . 'transparent_skin'];
         $isTransparentSkin = 1;
     }
 
     $isTurningSkin = 0;
     if ($request['is_turning_skin'] == 1) {
-        $sum += (int)$prices['turning_skin'];
+        $sum += (int)$prices[$clanPrice . 'turning_skin'];
         $isTurningSkin = 1;
     }
 
     $isInvisibleNick = 0;
     if ($request['is_invisible_nick'] == 1) {
-        $sum += (int)$prices['invisible_nick'];
+        $sum += (int)$prices[$clanPrice . 'invisible_nick'];
         $isInvisibleNick = 1;
     }
 
     $isRandomColor = 0;
-    if($request['is_random_color'] == 1){
-        $sum += (int)$prices['random_color'];
+    if ($request['is_random_color'] == 1) {
+        $sum += (int)$prices[$clanPrice . 'random_color'];
         $isRandomColor = 1;
     }
 
     $skinId = "";
 
     if (!empty($request['skin'])) {
-        $sum += (int)$prices['create_skin'];
-        if ($userInfo['balance'] >= $sum) {
+        $sum += (int)$prices[$clanPrice . 'create_skin'];
+        if ($totalBalance >= $sum) {
             $image = new Image();
             $skinId = $image->addImgByBase64($request['skin']);
 
@@ -176,17 +178,24 @@ if ($request['action'] === "create_nick") {
     }
 
 
-    if ($userInfo['balance'] < $sum) {
+    if ($totalBalance < $sum) {
         echo json_encode(["result" => "false", "data" => "balance"], 256);
         exit;
     }
-    if (!$auth->updateColumn("balance", $userInfo['balance'] - $sum, USER_ID)) {
+    $bonusBalance = $sum <= $userInfo['bonus_balance'] ? $sum : $userInfo['bonus_balance'];
+    if ($bonusBalance > 0 && !$auth->addBonusBalance(-$bonusBalance, USER_ID)) {
         echo json_encode(["result" => "false", "data" => "error"], 256);
         exit;
     }
 
+    $balance = $sum - $bonusBalance;
+    if ($balance > 0 && !$auth->addBalance(-$balance, USER_ID)) {
+        echo json_encode(["result" => "true", "data" => "error"], 256);
+        exit;
+    }
 
-    if ($nickId = $skin->createNick($request['nick'], $password, $skinId, USER_ID, $isTransparentSkin, $isTurningSkin, $isInvisibleNick, $isRandomColor)) {
+
+    if ($nickId = $skin->createNick($request['nick'], $password, $skinId, USER_ID, $isTransparentSkin, $isTurningSkin, $isInvisibleNick, $isRandomColor, $isClan)) {
         echo json_encode(["result" => "true", "data" => $nickId], 256);
         exit;
     }
@@ -205,7 +214,6 @@ if ($request['action'] === "change_nick") {
 
     $id = $request['id'];
 
-
     $skin = new Skin();
     $nickInfo = $skin->getById($request['id']);
     /// если нет ника
@@ -213,6 +221,9 @@ if ($request['action'] === "change_nick") {
         echo json_encode(["result" => "false", "data" => "invalid_data"], 256);
         exit;
     }
+
+    $isClan = $nickInfo['is_clan'] == 1 ? true : false;
+    $clanPrice = $isClan ? "clan_" : "";
 
     if ((empty($nickInfo['password']) && $request['remove_skin'] == 1) || (key_exists("password", $request) && empty($request['password']) && empty($nickInfo['skin_id']))) {
         echo json_encode(["result" => "false", "data" => "invalid_request"], 256);
@@ -225,7 +236,7 @@ if ($request['action'] === "change_nick") {
     }
 
 
-    if (!empty($request['nick']) && $skin->getByNick($request['nick'])) {
+    if (!empty($request['nick']) && $skin->getByNick($request['nick'], false, $isClan)) {
         echo json_encode(["result" => "false", "data" => "exists"], 256);
         exit;
     }
@@ -233,33 +244,34 @@ if ($request['action'] === "change_nick") {
     $prices = new Prices();
     $prices = $prices->getAllPriceToName();
     $userInfo = $auth->getUserInfo(USER_ID);
+    $totalBalance = $userInfo['balance'] + $userInfo['bonus_balance'];
     $sum = 0;
 
-    if (key_exists("password", $request) && !empty($nickInfo['password'])) $sum += (int)$prices['change_pass'];
-    else if (!empty($request['password'])) $sum += (int)$prices['create_pass'];
+    if (key_exists("password", $request) && !empty($nickInfo['password'])) $sum += (int)$prices[$clanPrice . 'change_pass'];
+    else if (!empty($request['password'])) $sum += (int)$prices[$clanPrice . 'create_pass'];
 
     if (key_exists("is_transparent_skin", $request)) {
-        $sum += (int)$prices['transparent_skin'];
+        $sum += (int)$prices[$clanPrice . 'transparent_skin'];
         $request['is_transparent_skin'] = (int)$request['is_transparent_skin'];
     }
     if (key_exists("is_turning_skin", $request)) {
-        $sum += (int)$prices['turning_skin'];
+        $sum += (int)$prices[$clanPrice . 'turning_skin'];
         $request['is_turning_skin'] = (int)$request['is_turning_skin'];
     }
     if (key_exists("is_invisible_nick", $request)) {
-        $sum += (int)$prices['invisible_nick'];
+        $sum += (int)$prices[$clanPrice . 'invisible_nick'];
         $request['is_invisible_nick'] = (int)$request['is_invisible_nick'];
     }
-    if(key_exists("is_random_color", $request)){
-        $sum += (int)$prices['random_color'];
+    if (key_exists("is_random_color", $request)) {
+        $sum += (int)$prices[$clanPrice . 'random_color'];
         $request['is_random_color'] = (int)$request['is_random_color'];
     }
 
     if (!empty($request['skin'])) {
-        if (empty($nickInfo['skin_id'])) $sum += (int)$prices['create_skin'];
-        else $sum += (int)$prices['change_skin'];
+        if (empty($nickInfo['skin_id'])) $sum += (int)$prices[$clanPrice . 'create_skin'];
+        else $sum += (int)$prices[$clanPrice . 'change_skin'];
 
-        if ($sum <= $userInfo['balance']) {
+        if ($sum <= $totalBalance) {
             $image = new Image();
             $skinId = $image->addImgByBase64($request['skin']);
             if (!$skinId) {
@@ -272,12 +284,19 @@ if ($request['action'] === "change_nick") {
     }
     unset($request['skin']);
 
-    if ($userInfo['balance'] < $sum) {
+    if ($totalBalance < $sum) {
         echo json_encode(["result" => "false", "data" => "balance"], 256);
         exit;
     }
 
-    if (!$auth->updateColumn("balance", $userInfo['balance'] - $sum, USER_ID)) {
+    $bonusBalance = $sum <= $userInfo['bonus_balance'] ? $sum : $userInfo['bonus_balance'];
+    if ($bonusBalance > 0 && !$auth->addBonusBalance(-$bonusBalance, USER_ID)) {
+        echo json_encode(["result" => "false", "data" => "error"], 256);
+        exit;
+    }
+
+    $balance = $sum - $bonusBalance;
+    if ($balance > 0 && !$auth->addBalance(-$balance, USER_ID)) {
         echo json_encode(["result" => "false", "data" => "error"], 256);
         exit;
     }

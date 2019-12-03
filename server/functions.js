@@ -47,7 +47,7 @@ exports.rgbToHex = function (...rgb) {
 };
 
 exports.sendRequest = function (url, obj, method = "POST") {
-    url = "http://sandl.pw/" + url;
+    url = "http://game.pw/" + url;
     let options = {
         url,
         method,
@@ -96,7 +96,7 @@ exports.getRandomColor = function () {
  * @param hex String
  * @return {{r: Number, b: Number, brightness: Boolean, g: Number}|null}
  */
-exports.hexToRgb = function(hex) {
+exports.hexToRgb = function (hex) {
     let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     if (!result) return null;
     let r = parseInt(result[1], 16);
@@ -108,8 +108,7 @@ exports.hexToRgb = function(hex) {
     return {r, g, b, brightness};
 };
 
-exports.toSignNumber = function(number, sign){
+exports.toSignNumber = function (number, sign) {
     number = Math.abs(number);
-    if(sign < 0) number *= -1;
-    return number;
+    return sign < 0 ? -number : number;
 };

@@ -84,8 +84,10 @@ if ($request['action'] == "get_nick") {
         exit;
     }
 
+    $isClan = $request['is_clan'] == 1;
+
     $skins = new Skin();
-    $nick = $skins->getByNick($request['nick']);
+    $nick = $skins->getByNick($request['nick'], false, $isClan);
     if (!$nick) {
         echo json_encode(["result" => "false", "data" => "invalid_data"], 256);
         exit;

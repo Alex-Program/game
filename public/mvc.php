@@ -12,7 +12,6 @@ spl_autoload_register('modelAutoload', true, true);
 
 date_default_timezone_set('UTC');
 
-
 $uri = explode("?", $_SERVER['REQUEST_URI'])[0];
 if (mb_substr($uri, -1, 1, "UTF-8") == "/") {
     $uri = mb_substr($uri, 0, -1, "UTF-8");
@@ -33,7 +32,7 @@ $isAuth = false;
 require('../model/db.php');
 require('../controller/auth_controller.php');
 
-$forAdmin = ["servers", "prices"];
+$forAdmin = ["servers", "prices", "admin_skins"];
 
 
 if ($api) {

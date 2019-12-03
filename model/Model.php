@@ -63,4 +63,26 @@ class Model
         return false;
     }
 
+    static function sendPostRequest($url, $data)
+    {
+        $post = http_build_query($data);
+        $post = urldecode($post);
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ["Token: elrjglkejrglkjekjwlkejflkwjelkfjwkleg", "User-Id: 0"]);
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        try {
+            $response = json_decode($response, true);
+            if (!is_array($response)) return false;
+        } catch (Throwable $e) {
+        }
+
+        return $response;
+    }
+
 }

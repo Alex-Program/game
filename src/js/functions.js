@@ -98,14 +98,15 @@ function timeFormat(time = '', zone = false) {
     }
 }
 
-function isEmpty(val) {
+function isEmpty(val, isDefault = false) {
     if (typeof val === "object") {
         for (let k in val) {
             return false;
         }
         return true;
     }
-    if (typeof val === "number" || typeof val === "bigint" || typeof val === "symbol" || typeof val === "function") return false;
+    if (typeof val === "number") return val === 0 && isDefault;
+    if (typeof val === "bigint" || typeof val === "symbol" || typeof val === "function") return false;
     if (typeof val === "string") return val === "";
     if (typeof val === "boolean") return !val;
     if (typeof val === "undefined" || val === null || isNaN(val) || val === undefined) return true;
@@ -193,6 +194,17 @@ function getRandomInt(min, max) {
 
 function objectLength(obj) {
     return Object.keys(obj).length;
+}
+
+function randomText(size){
+    let str = "";
+    for(let i = 0; i < size; i++){
+        let strCode = getRandomInt(33, 126);
+        let symbol = String.fromCharCode(strCode);
+        if(getRandomInt(0, 1)) symbol = symbol.toUpperCase();
+        str += symbol;
+    }
+    return str;
 }
 
 class Preloader {

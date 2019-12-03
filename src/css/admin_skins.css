@@ -1,0 +1,80 @@
+#main_block {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, 0);
+    padding: 40px;
+    border-radius: 5px;
+    border: solid 5px gold;
+    background: aliceblue;
+    display: flex;
+    flex-direction: row;
+}
+
+.nick {
+    transition: background 0.5s;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.nick:hover {
+    background: rgba(255, 0, 0, 0.8);
+}
+
+.nick > img {
+    width: 100px;
+    border-radius: 50px;
+}
+
+.nick > span {
+    margin-left: 10px;
+    flex-grow: 1;
+    text-align: center;
+    padding: 10px;
+    background: red;
+    color: gold;
+    font: bold 15pt/15pt sans-serif;
+    border-radius: 5px;
+    border: solid 2px gold;
+}
+
+#search_filter span {
+    flex-grow: 1;
+    margin-right: 10px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+#search_filter > div:not(:first-child) {
+    margin-top: 10px;
+}
+
+#nick_info {
+    transition: right 0.5s, opacity 0.5s;
+    position: fixed;
+    right: 0;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    opacity: 1;
+    border-left: solid 5px gold;
+    padding: 20px;
+    color: gold;
+    overflow: auto;
+    z-index: 1;
+}
+
+#nick_info.closed {
+    right: -100%;
+    opacity: 0;
+}
+
+#nick_info > div {
+    justify-content: flex-start;
+    margin-top: 15px;
+}
+
+#nick_info span {
+    text-align: center;
+    width: 300px;
+    margin-right: 10px;
+}

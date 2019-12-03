@@ -35,7 +35,7 @@ canvas {
     bottom: 20px;
     height: 300px;
     width: 300px;
-    background: rgba(237, 250, 255, 0.9);
+    background: rgba(237, 250, 255, 0.8);
     border-radius: 10px;
     font: normal 10pt/12pt sans-serif;
     visibility: visible;
@@ -48,22 +48,43 @@ canvas {
 }
 
 #all_messages {
+    letter-spacing: 1px;
     overflow-y: auto;
     height: 100%;
     flex: 1 1 auto;
     padding: 5px;
-    font-size: 10pt;
-    line-height: 14pt;
+    font-size: 11pt;
+    line-height: 15pt;
 }
 
 #all_messages > div {
+    white-space: pre-line;
+    word-break: break-all;
     padding: 7px;
     border-bottom: solid 1px black;
     border-radius: 5px;
 }
 
-#all_messages .admin {
-    background: red;
+#all_messages .admin, #all_messages .moder {
+    background: rgba(255, 0, 0, 0.8);
+    color: white;
+    font-weight: bold;
+}
+
+#all_messages .helper {
+    background: rgba(50, 205, 50, 0.8);
+    color: white;
+    font-weight: bold;
+}
+
+#all_messages .gold {
+    background: rgba(255, 215, 0, 0.8);
+    color: black;
+    font-weight: bold;
+}
+
+#all_messages .violet {
+    background: rgba(148, 0, 211, 0.8);
     color: white;
     font-weight: bold;
 }
@@ -88,6 +109,10 @@ canvas {
 
 #all_messages .admin .icon {
     background: url("../images/admin.png") #FFF;
+}
+
+#all_messages .moder .icon {
+    background: url("../images/moder.png") #FFF;
 }
 
 #all_messages .verified .icon {
@@ -139,9 +164,9 @@ canvas {
     border-top: solid 2px gold;
     border-left: solid 2px gold;
     border-right: solid 2px gold;
-    font-weight: bold;
     background: red;
     color: gold;
+    font: bold 12pt/12pt sans-serif;
 }
 
 .game_message > div {
@@ -811,7 +836,7 @@ canvas {
     border: solid 3px #1b8078;
 }
 
-#password_for_game {
+#password_for_game, #clan_for_game {
     margin-left: 10px;
 }
 
@@ -1309,3 +1334,114 @@ canvas {
     cursor: pointer;
     margin-right: 5px;
 }
+
+
+#admin_panel {
+    transition: opacity 0.5s, visibility 0.5s;
+    position: fixed;
+    top: 50px;
+    right: 200px;
+    opacity: 1;
+    visibility: visible;
+    border-radius: 5px;
+    border: solid 5px gold;
+    overflow: hidden;
+    color: gold;
+}
+
+#admin_panel.closed {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.admin_tag {
+    transition: background 0.5s;
+    padding: 5px;
+    font: bold 15pt/15pt sans-serif;
+    color: gold;
+    background: rgba(255, 0, 0, 0.8);
+    cursor: pointer;
+    flex-grow: 1;
+    text-align: center;
+}
+
+.admin_tag:hover {
+    background: rgba(255, 128, 117, 0.8);
+}
+
+.admin_tag.selected {
+    background: rgba(32, 178, 170, 0.8);
+}
+
+#admin_panel .player {
+    cursor: pointer;
+}
+
+#report {
+    font: bold 12pt/12pt sans-serif;
+}
+
+#report > div {
+    margin-top: 10px;
+}
+
+#report .current {
+    color: blue;
+}
+
+#report .target {
+    color: red;
+}
+
+#players_for_admin span {
+    padding: 5px;
+    flex-grow: 1;
+    text-align: center;
+    margin-left: 5px;
+    margin-right: 5px;
+    font: bold 12pt/12pt sans-serif;
+}
+
+#players_for_admin .id {
+    width: 50px;
+}
+
+#players_for_admin .nick {
+    width: 150px;
+}
+
+#players_for_admin .data .nick {
+    transition: background 0.5s, color 0.5s;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+#players_for_admin .data .nick:hover {
+    background: red;
+    color: white !important;
+}
+
+#players_for_admin .mass {
+    width: 100px;
+}
+
+#players_for_admin .player {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    cursor: pointer;
+    border-bottom: solid 2px gold;
+}
+
+#admin_panel_action {
+    transition: visibility 0.5s, opacity 0.5s;
+    position: fixed;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 5px;
+    border: solid 2px gold;
+}
+
+#admin_panel_action.closed {
+    opacity: 0;
+    visibility: hidden;
+}
+

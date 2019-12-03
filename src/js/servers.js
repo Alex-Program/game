@@ -1,5 +1,6 @@
 (function () {
-
+    let serverInfo = {};
+    let selectedServerId = null;
 
     sendRequest("api/registration", {action: "get_all_servers"})
         .then(data => {
@@ -15,12 +16,20 @@
                         <button class="button_green button save_button">Сохранить</button>
                         <button class="button_primary button cancel_button">Отмена</button>
                         <button class="button_red button delete_button">Удалить</button>
+                        <div class="server_info"><img src="/src/images/information.png"></div>
                     </div>
                 `;
             }
 
             $("#servers_list").html(html);
         });
+
+
+    function closeServerInfo() {
+        serverInfo = {};
+        selectedServerId = null;
+        $("#server_info").addClass("closed");
+    }
 
 
     $("body").on("click", ".cancel_button", function () {
@@ -86,6 +95,7 @@
                         <button class="button_green button save_button">Сохранить</button>
                         <button class="button_primary button cancel_button">Отмена</button>
                         <button class="button_red button delete_button">Удалить</button>
+                        <div class="server_info"><img src="/src/images/information.png"></div>
                     </div>
                 `;
                     $("#servers_list").append(html);
@@ -109,8 +119,83 @@
 
         })
 
-        .on("click", "#cancel_add", function(){
+        .on("click", "#cancel_add", function () {
             $(this).closest(".server").find("input").val("");
+        })
+
+        .on("click", "#send_global_message", function () {
+            let message = $("#global_message").val().trim();
+            if (!message) return true;
+
+            let json = {
+                action: "global_message",
+                message
+            };
+            sendRequest("api/servers", json)
+                .then(data => {
+                    let message = "Ошибка";
+                    if (data.result === "true") message = "Успешно";
+
+                    new Notify("Глобальное сообщене", message);
+                });
+        })
+
+        .on("click", ".server_info", function () {
+            Preloader.start();
+            serverInfo = {};
+
+            let parent = $(this).closest(".server");
+            let id = parent.find("input[data-name='id']").val();
+
+            selectedServerId = id;
+
+            let json = {
+                action: "get_game_settings",
+                id
+            };
+
+            sendRequest("api/servers", json)
+                .then(data => {
+                    serverInfo = data.data;
+                    $("#server_info input").each(function (i, el) {
+                        let name = $(el).attr("data-name");
+                        $(el).val(data.data[name] || 0);
+                    });
+
+                    Preloader.stop();
+                    $("#server_info").removeClass("closed");
+                });
+        })
+
+        .on("click", "#cancel_server_info", () => closeServerInfo())
+
+        .on("click", "#save_server_info", function () {
+            if (isEmpty(selectedServerId)) return true;
+            let obj = {};
+            $("#server_info input").each(function (i, el) {
+                let name = $(el).attr("data-name");
+                let val = $(this).val();
+                if (!(name in serverInfo) || +val === +serverInfo[name]) return true;
+                obj[name] = +val;
+            });
+            if (!objectLength(obj)) return true;
+            Preloader.start();
+
+            obj.id = selectedServerId;
+            obj.action = "update_game_settings";
+
+            sendRequest("api/servers", obj)
+                .then(data => {
+                    Preloader.stop();
+                    let message = "Ошибка";
+                    if (data.result === "true") {
+                        message = "Успешно";
+                        closeServerInfo();
+                    }
+
+                    new Notify("Изменение сервера", message);
+                });
+
         });
 
 })();

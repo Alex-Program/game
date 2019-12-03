@@ -8,10 +8,65 @@ Array.prototype.includesByType = function (search) {
     return false;
 };
 
+const Http = require('http');
 const WebSocketServer = require('ws');
 const Functions = require('./functions.js');
 const {isEmpty} = Functions;
 const Units = require('./GameClasses/Units.js');
+const {Worker} = require('worker_threads');
+const {Performance: performance} = require('./GameClasses/Perfromance.js');
+
+let httpServer = Http.createServer();
+httpServer.listen(8081);
+
+httpServer.on("request", function (request, response) {
+    let data = "";
+    request.on("data", e => data += e.toString());
+
+    request.on("end", () => {
+        data = Object.fromEntries(decodeURI(data).split("&").map(v => v.split("=")));
+        if (request.headers.token !== "elrjglkejrglkjekjwlkejflkwjelkfjwkleg" || +request.headers['user-id'] !== 0) {
+            response.write(JSON.stringify({result: "false", data: "invalid_request"}));
+            response.end();
+            return true;
+        }
+
+        if (Functions.isEmpty(data.action)) return true;
+        if (data.action === "global_message" && !Functions.isEmpty(data.message)) {
+            gameMessage(data.message);
+            response.write(JSON.stringify({result: "true", data: ""}));
+            response.end();
+            return true;
+        }
+
+        if (data.action === "get_game_settings") {
+            const worker = new Worker("/var/www/game.pw/server/GameClasses/Worker.js");
+            worker.on("message", data => {
+                response.write(JSON.stringify({result: "true", data}));
+                response.end();
+                worker.terminate();
+            });
+            worker.postMessage({action: "load_game_settings"});
+            return true;
+        }
+
+        if (data.action === "update_game_settings") {
+            Units.game.stopGame();
+            const worker = new Worker("/var/www/game.pw/server/GameClasses/Worker.js");
+            worker.on("message", () => {
+                response.write(JSON.stringify({result: "true", data: ""}));
+                response.end();
+                worker.terminate();
+                Units.game.startGame();
+            });
+            delete data.action;
+            worker.postMessage({action: "update_game_settings", data});
+            return true;
+        }
+    });
+
+});
+
 
 // подключенные клиенты
 let clients = {};
@@ -19,12 +74,12 @@ let bannedIP = [];
 
 // WebSocket-сервер на порту 8081
 const webSocketServer = new WebSocketServer.Server({
-    port: 8081
+    server: httpServer
 });
 
 
 function wsMessage(message, id = null, besidesId = null, isNeedTime = true) {
-    if (!message.time && isNeedTime) message.time = Date.now();
+    if (!message.time && isNeedTime) message.time = performance.now();
     message = JSON.stringify(message);
     message = Functions.stringToArrayBuffer(message);
     // console.log(message.byteLength);
@@ -70,15 +125,40 @@ function nickInfo(wsId) {
     wsMessage(message, player.wsId);
 }
 
+function onChangeNick(id){
+    let player = Units.game.findPlayer(id);
+    if (!player) return true;
+
+    player = player.player;
+    wsMessage({
+        action: "change_nick",
+        id: player.wsId,
+        nick: player.nick,
+        isTransparentSkin: +player.isTransparentSkin,
+        isTurningSkin: +player.isTurningSkin,
+        isInvisibleNick: +player.isInvisibleNick,
+        skin: player.skin,
+        skinId: player.skinId,
+        clan: player.clan
+    });
+    nickInfo(id);
+}
+
+
 class Command {
     adminsCommand = {
-        add_mass: this.addMass,
         break_player: this.breakPlayer,
+        ban_account: this.banAccount,
+        tp_coords: this.tpByCoords,
+        set_nick: this.setNick
+    };
+
+    modersCommand = {
+        add_mass: this.addMass,
         mute: this.mutePlayer,
         kick: this.kickPlayer,
         ban_ip: this.banIp,
-        ban_account: this.banAccount,
-        tp_coords: this.tpByCoords
+        set_mass: this.setMass
     };
 
 
@@ -86,9 +166,10 @@ class Command {
         let player = Units.game.findPlayer(id);
         if (!player) return false;
         player = player.player;
+        if(!player.isAdmin && !player.isModer) return false;
         if (command in this.adminsCommand && !player.isAdmin) return false;
 
-        let allCommands = {...this.adminsCommand};
+        let allCommands = {...this.adminsCommand, ...this.modersCommand};
         if (!(command in allCommands)) return false;
         allCommands[command](id, params);
     }
@@ -176,6 +257,30 @@ class Command {
         if (!params.y) data.y = 0;
         Units.game.teleportByCoords(params.target_id, params.x, params.y);
     }
+
+    setMass(id, params){
+        const targetId = params.target_id;
+        const mass = +params.mass;
+        if(isEmpty(targetId) || isEmpty(mass)) return false;
+
+        let currentPlayer = Units.game.findPlayer(id);
+        let targetPlayer = Units.game.findPlayer(targetId);
+        if(!currentPlayer || !targetPlayer) return true;
+        [currentPlayer, targetPlayer] = [currentPlayer.player, targetPlayer.player];
+
+        if(targetPlayer.isAdmin && !currentPlayer.isAdmin) return true;
+
+        Units.game.setMass(targetId, mass)
+    }
+
+    async setNick(id, params){
+        if(Functions.isEmpty(params.target_id)) return true;
+        let nick = params.nick || "SandL";
+
+        await Units.game.changeNick(params.target_id, nick, "", "");
+        onChangeNick(params.target_id);
+    }
+
 }
 
 let command = new Command();
@@ -186,16 +291,16 @@ Units.game.onSpawnUnit = function (unit) {
     unit = Units.game.getUnit(unit);
     let message = {
         action: "spawn_unit",
-        ...unit
+        unit
     };
-    if (message.name === "p") {
-        message.cr = "f";
-        wsMessage(message, null, message.id);
-        message.cr = "t";
-        wsMessage(message, message.id);
+    if (typeof(message.unit) !== "string" && message.unit.n === "p") {
+        message.unit.cr = "f";
+        wsMessage(message, null, message.unit.id);
+        message.unit.cr = "t";
+        wsMessage(message, message.unit.id);
 
-        nickInfo(message.id);
-        if (!isBot) chatMessage(message.id, "вошел в игру", 0, 0, true);
+        nickInfo(message.unit.id);
+        if (!isBot) chatMessage(message.unit.id, "вошел в игру", 0, 0, true);
         return true;
     }
 
@@ -220,8 +325,12 @@ function chatMessage(id, message, pm, pmId, isSecondary = false) {
         action: "chat_message",
         message: message,
         nick: player.isSpectator ? "Spectator" : player.nick,
-        color: (player.isSpectator || !player.isSpawned) ? "#b0b0b0" : player.color,
+        color: (player.isSpectator || !player.isSpawned) ? "#b0b0b0" : player.selectedColor,
         isAdmin: player.isSpectator ? 0 : player.isAdmin,
+        isModer: player.isSpectator ? 0 : player.isModer,
+        isHelper: player.isSpectator ? 0 : player.isHelper,
+        isGold: player.isSpectator ? 0 : player.isGold,
+        isViolet: player.isSpectator ? 0 : player.isViolet,
         isSecondary: +isSecondary,
         isVerified: +player.isVerified,
         pm,
@@ -315,7 +424,8 @@ webSocketServer.on('connection', function (ws, req) {
             let token = isEmpty(data.token) ? "" : data.token;
             let userId = isEmpty(data.userId) ? "" : data.userId;
             let nick = isEmpty(data.nick) ? "SandL" : data.nick;
-            Units.game.playerConnect(id, data.color, nick, password, token, userId, data.type);
+            let clan = isEmpty(data.clan) ? "" : data.clan;
+            Units.game.playerConnect(id, data.color, nick, password, token, userId, data.type, clan);
 
             return true;
         }
@@ -417,27 +527,19 @@ webSocketServer.on('connection', function (ws, req) {
 
         if (data.action === "change_nick") {
             if (Functions.isEmpty(data.nick)) data.nick = "SandL";
-            await Units.game.changeNick(id, data.nick, data.password);
-            let player = Units.game.findPlayer(id);
-            if (!player) return true;
-
-            player = player.player;
-            wsMessage({
-                action: "change_nick",
-                id: player.wsId,
-                nick: player.nick,
-                isTransparentSkin: +player.isTransparentSkin,
-                isTurningSkin: +player.isTurningSkin,
-                isInvisibleNick: +player.isInvisibleNick,
-                skin: player.skin,
-                skinId: player.skinId
-            });
-            nickInfo(id);
+            let clan = Functions.isEmpty(data.clan) ? "" : data.clan;
+            await Units.game.changeNick(id, data.nick, data.password, clan);
+            onChangeNick(id);
 
             return true;
         }
         if (data.action === "select_sticker") {
             if (Functions.isEmpty(data.number)) data.number = "";
+
+            let player = Units.game.findPlayer(id);
+            if(!player || !player.player.stickersSet) return true;
+
+            player.player.stickerI = isEmpty(data.number) ? null : data.number;
 
             wsMessage({
                 action: "select_sticker",
@@ -452,11 +554,11 @@ webSocketServer.on('connection', function (ws, req) {
             if (Functions.isEmpty(data.color)) return true;
 
             Units.game.changeColor(id, data.color);
-            wsMessage({
-                action: "change_color",
-                id,
-                color: data.color
-            });
+            // wsMessage({
+            //     action: "change_color",
+            //     id,
+            //     color: data.color
+            // });
 
             return true;
         }
@@ -473,6 +575,17 @@ webSocketServer.on('connection', function (ws, req) {
         if (data.action === "ping") {
             wsMessage({action: "ping"}, id);
         }
+
+        if(data.action === "report"){
+            if(isEmpty(data.targetId)) return true;
+
+            let player = Units.game.findPlayer(id);
+            let targetPlayer = Units.game.findPlayer(+data.targetId);
+            if(!player || !targetPlayer) return true;
+
+            wsModerMessage({action: "report", id, nick: player.player.nick, targetId: targetPlayer.player.wsId, targetNick: targetPlayer.player.nick});
+        }
+
     });
 
 });

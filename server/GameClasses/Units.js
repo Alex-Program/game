@@ -1,38 +1,16 @@
 const Functions = require('../functions.js');
 const {Performance: performance} = require("./Perfromance.js");
+const {Worker} = require("worker_threads");
 
-let gameInfo = {
-    width: 2500,
-    height: 2500,
-    startMass: 5000,
-    updateTime: 0,
-    deltaTime: 0,
-    perSecond: 1000 / 60,
-    food: 1500,
-    foodMinMass: 5,
-    foodMaxMass: 50,
-    virus: 100,
-    virusStartMass: 200,
-    bulletMass: 25,
-    bulletEatenCoefficient: 0.7,
-    connectTime: 1000,
-    connectTimeMassCoefficient: 0.1,
-    maxCells: 64,
-    maxCellMass: 22500,
-    botsCount: 0,
-    feedingVirusCount: 0,
-    feedingVirusStartMass: 400,
-    feedingVirusMaxMass: 5000,
-    feedingVirusInterval: 1000,
-    feedingVirusIntervalCoefficient: 0.01,
-    feedingVirusShootCoefficient: 0.1
-};
+let gameInfo = {};
 
 /// nick => {password, skin, skin_id, is_transparent_skin}
 let cachedNicks = {};
+let cachedClans = {};
 
 function clearCachedNicks() {
     cachedNicks = {};
+    cachedClans = {};
     setTimeout(clearCachedNicks, 300000);
 }
 
@@ -40,7 +18,7 @@ clearCachedNicks();
 
 
 let dailyTop = {
-    mass: "",
+    score: "",
     nick: "",
     skin: "",
     skinId: ""
@@ -94,6 +72,13 @@ class Arc {
         game.onDestroyUnit(this.constructor.name.toLowerCase(), this.id);
     }
 
+    static checkEatCollision(unit1, unit2) {
+        let c = Math.sqrt((unit1.x - unit2.x) ** 2 + (unit1.y - unit2.y) ** 2);
+        let minRadius = Math.min(unit1.drawableRadius, unit2.drawableRadius);
+        let maxRadius = Math.max(unit1.drawableRadius, unit2.drawableRadius);
+        return c <= maxRadius - minRadius / 2;
+    }
+
 }
 
 
@@ -119,7 +104,7 @@ let Food = exports.Food = class Food extends Arc {
 
 class Bullet extends Arc {
 
-    constructor(x, y, sin, cos, mass, distance, color = "#ff0400", fromFeedingVirus = false) {
+    constructor(x, y, sin, cos, mass, distance, color = "#ff0400", fromFeedingVirus = false, isDecreaseMass = false) {
         super();
 
         this.id = ++game.bulletId;
@@ -131,6 +116,7 @@ class Bullet extends Arc {
         this.distance = distance;
         this.color = color;
         this.fromFeedingVirus = fromFeedingVirus;
+        this.isDecreaseMass = isDecreaseMass;
 
         game.onSpawnUnit(this);
     }
@@ -209,9 +195,9 @@ class Virus extends Arc {
             this.toMass = Math.round(this.toMass - speed);
 
             if (!this.isFeeding) {
-                if (this.mass > 400) {
-                    this.mass = 400;
-                    this.toMass = -gameInfo.virusStartMass;
+                if (this.mass > gameInfo.virusMaxMass) {
+                    this.mass = gameInfo.virusMaxMass;
+                    this.toMass = gameInfo.virusStartMass - gameInfo.virusMaxMass;
                     game.virusArr.push(
                         new Virus(this.x, this.y, this.sin, this.cos, 200)
                     );
@@ -289,6 +275,73 @@ class Virus extends Arc {
 
 }
 
+
+class BlackHole extends Arc {
+
+    constructor(x, y, mass, angle, color = "#000000", isMoving = true, isShoot = false) {
+        super();
+
+        this.id = ++game.blackHoleId;
+        this.x = x;
+        this.y = y;
+        this.mass = mass;
+        this.angle = angle;
+        this.color = color;
+        this.isMoving = isMoving;
+        this.isChanged = true;
+        this.isShoot = isShoot;
+        this.lastShootTime = performance.now();
+        this.lastUpdateDirectionTime = performance.now();
+
+        game.onSpawnUnit(this);
+    }
+
+    update(delta = 1) {
+
+        if (this.isShoot && performance.now() - this.lastShootTime >= gameInfo.blackHoleShootInterval) {
+            let angle = Functions.degreeToRadians(Functions.getRandomInt(0, 360));
+            let sin = Math.sin(angle);
+            let cos = Math.cos(angle);
+
+            let bulletRadius = Arc.getDrawableRadius(gameInfo.blackHoleBulletMass);
+            let byX = (this.drawableRadius + bulletRadius) * cos;
+            let byY = (this.drawableRadius + bulletRadius) * sin;
+
+            game.bulletsArr.push(
+                new Bullet(this.x + byX, this.y + byY, sin, cos, gameInfo.blackHoleBulletMass, gameInfo.blackHoleBulletDistance, "#FF0000", false, true)
+            );
+            this.lastShootTime = performance.now();
+        }
+
+        if (!this.isMoving) return true;
+
+        if (performance.now() - this.lastUpdateDirectionTime > 5000) {
+            this.angle = Functions.getRandomInt(0, 360);
+            this.lastUpdateDirectionTime = performance.now();
+        }
+
+        this.x = Functions.roundFloor(this.x + this.cos * this.speed * gameInfo.blackHoleSpeedCoefficient * delta, 2);
+        this.y = Functions.roundFloor(this.y + this.sin * this.speed * gameInfo.blackHoleSpeedCoefficient * delta, 2);
+
+        if (this.x < 0) this.x = 0;
+        else if (this.x > gameInfo.width) this.x = gameInfo.width;
+
+        if (this.y < 0) this.y = 0;
+        else if (this.y > gameInfo.height) this.y = gameInfo.height;
+
+        this.isChanged = true;
+    }
+
+    get sin() {
+        return Math.sin(this.angle * Math.PI / 180);
+    }
+
+    get cos() {
+        return Math.cos(this.angle * Math.PI / 180);
+    }
+
+}
+
 class Cell extends Arc {
 
     constructor(x, y, mass, sin, cos, main = false, color = "#000000", owner, id, spaceDistance = 0) {
@@ -316,10 +369,8 @@ class Cell extends Arc {
         this.isConnect = false;
         this.isCollising = true;
         this.lastDecreaseTime = performance.now();
-        this.owner.isChanged = true;
         setTimeout(() => {
             this.isConnect = true;
-            this.owner.isChanged = true;
         }, gameInfo.connectTime + this.mass * gameInfo.connectTimeMassCoefficient);
 
         this.updateDirection();
@@ -335,7 +386,6 @@ class Cell extends Arc {
         if (performance.now() - this.lastDecreaseTime > 3000 && this.mass > 200) {
             this.toMass -= this.mass / 100;
             this.lastDecreaseTime = performance.now();
-            this.owner.isChanged = true;
         }
 
         if (this.spaceDistance === 0) {
@@ -354,11 +404,7 @@ class Cell extends Arc {
                 this.mass = gameInfo.maxCellMass;
                 this.toMass = 0;
             }
-            if (this.mass <= 0) {
-                this.owner.cells.splice(this.owner.updateI, 1);
-                this.owner.updateI--;
-                return true;
-            }
+            if (this.mass <= 0) return this.destroy();
         }
 
         if (Math.abs(this.spaceDistance > 0)) {
@@ -395,36 +441,13 @@ class Cell extends Arc {
 
                 if (c > this.drawableRadius - 0.5 * virus.drawableRadius) continue;
 
-                this.toMass += virus.mass;
-                let count = Math.min(Math.floor((this.mass / 2) / 50), gameInfo.maxCells - this.owner.cells.length);
-                let mass = Math.floor((this.mass / 2) / count);
-                let angleStep = 180 / count;
-                let angle = Functions.getAngle(this.sin, this.cos);
-
-                this.isCollising = true;
-
-                let currentAngle = angle.degree - 90;
-
-                if (count > 0) this.toMass -= this.mass / 2;
-
-                while (count > 0) {
-                    let sin = Math.sin(Functions.degreeToRadians(currentAngle));
-                    let cos = Math.cos(Functions.degreeToRadians(currentAngle));
-
-                    let distance = this.radius + mass / 10 + 5;
-                    this.owner.cells.push(
-                        new Cell(this.x + distance * cos, this.y + distance * sin, mass, sin, cos, false, this.color, this.owner, ++this.owner.cellId, 50)
-                    );
-                    currentAngle += angleStep;
-                    count--;
-                }
+                this.breakByVirus(virus);
 
 
                 virus.destroy();
                 game.virusArr.splice(i, 1);
                 i--;
 
-                this.owner.isChanged = true;
             }
 
             for (let i = 0; i < game.virusFeedingArr.length; i++) {
@@ -437,57 +460,34 @@ class Cell extends Arc {
                     if (c > virus.drawableRadius - 0.5 * this.drawableRadius) continue;
 
                     virus.toMass += this.mass;
-                    let updateI = game.playersArr[game.updatePlayerI].updateI;
-                    game.playersArr[game.updatePlayerI].cells.splice(updateI, 1);
-
-                    game.playersArr[game.updatePlayerI].updateI--;
-
-                    if (game.playersArr[game.updatePlayerI].cells.length === 0) {
-                        game.playersArr[game.updatePlayerI].destroy();
-                        if (game.playersArr[game.updatePlayerI].type === "bot") {
-                            game.playersArr.splice(game.updatePlayerI, 1);
-                            game.updatePlayerI--;
-                        }
-                        return true;
-                    }
-                    if (this.main) game.playersArr[game.updatePlayerI].cells[0].main = true;
+                    this.destroy();
                     return true;
                 }
 
 
                 if (c > this.drawableRadius - 0.5 * virus.drawableRadius) continue;
 
-                this.toMass += virus.mass;
-                let count = Math.min(Math.floor((this.mass / 2) / 50), gameInfo.maxCells - this.owner.cells.length);
-                let mass = Math.floor((this.mass / 2) / count);
-                let angleStep = 180 / count;
-                let angle = Functions.getAngle(this.sin, this.cos);
-
-                this.isCollising = true;
-
-                let currentAngle = angle.degree - 90;
-
-                if (count > 0) this.toMass -= this.mass / 2;
-
-                while (count > 0) {
-                    let sin = Math.sin(Functions.degreeToRadians(currentAngle));
-                    let cos = Math.cos(Functions.degreeToRadians(currentAngle));
-
-                    let distance = this.radius + mass / 10 + 5;
-                    this.owner.cells.push(
-                        new Cell(this.x + distance * cos, this.y + distance * sin, mass, sin, cos, false, this.color, this.owner, ++this.owner.cellId, 50)
-                    );
-                    currentAngle += angleStep;
-                    count--;
-                }
-
+                this.breakByVirus(virus);
 
                 virus.destroy();
                 game.virusFeedingArr.splice(i, 1);
                 i--;
 
-                this.owner.isChanged = true;
+            }
 
+            for (let i = 0; i < game.blackHoleArr.length; i++) {
+                let blackHole = game.blackHoleArr[i];
+
+                if (!Arc.checkEatCollision(this, blackHole)) continue;
+                this.owner.score += Math.round(this.mass);
+                this.destroy();
+            }
+
+            for (let i = 0; i < game.shootingBlackHoleArr.length; i++) {
+                let blackHole = game.shootingBlackHoleArr[i];
+
+                if (!Arc.checkEatCollision(this, blackHole)) continue;
+                this.destroy();
             }
 
         }
@@ -497,27 +497,26 @@ class Cell extends Arc {
                 let bullet = game.bulletsArr[i];
                 let c = Math.sqrt((this.x - bullet.x) ** 2 + (this.y - bullet.y) ** 2);
                 if (this.drawableRadius >= c) {
-                    this.toMass += bullet.mass * gameInfo.bulletEatenCoefficient;
+                    let mass = bullet.mass * gameInfo.bulletEatenCoefficient;
+                    if (bullet.isDecreaseMass) mass *= -1;
+                    this.toMass += mass;
 
                     bullet.destroy();
                     game.bulletsArr.splice(i, 1);
                     i--;
-                    this.owner.isChanged = true;
                 }
             }
 
 
             for (let i = 0; i < game.foodsArr.length; i++) {
                 let food = game.foodsArr[i];
-                let c = Math.sqrt((this.x - food.x) ** 2 + (this.y - food.y) ** 2);
-                if (c > this.drawableRadius + food.drawableRadius + 1) continue;
+                if (!Arc.checkEatCollision(this, food)) continue;
 
                 this.toMass += food.mass;
 
                 food.destroy();
                 game.foodsArr.splice(i, 1);
                 i--;
-                this.owner.isChanged = true;
             }
 
         }
@@ -568,7 +567,7 @@ class Cell extends Arc {
                         //     this.x = Functions.roundFloor(this.x + cos * different, 2);
                         //     this.y = Functions.roundFloor(this.y + sin * different, 2);
                         // }
-                        this.owner.isChanged = true;
+                        // break;
                         // let cos = differentX / c || 0;
                         // let sin = differentY / c || 0;
 
@@ -586,7 +585,6 @@ class Cell extends Arc {
                             i--;
                             this.owner.updateI--;
                         }
-                        this.owner.isChanged = true;
                         // this.isConnect = false;
                         // setTimeout(() => this.isConnect = true, 100);
                     }
@@ -596,8 +594,6 @@ class Cell extends Arc {
 
                 if (this.mass < 1.25 * cell.mass) continue;
                 if (distance > Functions.roundFloor(this.drawableRadius - cell.drawableRadius / 2, 2)) continue;
-                game.playersArr[p].isChanged = true;
-                this.owner.isChanged = true;
 
                 this.toMass = Functions.roundFloor(this.toMass + cell.mass, 2);
                 game.playersArr[p].cells.splice(i, 1);
@@ -622,6 +618,32 @@ class Cell extends Arc {
         }
 
         this.updateCoords();
+    }
+
+    breakByVirus(virus) {
+        this.toMass += virus.mass;
+        let count = Math.min(Math.floor((this.mass / 2) / 50), gameInfo.maxCells - this.owner.cells.length);
+        let mass = Math.floor((this.mass / 2) / count);
+        let angleStep = 180 / count;
+        let angle = Functions.getAngle(this.sin, this.cos);
+
+        this.isCollising = true;
+
+        let currentAngle = angle.degree - 90;
+
+        if (count > 0) this.toMass -= this.mass / 2;
+
+        while (count > 0) {
+            let sin = Math.sin(Functions.degreeToRadians(currentAngle));
+            let cos = Math.cos(Functions.degreeToRadians(currentAngle));
+
+            let distance = this.radius + mass / 10 + 5;
+            this.owner.cells.push(
+                new Cell(this.x + distance * cos, this.y + distance * sin, mass, sin, cos, false, this.color, this.owner, ++this.owner.cellId, 50)
+            );
+            currentAngle += angleStep;
+            count--;
+        }
     }
 
     updateDirection() {
@@ -690,7 +712,7 @@ class Cell extends Arc {
         if (this.mass + this.toMass <= 70) return true;
 
         game.bulletsArr.push(
-            new Bullet(this.x + (this.radius + 5) * this.cos, this.y + (this.radius + 5) * this.sin, this.sin, this.cos, gameInfo.bulletMass, 100, this.color, false)
+            new Bullet(this.x + (this.radius + 5) * this.cos, this.y + (this.radius + 5) * this.sin, this.sin, this.cos, gameInfo.bulletMass, gameInfo.bulletDistance, this.color, false)
         );
         this.toMass -= gameInfo.bulletMass;
     }
@@ -705,7 +727,6 @@ class Cell extends Arc {
                 new Bullet(rand.x, rand.y, 0, 0, gameInfo.bulletMass, 0, "#ff0400", false)
             );
         }
-        this.owner.isChanged = true;
     }
 
     getRandomInRound(radius = 300, distance = 0) {
@@ -719,14 +740,32 @@ class Cell extends Arc {
         return {x, y};
     }
 
+
+    destroy() {
+        let updateI = game.playersArr[game.updatePlayerI].updateI;
+        game.playersArr[game.updatePlayerI].cells.splice(updateI, 1);
+
+        game.playersArr[game.updatePlayerI].updateI--;
+
+        if (game.playersArr[game.updatePlayerI].cells.length === 0) {
+            game.playersArr[game.updatePlayerI].destroy();
+            if (game.playersArr[game.updatePlayerI].type === "bot") {
+                game.playersArr.splice(game.updatePlayerI, 1);
+                game.updatePlayerI--;
+            }
+            return true;
+        }
+        if (this.main) game.playersArr[game.updatePlayerI].cells[0].main = true;
+    }
 }
 
 class Player {
 
-    constructor(wsId, x, y, mass, mouseX, mouseY, color = "#000000", nick, password = "", token = "", userId = "", type = "player", isSpectator, isTransparentSkin = false, isTurningSkin = false, isInvisibleNick = false, isRandomColor = false) {
+    constructor(wsId, x, y, mass, mouseX, mouseY, color = "#000000", nick, password = "", token = "", userId = "", type = "player", isSpectator, isTransparentSkin = false, isTurningSkin = false, isInvisibleNick = false, isRandomColor = false, clan = "") {
         this.type = type;
         this.nick = nick;
         this.password = password;
+        this.clan = clan;
         this.skin = "";
         this.skinId = 0;
         this.isTransparentSkin = isTransparentSkin;
@@ -753,11 +792,19 @@ class Player {
         this.y = y;
         this.mass = mass;
         this.color = color;
+        this.selectedColor = color;
         this.toColor = color;
-        this.isAdmin = false;
-        this.isModer = false;
+
+
+        this.isAdmin = 0;
+        this.isModer = 0;
+        this.isHelper = 0;
+        this.isGold = 0;
+        this.isViolet = 0;
+
         this.mass = 0;
         this.totalMass = 0;
+        this.score = 0;
         this.toMass = 0;
         this.isBreak = false;
         this.token = token;
@@ -766,7 +813,7 @@ class Player {
         this.stickersSet = null;
         this.stickerI = null;
         this.lastShootTime = performance.now();
-        this.isChanged = true;
+        this.lastSplitTime = performance.now();
         this.isSpawned = false;
         // this.lastUpdateUnitsTime = performance.now();
         this.isSpectator = isSpectator;
@@ -774,7 +821,14 @@ class Player {
         this.isNeedShoot = false;
         this.isDisconnect = false;
 
+        this.lastUpdateDirection = performance.now();
+
         this.main();
+    }
+
+    setRandomDirection() {
+        let coords = game.getRandomMapCoords();
+        this.mouseMove(coords.x, coords.y);
     }
 
     async main() {
@@ -801,7 +855,6 @@ class Player {
                 } else if (+data.data.is_banned) {
                     this.account = null;
                 } else this.account = data.data;
-                this.isChanged = true;
                 return true;
             });
     }
@@ -814,40 +867,58 @@ class Player {
     }
 
     async getNickInfo() {
-        let data = await Functions.sendRequest("api/admin", {action: "get_nick", nick: this.nick});
+        let isClan = Functions.isEmpty(this.clan) ? 0 : 1;
+        let searched = isClan ? this.clan : this.nick;
+        let data = await Functions.sendRequest("api/admin", {action: "get_nick", nick: searched, is_clan: isClan});
         if (data.result === "true") return data.data;
         if (data.data === "invalid_data") return false;
     }
 
+    resetNick() {
+        this.skin = "";
+        this.skinId = "";
+
+        this.isAdmin = 0;
+        this.isModer = 0;
+        this.isHelper = 0;
+        this.isGold = 0;
+        this.isViolet = 0;
+
+        this.isVerified = false;
+        this.isTransparentSkin = false;
+        this.isTurningSkin = false;
+        this.isInvisibleNick = false;
+        this.isRandomColor = false;
+    }
+
+
     async authNick() {
-        let nickInfo = this.nick.toLowerCase() in cachedNicks ? cachedNicks[this.nick.toLowerCase()] : await this.getNickInfo();
+        let searchObj = Functions.isEmpty(this.clan) ? cachedNicks : cachedClans;
+        let search = Functions.isEmpty(this.clan) ? this.nick.toLowerCase() : this.clan.toLowerCase();
+        let nickInfo = search in searchObj ? searchObj[search] : await this.getNickInfo();
         if (nickInfo) {
-            if (!(nickInfo.nick.toLowerCase() in cachedNicks)) {
-                cachedNicks[nickInfo.nick.toLowerCase()] = {
+            if (!(nickInfo.nick.toLowerCase() in searchObj)) {
+                searchObj[nickInfo.nick.toLowerCase()] = {
                     nick: nickInfo.nick.toLowerCase(),
                     password: nickInfo.password,
                     is_moder: +nickInfo.is_moder,
                     is_admin: +nickInfo.is_admin,
+                    is_helper: +nickInfo.is_helper,
+                    is_gold: +nickInfo.is_gold,
+                    is_violet: +nickInfo.is_violet,
                     skin: nickInfo.skin,
                     skin_id: nickInfo.skin_id,
                     is_transparent_skin: +nickInfo.is_transparent_skin,
                     is_turning_skin: +nickInfo.is_turning_skin,
                     is_invisible_nick: +nickInfo.is_invisible_nick,
-                    is_random_color: +nickInfo.is_random_color
+                    is_random_color: +nickInfo.is_random_color,
+                    is_clan: +nickInfo.is_clan
                 };
             }
             if (!Functions.isEmpty(nickInfo.password) && String(this.password) !== String(nickInfo.password)) {
                 this.nick = "Wrong password";
-                this.skin = "";
-                this.skinId = "";
-                this.isModer = 0;
-                this.isAdmin = 0;
-                this.isVerified = false;
-                this.isChanged = true;
-                this.isTransparentSkin = false;
-                this.isTurningSkin = false;
-                this.isInvisibleNick = false;
-                this.isRandomColor = false;
+                this.clan = "";
+                this.resetNick();
                 return true;
             }
             // this.nick = nickInfo.nick;
@@ -855,30 +926,27 @@ class Player {
             this.skinId = +nickInfo.skin_id;
             this.isAdmin = +nickInfo.is_admin;
             this.isModer = +nickInfo.is_moder;
+            this.isHelper = +nickInfo.is_helper;
+            this.isGold = +nickInfo.is_gold;
+            this.isViolet = +nickInfo.is_violet;
             this.isTransparentSkin = Boolean(+nickInfo.is_transparent_skin);
             this.isTurningSkin = Boolean(+nickInfo.is_turning_skin);
             this.isVerified = !Functions.isEmpty(nickInfo.password);
             this.isInvisibleNick = Boolean(+nickInfo.is_invisible_nick);
             this.isRandomColor = Boolean(+nickInfo.is_random_color);
         } else {
-            if (!(this.nick.toLowerCase() in cachedNicks)) cachedNicks[this.nick.toLowerCase()] = false;
-            this.skin = "";
-            this.skinId = "";
-            this.isAdmin = 0;
-            this.isModer = 0;
-            this.isVerified = false;
-            this.isTransparentSkin = false;
-            this.isTurningSkin = false;
-            this.isInvisibleNick = false;
-            this.isRandomColor = false;
+            if (!(this.nick.toLowerCase() in searchObj)) searchObj[this.nick.toLowerCase()] = false;
+            this.resetNick();
         }
-        this.isChanged = true;
     }
 
-    async changeNick(nick, password = "") {
+    async changeNick(nick, password = "", clan = "") {
         this.nick = nick;
         this.password = password;
+        this.clan = clan;
         await this.authNick();
+        this.toColor = this.selectedColor;
+        this.changeColor(this.selectedColor);
     }
 
     changeColor(color) {
@@ -886,11 +954,15 @@ class Player {
         for (let i = 0; i < this.cells.length; i++) {
             this.cells[i].color = color;
         }
-        this.isChanged = true;
     }
 
     update(delta = 1) {
         if (!this.isSpawned) return true;
+
+        if (this.type === "bot" && performance.now() - this.lastUpdateDirection > gameInfo.botsUpdateDirectionInterval) {
+            this.setRandomDirection();
+            this.lastUpdateDirection = performance.now();
+        }
 
         if (this.isRandomColor && this.color === this.toColor) {
             this.toColor = Functions.getRandomColor();
@@ -905,12 +977,12 @@ class Player {
             let sR = Math.round(dR / 20);
             let sG = Math.round(dG / 20);
             let sB = Math.round(dB / 20);
-            if(Math.abs(sR) < 1) sR = Functions.toSignNumber(1, dR);
-            if(Math.abs(sG) < 1) sG = Functions.toSignNumber(1, dG);
-            if(Math.abs(sB) < 1) sB = Functions.toSignNumber(1, dB);
-            if(Math.abs(dR) < Math.abs(sR)) sR = dR;
-            if(Math.abs(dG) < Math.abs(sG)) sG = dG;
-            if(Math.abs(dB) < Math.abs(sB)) sB = dB;
+            if (Math.abs(sR) < 1) sR = Functions.toSignNumber(1, dR);
+            if (Math.abs(sG) < 1) sG = Functions.toSignNumber(1, dG);
+            if (Math.abs(sB) < 1) sB = Functions.toSignNumber(1, dB);
+            if (Math.abs(dR) < Math.abs(sR)) sR = dR;
+            if (Math.abs(dG) < Math.abs(sG)) sG = dG;
+            if (Math.abs(dB) < Math.abs(sB)) sB = dB;
             // console.log(sR);
             this.changeColor(Functions.rgbToHex(currentColor.r + sR, currentColor.g + sG, currentColor.b + sB));
         }
@@ -940,7 +1012,7 @@ class Player {
             }
             this.cells[this.updateI].update(delta);
             try {
-                mass = (mass + this.cells[this.updateI].mass) || mass;
+                mass = (mass + this.cells[this.updateI].mass + this.cells[this.updateI].toMass) || mass;
                 if (this.cells[this.updateI].main) {
                     this.x = this.cells[this.updateI].x;
                     this.y = this.cells[this.updateI].y;
@@ -956,56 +1028,40 @@ class Player {
     }
 
     split() {
+        if (performance.now() - this.lastSplitTime < 100) return true;
         this.isNeedSplit = true;
-        return true;
-
-        let length = this.cells.length;
-        for (let i = 0; i < length; i++) {
-            this.cells[i].split();
-        }
-
-        this.isChanged = true;
+        this.lastSplitTime = performance.now();
     }
 
     shoot() {
         if (performance.now() - this.lastShootTime < 100) return true;
         this.isNeedShoot = true;
         this.lastShootTime = performance.now();
-        return true;
-
-        let length = this.cells.length;
-        for (let i = 0; i < length; i++) {
-            this.cells[i].shoot();
-        }
-
-        this.isChanged = true;
     }
 
 
     mouseMove(x, y) {
         this.mouse = {x, y};
 
-        this.isChanged = true;
     }
 
     setStickers(stickers) {
         this.stickersSet = stickers;
         this.stickerI = null;
 
-        this.isChanged = true;
     }
 
     destroy() {
         this.isSpawned = false;
 
-        if (this.type === "player" && this.totalMass > dailyTop.mass) {
-            dailyTop.mass = this.totalMass;
+        if (this.type === "player" && this.score > dailyTop.score) {
+            dailyTop.score = this.score;
             dailyTop.nick = this.nick;
             dailyTop.skin = this.skin || "";
             dailyTop.skinId = this.skinId || "";
             game.wsMessage({
                 action: "game_message",
-                message: "Новый ежедневный рекорд " + this.totalMass + " установлен игроком " + this.nick
+                message: "Новый ежедневный рекорд " + this.score + " установлен игроком " + this.nick
             });
             game.wsMessage({
                 action: "get_daily_top",
@@ -1025,6 +1081,8 @@ class Player {
         this.y = coords.y;
         this.isSpawned = true;
         this.isSpectator = false;
+        this.isNeedShoot = false;
+        this.isNeedSplit = false;
         this.cells[0].updateDirection();
     }
 
@@ -1058,29 +1116,55 @@ class Game {
 
 
     constructor() {
+        this.clearAll();
+        this.onSpawnUnit = unit => "";
+        this.onDestroyUnit = (type, id) => "";
+        this.wsMessage = (message, id = null, besidesId = null, isNeedTime) => "";
+        this.lastUpdateUnitsTime = performance.now();
+        this.isStart = false;
+        this.isStop = false;
+        this.isStart = false;
+    }
+
+    clearAll() {
         this.foodsArr = [];
         this.virusArr = [];
         this.bulletsArr = [];
         this.playersArr = [];
         this.virusFeedingArr = [];
+        this.blackHoleArr = [];
+        this.shootingBlackHoleArr = [];
         this.gameStates = [];
         this.foodId = 0;
         this.virusId = 0;
         this.bulletId = 0;
         this.playerId = 0;
+        this.blackHoleId = 0;
         this.updatePlayerI = 0;
-        this.onSpawnUnit = unit => "";
-        this.onDestroyUnit = (type, id) => "";
-        this.wsMessage = (message, id = null, besidesId = null, isNeedTime) => "";
-        this.lastUpdateUnitsTime = performance.now();
+        this.isStop = false;
     }
 
+    restartGame() {
+        [this.isStart, this.isStop] = [true, true];
+    }
+
+    stopGame() {
+        this.isStop = true;
+    }
 
     startGame() {
+        if (this.isStop) return this.isStart = true;
         // return true;
-        gameInfo.updateTime = performance.now();
+        let worker = new Worker("/var/www/game.pw/server/GameClasses/Worker.js");
+        worker.on("message", data => {
+            gameInfo = data;
+            gameInfo.updateTime = performance.now();
+            setTimeout(() => this.loop(), 0);
+            worker.terminate();
+        });
+        worker.postMessage({action: "load_game_settings"});
 
-        setTimeout(() => this.loop(), 0);
+
     }
 
     spawnUnit() {
@@ -1103,9 +1187,27 @@ class Game {
         if (this.virusFeedingArr.length < gameInfo.feedingVirusCount) {
             let count = Functions.getRandomInt(0, gameInfo.feedingVirusCount - this.virusFeedingArr.length);
             for (let i = 0; i < count; i++) {
-                let coords = game.getRandomMapCoords();
+                let coords = this.getRandomMapCoords();
                 this.virusFeedingArr.push(
                     new Virus(coords.x, coords.y, 0, 0, 0, gameInfo.feedingVirusStartMass, "gold", true)
+                );
+            }
+        }
+        if (this.blackHoleArr.length < gameInfo.blackHoleCount) {
+            let count = Functions.getRandomInt(0, gameInfo.blackHoleCount - this.blackHoleArr.length);
+            for (let i = 0; i < count; i++) {
+                let coords = this.getRandomMapCoords();
+                this.blackHoleArr.push(
+                    new BlackHole(coords.x, coords.y, gameInfo.blackHoleStartMass, Functions.getRandomInt(0, 360), Functions.getRandomColor())
+                );
+            }
+        }
+        if (this.shootingBlackHoleArr.length < gameInfo.shootingBlackHoleCount) {
+            let count = Functions.getRandomInt(0, gameInfo.shootingBlackHoleCount - this.shootingBlackHoleArr.length);
+            for (let i = 0; i < count; i++) {
+                let coords = this.getRandomMapCoords();
+                this.shootingBlackHoleArr.push(
+                    new BlackHole(coords.x, coords.y, gameInfo.blackHoleStartMass, Functions.getRandomInt(0, 360), Functions.getRandomColor(), true, true)
                 );
             }
         }
@@ -1132,6 +1234,7 @@ class Game {
     }
 
     updateUnit() {
+        let delta = this.getTimeByDelta(gameInfo.deltaTime);
         this.updatePlayerI = 0;
         for (; this.updatePlayerI < this.playersArr.length; this.updatePlayerI++) {
             if (this.playersArr[this.updatePlayerI].isDisconnect) {
@@ -1140,7 +1243,7 @@ class Game {
                 this.updatePlayerI--;
                 continue;
             }
-            this.playersArr[this.updatePlayerI].update(this.getTimeByDelta(gameInfo.deltaTime));
+            this.playersArr[this.updatePlayerI].update(delta);
         }
 
         for (let i = 0; i < this.bulletsArr.length; i++) {
@@ -1153,6 +1256,14 @@ class Game {
 
         for (let i = 0; i < this.virusFeedingArr.length; i++) {
             this.virusFeedingArr[i].update();
+        }
+
+        for (let i = 0; i < this.blackHoleArr.length; i++) {
+            this.blackHoleArr[i].update(delta);
+        }
+
+        for (let i = 0; i < this.shootingBlackHoleArr.length; i++) {
+            this.shootingBlackHoleArr[i].update(delta);
         }
 
         // for (let i = 0; i < this.foodsArr.length; i++) {
@@ -1217,28 +1328,34 @@ class Game {
     }
 
     loop() {
-        if(performance.now() - gameInfo.updateTime < gameInfo.perSecond) return setTimeout(() => this.loop(), 0);
+        if (this.isStop) {
+            this.clearAll();
+            if (!this.isStart) return true;
+            this.isStart = false;
+            return this.startGame();
+        }
+        if (performance.now() - gameInfo.updateTime < gameInfo.perSecond) return setTimeout(() => this.loop(), 0);
         // while (performance.now() - gameInfo.updateTime >= gameInfo.perSecond) {
-            // let time = performance.now();
+        // let time = performance.now();
 
-            gameInfo.deltaTime = performance.now() - gameInfo.updateTime;
-            gameInfo.updateTime = performance.now();
-            let delta = this.getTimeByDelta(gameInfo.deltaTime);
+        gameInfo.deltaTime = performance.now() - gameInfo.updateTime;
+        gameInfo.updateTime = performance.now();
+        let delta = this.getTimeByDelta(gameInfo.deltaTime);
 
 
-            this.spawnUnit();
-            this.updateUnit();
-            this.addGameState();
-            this.spawnBots();
+        this.spawnUnit();
+        this.updateUnit();
+        this.addGameState();
+        this.spawnBots();
+
+        if (this.playersArr.length > 0) {
 
             // if (performance.now() - this.lastUpdateUnitsTime > 1000 / 60) {
-            let arr = [];
-            // console.log(JSON.stringify(arr));
-            arr = this.getAllUnits(false);
-            let time = Date.now();
+            let arr = this.getAllUnits(false);
+            let time = performance.now();
             for (let i = 0; i < this.playersArr.length; i++) {
                 let player = this.playersArr[i];
-                // if (player.type === "bot") continue;
+                if (player.type === "bot") continue;
 
 
                 // if (performance.now() - player.lastUpdateUnitsTime >= 100) {
@@ -1259,15 +1376,17 @@ class Game {
             this.lastUpdateUnitsTime = performance.now();
             // }
             // console.log(performance.now() - time);
-        // }
+            // }
+        }
 
         // console.log(performance.now() - time);
         setTimeout(() => this.loop(), 0);
     }
 
-    async playerConnect(wsId, color, nick = "SandL", password = "", token = "", userId = "", type = "player") {
+    async playerConnect(wsId, color, nick = "SandL", password = "", token = "", userId = "", type = "player", clan = "") {
+        let coords = this.getRandomMapCoords();
         this.playersArr.push(
-            new Player(wsId, Functions.getRandomInt(10, gameInfo.width), Functions.getRandomInt(10, gameInfo.height), gameInfo.startMass, 0, 0, color, nick, password, token, userId, "player", type === "spectator")
+            new Player(wsId, coords.x, coords.y, gameInfo.startMass, 0, 0, color, nick, password, token, userId, "player", type === "spectator", false, false, false, false, clan)
         );
 
     }
@@ -1287,10 +1406,8 @@ class Game {
         for (let i = 0; i < this.playersArr.length; i++) {
             let player = this.playersArr[i];
             if (typeof wsId === "number" && player.wsId !== wsId) continue;
-            // if (!all && !player.isChanged) continue;
 
             p.push(this.getUnit(player, all));
-            this.playersArr[i].isChanged = false;
             if (typeof wsId === "number" && player.wsId === wsId) break;
         }
 
@@ -1310,6 +1427,21 @@ class Game {
             v.push(this.getUnit(virus));
             this.virusFeedingArr[i].isChanged = false;
         }
+        let bh = [];
+        for (let i = 0; i < this.blackHoleArr.length; i++) {
+            let blackHole = this.blackHoleArr[i];
+            if (!all && !blackHole.isChanged) continue;
+
+            bh.push(this.getUnit(blackHole));
+            this.blackHoleArr[i].isChanged = false;
+        }
+        for (let i = 0; i < this.shootingBlackHoleArr.length; i++) {
+            let blackHole = this.shootingBlackHoleArr[i];
+            if (!all && !blackHole.isChanged) continue;
+
+            bh.push(this.getUnit(blackHole));
+            this.shootingBlackHoleArr[i].isChanged = false;
+        }
         if (all) {
 
             let foods = this.foodsArr.map(unit => {
@@ -1320,9 +1452,9 @@ class Game {
                 return this.getUnit(unit);
             });
 
-            return {p, foods, v, bullets};
+            return p.concat(foods, v, bullets, bh);
         }
-        return {p, v};
+        return p.concat(v, bh);
     }
 
     getUnit(unit, all = true) {
@@ -1330,13 +1462,16 @@ class Game {
 
         if (name === "player") {
             let obj = {
-                name: "p",
+                n: "p",
                 c: "", // cells
                 // ci: unit.cellId, // cellId
+                sc: unit.score,
                 y: unit.mouse.y, // mouseY
                 x: unit.mouse.x, // mouseX
-                cl: unit.color, // color
+                cl: unit.color, // color,
+                s: unit.selectedColor,
                 id: unit.wsId,
+                cn: unit.clan,
                 nick: unit.nick,
                 skin: unit.skin,
                 skinId: unit.skinId,
@@ -1349,6 +1484,7 @@ class Game {
             if (!all) {
                 // delete obj.mouseY;
                 // delete obj.mouseX;
+                delete obj.cn;
                 delete obj.itrs;
                 delete obj.iin;
                 delete obj.its;
@@ -1362,31 +1498,7 @@ class Game {
             for (let i = 0; i < length; i++) {
                 let cell = unit.cells[i];
                 let objC = [cell.id, cell.x, cell.y, cell.mass, cell.main ? "t" : "f", ""].join(","); // id, x, y, mass, main
-                // let objC = {
-                //     x: cell.x,
-                //     y: cell.y,
-                //     m: cell.mass, // mass
-                //     // tm: cell.toMass, // toMass
-                //     // ss: cell.spaceSin, // spaceSin
-                //     // sc: cell.spaceCos, // spaceCos
-                //     // sd: cell.spaceDistance,
-                //     // tsd: cell.totalSpaceDistane,
-                //     // ed: cell.engineDistance,
-                //     // es: cell.engineSin,
-                //     // ec: cell.engineCos,
-                //     // ic: cell.isConnect,
-                //     id: cell.id,
-                //     // c: cell.color,
-                //     // icl: cell.isCollising,
-                //     mn: cell.main,
-                //     // s: cell.sin,
-                //     // c: cell.cos
-                // };
-                // if (!all) {
-                //     for (let key in objC) {
-                //         if (!objC[key]) delete objC[key];
-                //     }
-                // }
+
                 obj.c += objC;
             }
             obj.c = obj.c.substring(0, obj.c.length - 1);
@@ -1395,30 +1507,22 @@ class Game {
             return obj;
         }
 
-        if (name === "virus") {
-            let isFeeding = unit.isFeeding ? "t" : "f";
-            let obj = {
-                name: "v",
-                d: [unit.id, unit.x, unit.y, unit.mass, isFeeding].join(",") // id, x, y, mass, isFeeding
-            };
-            return obj;
-        }
-        let obj = {
-            name,
-            id: unit.id,
-            x: unit.x,
-            y: unit.y,
-            mass: unit.mass,
-            toMass: unit.toMass,
-            color: unit.color,
-        };
-        if (name === "bullet" || name === "virus") {
-            obj.sin = unit.sin;
-            obj.cos = unit.cos;
-            obj.distance = unit.distance;
+        if (name === "blackhole") {
+            return ["bh", unit.id, unit.x, unit.y, unit.mass, unit.angle].join(","); // id, x, y, mass, angle
         }
 
-        return obj;
+        if (name === "virus") {
+            let isFeeding = unit.isFeeding ? "t" : "f";
+            return ["v", unit.id, unit.x, unit.y, unit.mass, isFeeding].join(","); // id, x, y, mass, isFeeding
+        }
+
+        if (name === "food") {
+            return ["f", unit.id, unit.x, unit.y, unit.mass, unit.color].join(",") // id, x, y, mass, color
+        }
+
+        if (name === "bullet") {
+            return ["b", unit.id, unit.x, unit.y, unit.sin, unit.cos, unit.mass, unit.distance, unit.color, unit.isDecreaseMass ? "t" : "f"].join(",") // id, x, y, sin, cos, mass, distance, color
+        }
     }
 
     /**
@@ -1486,6 +1590,15 @@ class Game {
         this.playersArr[player.count].toMass += mass;
     }
 
+
+    setMass(wsId, mass) {
+        let player = this.findPlayer(wsId);
+        if (!player) return false;
+
+        let currentMass = player.player.mass;
+        this.playersArr[player.count].toMass += mass - currentMass;
+    }
+
     breakPlayer(wsId) {
         let player = this.findPlayer(wsId);
         if (!player) return false;
@@ -1493,12 +1606,12 @@ class Game {
         this.playersArr[player.count].isBreak = true;
     }
 
-    async changeNick(wsId, nick, password = "") {
+    async changeNick(wsId, nick, password = "", clan = "") {
         let player = this.findPlayer(wsId);
         if (!player) return true;
 
         player = player.player;
-        await player.changeNick(nick, password);
+        await player.changeNick(nick, password, clan);
     }
 
     changeColor(wsId, color) {
@@ -1507,6 +1620,8 @@ class Game {
 
         player = player.player;
         player.changeColor(color);
+        player.selectedColor = color;
+        player.toColor = color;
     }
 
     setStickers(wsId, stickers) {

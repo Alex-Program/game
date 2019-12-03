@@ -128,7 +128,7 @@ $(document).ready(function () {
         });
 
 
-    let ws = new Ws("ws://127.0.0.1:8081");
+    let ws = new Ws("ws://127.0.0.1:8082");
 
     ws.on("message", function (event) {
         let data = "";

@@ -2,7 +2,7 @@
 
     class Skin {
 
-        constructor(id, nick, skinId = "", password = "", isAdmin = 0, isModer = 0, userId = getCookie("User-Id"), skin = "", count = 0, isTransparentSkin = 0, isTurningSkin = 0, isInvisibleNick = 0, isRandomColor = 0) {
+        constructor(id, nick, skinId = "", password = "", isAdmin = 0, isModer = 0, userId = getCookie("User-Id"), skin = "", count = 0, isTransparentSkin = 0, isTurningSkin = 0, isInvisibleNick = 0, isRandomColor = 0, isClan = 0) {
             this.id = id;
             this.nick = escapeHtml(nick);
             this.skinId = skinId;
@@ -17,6 +17,7 @@
             this.isTurningSkin = isTurningSkin;
             this.isInvisibleNick = isInvisibleNick;
             this.isRandomColor = isRandomColor;
+            this.isClan = isClan;
         }
 
         renderHtml() {
@@ -51,8 +52,9 @@
             else if (name === "password") return this.password;
             else if (name === "is_transparent_skin") return Boolean(this.isTransparentSkin);
             else if (name === "is_turning_skin") return Boolean(this.isTurningSkin);
-            else if(name === "is_invisible_nick") return Boolean(this.isInvisibleNick);
-            else if(name === "is_random_color") return Boolean(this.isRandomColor);
+            else if (name === "is_invisible_nick") return Boolean(this.isInvisibleNick);
+            else if (name === "is_random_color") return Boolean(this.isRandomColor);
+            else if (name === "is_clan") return Boolean(this.isClan);
         }
 
         checkChanges(name, value) {
@@ -80,6 +82,10 @@
                     defaultValue = this.isRandomColor;
                     value = +value;
                     break;
+                case "is_clan":
+                    defaultValue = this.isClan;
+                    value = +value;
+                    break;
                 default:
                     defaultValue = this.id;
                     value = +value;
@@ -95,8 +101,9 @@
             else if (name === "skin_id") this.skinId = value;
             else if (name === "is_transparent_skin") this.isTransparentSkin = +value;
             else if (name === "is_turning_skin") this.isTurningSkin = +value;
-            else if(name === "is_invisible_nick") this.isInvisibleNick = +value;
-            else if(name === "is_random_color") this.isRandomColor = +value;
+            else if (name === "is_invisible_nick") this.isInvisibleNick = +value;
+            else if (name === "is_random_color") this.isRandomColor = +value;
+            else if (name === "is_clan") this.isClan = +value;
         }
 
     }
@@ -204,6 +211,7 @@
     let skinsArr = [];
     let isChangedSkin = false;
     let selectedSkinCount = null;
+    let isClan = false;
 
     let isChanged = {};
     let isCreated = {};
@@ -222,6 +230,7 @@
         isCreated = {};
         isChanged = {};
         $("#sum span:eq(0)").text("0");
+        // $(".skin_tag:eq(0)").click();
     }
 
     resetInputs();
@@ -233,13 +242,16 @@
             .then(data => {
                 if (data.result !== "true") return false;
 
-                let html = "";
+                let nicksHtml = "";
+                let clansHtml = "";
                 for (let skin of data.data) {
-                    let s = new Skin(skin.id, skin.nick, skin.skin_id, skin.password, skin.is_admin, skin.is_moder, skin.user_id, skin.skin, skinsArr.length, +skin.is_transparent_skin, +skin.is_turning_skin, +skin.is_invisible_nick, +skin.is_random_color);
+                    let s = new Skin(skin.id, skin.nick, skin.skin_id, skin.password, skin.is_admin, skin.is_moder, skin.user_id, skin.skin, skinsArr.length, +skin.is_transparent_skin, +skin.is_turning_skin, +skin.is_invisible_nick, +skin.is_random_color, +skin.is_clan);
                     skinsArr.push(s);
-                    html += s.renderHtml();
+                    if (+skin.is_clan) clansHtml += s.renderHtml();
+                    else nicksHtml += s.renderHtml();
                 }
-                $("#all_skins").html(html);
+                $("#all_skins").html(nicksHtml);
+                $("#all_clans").html(clansHtml);
 
             });
     }
@@ -262,6 +274,7 @@
 
                 if (!(changedKey in keysInPrice)) continue;
                 let priceKey = keysInPrice[changedKey];
+                if (isClan) priceKey = "clan_" + priceKey;
                 if (!(priceKey in prices)) continue;
                 sum += +prices[priceKey];
             }
@@ -326,7 +339,8 @@
 
         .on("click", "#create_skin_button", function () {
             let obj = {
-                action: "create_nick"
+                action: "create_nick",
+                is_clan: +isClan
             };
             $("#nick_info input").each(function (i, el) {
                 let type = $(el).attr("type");
@@ -373,6 +387,7 @@
             if (objectLength(obj) === 0) return true;
 
             obj.id = skinsArr[selectedSkinCount].id;
+            obj.is_clan = +isClan;
             obj.action = "change_nick";
 
             if (("nick" in obj && isEmpty(obj.nick)) || (isEmpty(obj.password) && (obj.remove_skin || !skinsArr[selectedSkinCount].image))) return true;
@@ -418,6 +433,18 @@
         .on("click", "#skin_canvas", function () {
             if (!canvas.image) return true;
             openImage(canvas.image.src);
+        })
+
+        .on("click", ".skin_tag", function () {
+            if ($(this).hasClass("selected")) return true;
+
+            $(".skin_tag.selected").removeClass("selected");
+            $(this).addClass("selected");
+            let name = $(this).attr("data-name");
+            $(".all_skins").hide();
+            $(".all_skins[data-name='" + name + "']").show();
+            isClan = name === "clans";
+            resetInputs();
         });
 
 })();

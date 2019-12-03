@@ -2,10 +2,16 @@
 
 
 <div id="main_block" class="flex_row" style="align-items: flex-start; white-space: nowrap;">
-
-    <div>
+    <div id="nicks_menu">
+        <div class="skin_tag selected" data-name="nicks">Ники</div>
+        <div class="skin_tag" data-name="clans">Кланы</div>
+    </div>
+    <div style="margin-left: 10px;">
         <div id="create_skin" class="button button_green">Создать скин</div>
-        <div id="all_skins">
+        <div id="all_skins" class="all_skins" data-name="nicks">
+
+        </div>
+        <div id="all_clans" class="all_skins" style="display: none;" data-name="clans">
 
         </div>
     </div>

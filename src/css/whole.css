@@ -5,7 +5,7 @@
     outline: none;
 }
 
-canvas{
+canvas {
     display: block;
 }
 
@@ -31,6 +31,10 @@ input {
 
 input {
     box-shadow: 0 0 10px transparent;
+}
+
+input:not([type='checkbox']) {
+    cursor: text;
 }
 
 input:invalid {
@@ -103,13 +107,17 @@ button, button:active, button:focus, input {
     align-items: center;
 }
 
+.flex_grow_all {
+    flex-grow: 1;
+}
+
 .main_text {
     padding: 5px;
-    font-weight: bold;
     color: gold;
     background: red;
     border: solid 2px gold;
     border-radius: 5px;
+    font: bold 15pt/15pt sans-serif;
 }
 
 .gold_input {
@@ -129,7 +137,7 @@ button, button:active, button:focus, input {
     animation-duration: 3s;
 }
 
-.gold_input:read-only{
+.gold_input:read-only {
     /*color: #3e3e3e;*/
     color: red;
 }

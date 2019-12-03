@@ -20,6 +20,7 @@ class Auth extends Model
     `image_id` text NOT NULL,
     `stickers` text NOT NULL,
     `balance` int(11) default 0,
+    `bonus_balance` int(11) DEFAULT 0,
     `level` int(11) default 0,
     `experience` bigint(32) default 0,
     `is_admin` tinyint(1) default 0,
@@ -36,6 +37,8 @@ class Auth extends Model
         $sql = "ALTER TABLE `users` ADD `is_banned`tinyint(1) default 0";
         $this->mysqli->query($sql);
         $sql = "ALTER TABLE `users` ADD `image_id` tinyint(1) DEFAULT 0";
+        $this->mysqli->query($sql);
+        $sql = "ALTER TABLE `users` ADD `bonus_balance` int(11) DEFAULT 0";
         $this->mysqli->query($sql);
     }
 
@@ -174,6 +177,17 @@ class Auth extends Model
         $userId = $this->mysqli->real_escape_string($userId);
 
         $sql = "UPDATE `users` SET `balance`=`balance`+" . $sum . " WHERE `id`=" . $userId;
+        if ($this->mysqli->query($sql)) return true;
+
+        return false;
+    }
+
+    public function addBonusBalance($sum, $userId)
+    {
+        $sum = $this->mysqli->real_escape_string($sum);
+        $userId = $this->mysqli->real_escape_string($userId);
+
+        $sql = "UPDATE `users` SET `bonus_balance`=`bonus_balance`+" . $sum . " WHERE `id`=" . $userId;
         if ($this->mysqli->query($sql)) return true;
 
         return false;

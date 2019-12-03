@@ -5,7 +5,7 @@ exports.Files = class {
     encoding = "utf8";
 
     constructor(src, encoding = "utf8") {
-        this.src = src;
+        this.src = "/var/www/game.pw/server/" + src;
         this.encoding = encoding;
     }
 
@@ -21,7 +21,7 @@ exports.Files = class {
 
     async readFile() {
         return new Promise(async (resolve, reject) => {
-            if(!await this.checkPath()) resolve("");
+            if (!await this.checkPath()) resolve("");
 
             fs.readFile(this.src, {encoding: this.encoding}, function (error, data) {
                 if (error) reject(error);

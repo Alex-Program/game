@@ -8,3 +8,5 @@ src/users_img/
 .idea/
 ./server/node_modules/
 server/node_modules/
+server/game_info.json
+./server/game_info.json

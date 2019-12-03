@@ -6,6 +6,7 @@ class Server extends Model
 
     public function __construct()
     {
+        $this->tableName = "servers";
         parent::__construct();
 
         $sql = "CREATE TABLE IF NOT EXISTS `servers` (

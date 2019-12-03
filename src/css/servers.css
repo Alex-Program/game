@@ -9,10 +9,63 @@
     border: solid 2px black;
 }
 
-.server > *{
+.server > * {
     margin: 5px;
+}
+
+.server_info {
+    transition: background 0.5s;
+    background: #52a8c5;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+.server_info:hover {
+    background: #6adbff;
+}
+
+.server_info > img {
+    width: 40px;
 }
 
 .ip {
     width: 200px;
+}
+
+#server_info {
+    transition: right 0.5s, opacity 0.5s;
+    position: fixed;
+    right: 0;
+    height: 100%;
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 40px;
+    border-left: solid 5px gold;
+    color: gold;
+    z-index: 1;
+    overflow: auto;
+}
+
+#server_info > div{
+    margin-top: 10px;
+}
+
+#server_info span {
+    padding: 5px;
+    border-radius: 5px;
+    border: solid 2px gold;
+    background: red;
+    color: gold;
+    font: bold 14pt/15pt sans-serif;
+    width: 300px;
+    text-align: center;
+}
+
+#server_info input {
+    margin-left: 10px;
+}
+
+#server_info.closed {
+    right: -100%;
+    opacity: 0;
 }

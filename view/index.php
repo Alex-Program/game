@@ -66,6 +66,40 @@
     </div>
 </div>
 
+
+<div id="admin_panel" class="closed">
+    <div class="flex_row">
+        <div data-id="players_for_admin" class="admin_tag selected">Игроки</div>
+        <div data-id="report" class="admin_tag">Жалобы</div>
+    </div>
+
+    <div style="padding: 20px; background: rgba(0,0,0,0.8);" id="admin_data">
+        <div id="players_for_admin">
+            <div class="flex_row" class="header">
+                <span class="id main_text">Id</span><span class="nick main_text">Ник</span><span class="mass main_text" data-action="change_mass">Масса</span>
+            </div>
+            <div class="data">
+
+            </div>
+        </div>
+        <div id="report" style="display: none;">
+
+        </div>
+    </div>
+</div>
+
+
+<div id="admin_panel_action" class="closed">
+    <div class="flex_row" data-name="mass">
+        <input type="text" class="gold_input" style="width: 100px;">
+        <button id="admin_change_mass" class="button button_primary" style="margin-left: 5px;">Изменить</button>
+    </div>
+    <div class="flex_row" data-name="nick">
+        <input type="text" class="gold_input" style="width: 100px;">
+        <button id="admin_change_nick" class="button button_primary" style="margin-left: 5px;">Изменить</button>
+    </div>
+</div>
+
 <div id="top_players">
 
 </div>
@@ -88,6 +122,7 @@
     <div>Написать ЛС</div>
     <div>Обратиться</div>
     <div>Скопировать ник</div>
+    <div>Пожаловаться</div>
 </div>
 
 <div id="online_players" class="closed">
@@ -235,7 +270,11 @@
             </div>
         </div>
         <div style="display: flex; flex-direction: row; border: dashed 3px gold; padding: 5px; background: lightseagreen; border-radius: 5px;">
-            <div style="position: relative;" class="flex_row">
+            <div class="flex_row">
+                <span class="label_input">Клан:</span>
+                <input type="text" class="gold_input" placeholder="Клан" id="clan_for_game">
+            </div>
+            <div style="position: relative; margin-left: 10px;" class="flex_row">
                 <span class="label_input">Ник:</span>
                 <div style="position: relative; margin-left: 10px;">
                     <input type="text" class="gold_input" placeholder="Ник" id="nick_for_game">
@@ -313,6 +352,9 @@
     <div id="music_button">
         <img src="/src/images/music_button.png">
     </div>
+    <div id="to_admin_panel" class="for_moder" style="display: none;">
+        <img src="/src/images/admin.png">
+    </div>
 </div>
 
 <div id="select_music" class="closed">
@@ -348,6 +390,16 @@
 
 <div id="game_settings" class="closed">
     <h2 style="text-align: center;">Настройки</h2>
+    <!--    <div>-->
+    <!--        <span class="label_settings">Картинка на фон</span>-->
+    <!--        <input type="text" class="gold_input" data-name="backgroundImage" placeholder="http://...">-->
+    <!--        <div class="tumbler">-->
+    <!--            <input type="checkbox" class="toggle_settings" data-name="isBackgroundImage">-->
+    <!--            <div>-->
+    <!--                <div></div>-->
+    <!--            </div>-->
+    <!--        </div>-->
+    <!--    </div>-->
     <div>
         <span class="label_settings">Фон</span>
         <input type="color" class="select_color_input" data-name="background" value="#000000">
@@ -365,6 +417,28 @@
         <span class="select_color_span" style="background: #000000; color: white;">#000000</span>
         <div class="tumbler">
             <input type="checkbox" class="toggle_settings" data-name="isCellColor">
+            <div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <span class="label_settings">Цвет ников игроков</span>
+        <input type="color" class="select_color_input" data-name="cellNickColor" value="#FFFFFF">
+        <span class="select_color_span" style="background: #FFFFFF; color: black;">#FFFFFF</span>
+        <div class="tumbler">
+            <input type="checkbox" class="toggle_settings" data-name="isCellNickColor">
+            <div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <span class="label_settings">Выделять кланы</span>
+        <input type="color" class="select_color_input" data-name="clanCellColor" value="#FFD700">
+        <span class="select_color_span" style="background: #FFD700; color: black;">#FFD700</span>
+        <div class="tumbler">
+            <input type="checkbox" class="toggle_settings" data-name="isClanCellColor">
             <div>
                 <div></div>
             </div>
@@ -404,6 +478,28 @@
         </div>
     </div>
     <div>
+        <span class="label_settings">Цвет уменьшающей массы</span>
+        <input type="color" class="select_color_input" data-name="decreaseBulletColor" value="#000000">
+        <span class="select_color_span" style="background: #000000; color: white;">#000000</span>
+        <div class="tumbler">
+            <input type="checkbox" class="toggle_settings" data-name="isDecreaseBulletColor">
+            <div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <span class="label_settings">Цвет массы вирусов</span>
+        <input type="color" class="select_color_input" data-name="virusMassColor" value="#FFFFFF">
+        <span class="select_color_span" style="background: #FFFFFF; color: black;">#FFFFFF</span>
+        <div class="tumbler">
+            <input type="checkbox" class="toggle_settings" data-name="isVirusMassColor">
+            <div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+    <div>
         <span class="label_settings">Свечение</span>
         <input type="color" class="select_color_input" data-name="shadowColor" value="#000000">
         <span class="select_color_span" style="background: #000000; color: white;">#000000</span>
@@ -436,28 +532,28 @@
             </div>
         </div>
     </div>
-    <div>
-        <span class="label_settings">Grayscale-фильтр (сильные лаги)</span>
-        <!--                <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
-        <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
-        <div class="tumbler">
-            <input type="checkbox" class="toggle_settings" data-name="isGrayscale">
-            <div>
-                <div></div>
-            </div>
-        </div>
-    </div>
-    <div>
-        <span class="label_settings">Sepia-фильтр (сильные лаги)</span>
-        <!--                <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
-        <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
-        <div class="tumbler">
-            <input type="checkbox" class="toggle_settings" data-name="isSepia">
-            <div>
-                <div></div>
-            </div>
-        </div>
-    </div>
+    <!--    <div>-->
+    <!--        <span class="label_settings">Grayscale-фильтр (сильные лаги)</span>-->
+    <!--                <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
+    <!--        <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>-->
+    <!--        <div class="tumbler">-->
+    <!--            <input type="checkbox" class="toggle_settings" data-name="isGrayscale">-->
+    <!--            <div>-->
+    <!--                <div></div>-->
+    <!--            </div>-->
+    <!--        </div>-->
+    <!--    </div>-->
+    <!--    <div>-->
+    <!--        <span class="label_settings">Sepia-фильтр (сильные лаги)</span>-->
+    <!--                <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
+    <!--        <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>-->
+    <!--        <div class="tumbler">-->
+    <!--            <input type="checkbox" class="toggle_settings" data-name="isSepia">-->
+    <!--            <div>-->
+    <!--                <div></div>-->
+    <!--            </div>-->
+    <!--        </div>-->
+    <!--    </div>-->
     <div>
         <span class="label_settings">Яркие цвета (сильные лаги)</span>
         <!--                <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
@@ -469,17 +565,17 @@
             </div>
         </div>
     </div>
-    <div>
-        <span class="label_settings">Инверсия цветов (сильные лаги)</span>
-        <!--                <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
-        <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
-        <div class="tumbler">
-            <input type="checkbox" class="toggle_settings" data-name="isInvertColor">
-            <div>
-                <div></div>
-            </div>
-        </div>
-    </div>
+    <!--    <div>-->
+    <!--        <span class="label_settings">Инверсия цветов (сильные лаги)</span>-->
+    <!--                <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
+    <!--        <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>-->
+    <!--        <div class="tumbler">-->
+    <!--            <input type="checkbox" class="toggle_settings" data-name="isInvertColor">-->
+    <!--            <div>-->
+    <!--                <div></div>-->
+    <!--            </div>-->
+    <!--        </div>-->
+    <!--    </div>-->
     <div>
         <span class="label_settings">Отключить автоматическую очистку поля</span>
         <!--        <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
@@ -558,6 +654,17 @@
         </div>
     </div>
     <div>
+        <span class="label_settings">Отключить прозрачные скины</span>
+        <!--        <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
+        <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
+        <div class="tumbler">
+            <input type="checkbox" class="toggle_settings" data-name="isDisableTransparentSkin">
+            <div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+    <div>
         <span class="label_settings">Не загружать картинки</span>
         <!--        <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
         <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
@@ -574,6 +681,17 @@
         <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
         <div class="tumbler">
             <input type="checkbox" class="toggle_settings" data-name="isLowImage">
+            <div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <span class="label_settings">Отключить анимированные цвета</span>
+        <!--        <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
+        <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
+        <div class="tumbler">
+            <input type="checkbox" class="toggle_settings" data-name="isDisableColorAnim">
             <div>
                 <div></div>
             </div>
@@ -597,6 +715,17 @@
         <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
         <div class="tumbler">
             <input type="checkbox" class="toggle_settings" data-name="isBigText">
+            <div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <span class="label_settings">Уменьшить текст</span>
+        <!--        <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
+        <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
+        <div class="tumbler">
+            <input type="checkbox" class="toggle_settings" data-name="isSmallText">
             <div>
                 <div></div>
             </div>
