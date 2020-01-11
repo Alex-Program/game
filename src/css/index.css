@@ -115,6 +115,10 @@ canvas {
     background: url("../images/moder.png") #FFF;
 }
 
+#all_messages .helper .icon {
+    background: url("../images/helper.png") #FFF;
+}
+
 #all_messages .verified .icon {
     background: url("../images/verified.png") #FFF;
 }

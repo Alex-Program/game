@@ -25,7 +25,8 @@ class Skin extends Model
     `is_clan` TINYINT(1) DEFAULT 0,
     `is_helper` TINYINT(1) DEFAULT 0,
     `is_gold` TINYINT(1) DEFAULT 0,
-    `is_violet` TINYINT(1) DEFAULT 0
+    `is_violet` TINYINT(1) DEFAULT 0,
+    `is_random_nick_color` TINYINT(1) DEFAULT 0
 )";
         $this->mysqli->query($sql);
 
@@ -46,6 +47,8 @@ class Skin extends Model
         $sql = "ALTER TABLE `nicks` ADD `is_gold` TINYINT(1) DEFAULT 0";
         $this->mysqli->query($sql);
         $sql = "ALTER TABLE `nicks` ADD `is_violet` TINYINT(1) DEFAULT 0";
+        $this->mysqli->query($sql);
+        $sql = "ALTER TABLE `nicks` ADD `is_random_nick_color` TINYINT(1) DEFAULT 0";
         $this->mysqli->query($sql);
     }
 
@@ -69,7 +72,7 @@ class Skin extends Model
         return $arr;
     }
 
-    public function createNick($nick, $password, $skinId, $userId, $isTransparentSkin, $isTurningSkin, $isInvisibleNick, $isRandomColor, $isClan = false)
+    public function createNick($nick, $password, $skinId, $userId, $isTransparentSkin, $isTurningSkin, $isInvisibleNick, $isRandomColor, $isClan = false, $isRandomNickColor)
     {
         $nick = $this->mysqli->real_escape_string($nick);
         $password = $this->mysqli->real_escape_string($password);
@@ -79,9 +82,10 @@ class Skin extends Model
         $isTurningSkin = $this->mysqli->real_escape_string($isTurningSkin);
         $isInvisibleNick = $this->mysqli->real_escape_string($isInvisibleNick);
         $isRandomColor = $this->mysqli->real_escape_string($isRandomColor);
+        $isRandomNickColor = $this->mysqli->real_escape_string($isRandomNickColor);
         $isClan = (int)$isClan;
 
-        $sql = "INSERT INTO `nicks` (`nick`, `time`, `skin_id`, `password`, `user_id`, `is_transparent_skin`, `is_turning_skin`, `is_invisible_nick`, `is_random_color`, `is_clan`) VALUES ('" . $nick . "', " . time() . ", '" . $skinId . "', '" . $password . "', '" . $userId . "', " . $isTransparentSkin . ", " . $isTurningSkin . ", " . $isInvisibleNick . ", " . $isRandomColor . ", " . $isClan . ")";
+        $sql = "INSERT INTO `nicks` (`nick`, `time`, `skin_id`, `password`, `user_id`, `is_transparent_skin`, `is_turning_skin`, `is_invisible_nick`, `is_random_color`, `is_clan`, `is_random_nick_color`) VALUES ('" . $nick . "', " . time() . ", '" . $skinId . "', '" . $password . "', '" . $userId . "', " . $isTransparentSkin . ", " . $isTurningSkin . ", " . $isInvisibleNick . ", " . $isRandomColor . ", " . $isClan . ", " . $isRandomNickColor . ")";
         if ($this->mysqli->query($sql)) return $this->mysqli->insert_id;
 
         return false;
@@ -114,18 +118,18 @@ class Skin extends Model
         return $row;
     }
 
-    public function getAllNicks(){
+    public function getAllNicks()
+    {
         $sql = "SELECT * FROM `nicks`";
         $result = $this->mysqli->query($sql);
-        if($result->num_rows === 0) return [];
+        if ($result->num_rows === 0) return [];
 
         $arr = [];
         $image = new Image();
-        while($row = $result->fetch_assoc()){
-            if(!empty($row['skin_id'])){
+        while ($row = $result->fetch_assoc()) {
+            if (!empty($row['skin_id'])) {
                 $row['skin'] = $image->getPath($row['skin_id']);
-            }
-            else $row['skin'] = "";
+            } else $row['skin'] = "";
             array_push($arr, $row);
         }
 

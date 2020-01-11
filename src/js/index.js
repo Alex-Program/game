@@ -14,6 +14,28 @@ let isAdmin = false;
 let isModer = false;
 
 
+function toDataUlr(img) {
+    let c = document.createElement("canvas");
+    [c.width, c.height] = [512, 512];
+    let ctx = c.getContext("2d");
+    ctx.clearRect(0, 0, c.width, c.height);
+    ctx.drawImage(img, 0, 0, c.width, c.height);
+    return c.toDataURL("image/png", 1.0);
+}
+
+function cacheImage(imageName, img) {
+    let dataUrl = toDataUlr(img);
+    try {
+        localStorage.setItem("image" + imageName, dataUrl);
+    } catch {
+    }
+}
+
+function getCachedImage(imageName) {
+    imageName = "image" + imageName;
+    return localStorage.getItem(imageName) || null;
+}
+
 function loadImage(imageName, src) {
     if (imagesArr[imageName] || imagesArr[imageName] === null) return false;
 
@@ -22,6 +44,9 @@ function loadImage(imageName, src) {
 
     let hideImage = +gameSettings.hideImage;
     if (hideImage) return true;
+
+    let cache = getCachedImage(imageName);
+    if (!isEmpty(cache)) src = cache;
 
     let image = new Image();
 
@@ -45,9 +70,13 @@ function loadImage(imageName, src) {
         return true;
     }
 
-    image.onload = () => imagesArr[imageName] = image;
+    image.onload = () => {
+        imagesArr[imageName] = image;
+        if (!cache && !gameSettings.isDisableImageCache) cacheImage(imageName, image);
+    };
     image.src = src;
 }
+
 
 function reloadImages() {
     imagesArr = {};
@@ -59,6 +88,17 @@ function reloadImages() {
 let imagesSrc = {};
 let imagesArr = {};
 
+
+let isNeedUpdateNickImages = false;
+
+function checkIsNeedUpdateNickImages(name) {
+    for (let property of ["cellnickcolor", "clancellcolor", "isoptimization", "isbigtext", "issmalltext", "isalphatext", "textshadowcolor"]) {
+        if (name.toLowerCase().includes(property)) {
+            isNeedUpdateNickImages = true;
+            break;
+        }
+    }
+}
 
 class Message {
     static getNewMessage(data) {
@@ -73,7 +113,7 @@ class Message {
 
         if (isAdmin) cl = "admin";
         else if (isModer) cl = "moder";
-        else if (isHelper) cl = "verified helper";
+        else if (isHelper) cl = "helper";
         else if (isGold) cl = "verified gold";
         else if (isViolet) cl = "verified violet";
         else if (isVerified) cl = "verified";
@@ -220,6 +260,14 @@ function changeNick(nick, password = "", clan = "") {
     });
 
     if (isEmpty(clan)) addLocalNick(nick, password);
+    else nick = clan;
+    clan = +!isEmpty(clan);
+    $("#user_nicks .user_skin").removeClass("selected");
+    $("#user_nicks .user_skin").each(function (i, el) {
+        let n = $(el).attr("data-nick");
+        let isClan = +$(el).attr("data-clan");
+        if (n.toLowerCase() === nick.toLowerCase() && clan === isClan) $(el).addClass("selected");
+    });
 }
 
 function addLocalNick(nick, password) {
@@ -244,6 +292,7 @@ function getLocalNicks() {
     let returned = "";
     try {
         returned = JSON.parse(nicks);
+        if (typeof returned !== "object") throw("Error");
     } catch {
         return null;
     }
@@ -269,7 +318,7 @@ function deleteLocalNick(nick) {
     let nicks = getLocalNicks() || [];
     for (let [key, n] of Object.entries(nicks)) {
         if (n.nick.toLowerCase() === nick.toLowerCase()) {
-            nicks.splice(key, 1);
+            nicks.splice(+key, 1);
             localStorage.setItem("nicks", JSON.stringify(nicks));
             break;
         }
@@ -286,11 +335,12 @@ function onDeleteLocalNick(nick) {
 
 function getSettings() {
     let settings = localStorage.getItem("settings");
-    if (!settings) return false;
+    if (!settings) return null;
     try {
         settings = JSON.parse(settings);
+        if (typeof settings !== "object") throw("Error");
     } catch {
-        return false;
+        return null;
     }
 
     return settings;
@@ -347,7 +397,10 @@ function onNickInfo() {
     else if (isModer) {
         $(".for_moder").show();
         $(".for_admin").hide();
-    } else $(".for_moder, .for_admin").hide();
+    } else {
+        $(".for_moder, .for_admin").hide();
+        $("#admin_panel").addClass("closed");
+    }
 }
 
 let user = null;
@@ -565,10 +618,12 @@ let getNickTimeOut = null;
 let changeSettings = false;
 let isChangeColor = false;
 let isMoveCoords = false;
+let isMoveAdminPanel = false;
 let differentCoordsPosition = {x: 0, y: 0};
 
 let selectedAdminPanelPlayer = null;
 
+let adminPanelHtml = $("#admin_panel");
 $("#resize_chat").mousedown(() => resizeChat = true);
 $("#coords").mousedown(event => {
     let coords = $("#coords")[0].getBoundingClientRect();
@@ -579,20 +634,33 @@ $("#coords").mousedown(event => {
 $("body").mouseup(() => {
     resizeChat = false;
     isMoveCoords = false;
+    isMoveAdminPanel = false
 })
     .mousemove(function (event) {
         if (isMoveCoords) {
             $("#coords").css({
                 left: event.clientX - differentCoordsPosition.x,
-                top: event.clientY - differentCoordsPosition.y
+                top: event.clientY - differentCoordsPosition.y,
             });
             return true;
-        }
-        if (!resizeChat) return true;
 
-        let height = window.innerHeight - 20 - event.clientY;
-        if (height < 200) height = 200;
-        $("#main_messages").css("height", height);
+        } else if (resizeChat) {
+
+            let height = window.innerHeight - 20 - event.clientY;
+            if (height < 200) height = 200;
+            $("#main_messages").css("height", height);
+            return true;
+
+        } else if (isMoveAdminPanel) {
+            adminPanelHtml.css({
+                left: event.clientX - differentCoordsPosition.x,
+                top: event.clientY - differentCoordsPosition.y,
+                right: "auto"
+            });
+            return true;
+
+        }
+
     })
 
     .on("click", "#play_button", () => $("#servers_list").addClass("show"))
@@ -637,6 +705,19 @@ $("body").mouseup(() => {
         userActionsDiv.css({top: event.clientY + 10, left: event.clientX + 10}).removeClass("closed");
         $("#selected_chat_user").val(parent.attr("data-pid"));
         $("#selected_chat_nick").val(parent.attr("data-nick"));
+    })
+
+    .on("contextmenu", "#players_for_admin .player", function (event) {
+        $(".user_actions").addClass("closed");
+        event.preventDefault();
+        event.stopPropagation();
+        let userActionsDiv = $(".user_actions.admin");
+        let nick = $(this).attr("data-nick");
+        let pId = $(this).attr("data-id");
+        userActionsDiv.find("div:eq(0)").text(nick + " (" + pId + ")");
+        userActionsDiv.css({top: event.pageY + 10, left: event.clientX + 10}).removeClass("closed");
+        $("#selected_chat_user").val(pId);
+        $("#selected_chat_nick").val(nick);
     })
 
     .on("click", ".user_actions div:eq(0)", event => event.stopPropagation())
@@ -827,20 +908,30 @@ $("body").mouseup(() => {
         changeSettings = true;
     })
 
-    .on("change", ".select_color_input", function () {
-        let color = $(this).val();
+    .on("change input", ".select_color_input, .settings_input", function () {
         let name = $(this).attr("data-name");
-        let rgb = hexToRgb(color);
-        let textColor = "white";
-        if (rgb.brightness) textColor = "black";
-        $(this).next(".select_color_span").css({background: color, color: textColor}).text(color);
-        setGameSetting(name, color);
+        let val = $(this).val();
+
+        if ($(this).hasClass("settings_input")) {
+            if (name === "backgroundImage") {
+                delete imagesArr['background_image'];
+                loadImage("background_image", val);
+            }
+        } else if ($(this).hasClass("select_color_input")) {
+            let rgb = hexToRgb(val);
+            let textColor = "white";
+            if (rgb.brightness) textColor = "black";
+            $(this).next(".select_color_span").css({background: val, color: textColor}).text(val);
+        }
+        checkIsNeedUpdateNickImages(name);
+        setGameSetting(name, val);
     })
 
     .on("change", ".toggle_settings", function () {
         $(this).blur();
         let value = +$(this).prop("checked");
         let name = $(this).attr("data-name");
+        checkIsNeedUpdateNickImages(name);
         setGameSetting(name, value);
         if (name === "isLowImage" || name === "hideImage") reloadImages();
     })
@@ -988,8 +1079,7 @@ $("body").mouseup(() => {
             div = $("#admin_panel_action div[data-name='mass']");
             let mass = $(this).text();
             div.find("input").val(mass);
-        }
-        else if($(this).hasClass("nick")){
+        } else if ($(this).hasClass("nick")) {
             div = $("#admin_panel_action div[data-name='nick']");
             let nick = $(this).text();
             div.find("input").val(nick);
@@ -1010,18 +1100,27 @@ $("body").mouseup(() => {
         new Command("set_mass " + selectedAdminPanelPlayer + " " + mass);
     })
 
-    .on("click", "#admin_change_nick", function(){
-        if(isEmpty(selectedAdminPanelPlayer) || !ws) return true;
+    .on("click", "#admin_change_nick", function () {
+        if (isEmpty(selectedAdminPanelPlayer) || !ws) return true;
 
         let nick = $(this).prev("input").val();
-        if(isEmpty(nick)) return true;
+        if (isEmpty(nick)) return true;
 
         new Command("set_nick " + selectedAdminPanelPlayer + " " + nick);
     })
 
     .on("click", "#admin_panel_action, #admin_panel", e => e.stopPropagation())
 
-    .on("click", "#to_admin_panel", () => $("#admin_panel").toggleClass("closed"));
+    .on("click", "#to_admin_panel", () => $("#admin_panel").toggleClass("closed"))
+
+    .on("mousedown", "#admin_panel", function (event) {
+        if (!event.ctrlKey) return true;
+
+        let coords = $("#admin_panel")[0].getBoundingClientRect();
+        differentCoordsPosition.x = event.clientX - coords.left;
+        differentCoordsPosition.y = event.clientY - coords.top;
+        isMoveAdminPanel = true;
+    });
 
 
 {
@@ -1034,6 +1133,12 @@ $("body").mouseup(() => {
         $("#main_menu").append(image);
     }
 }
+
+
+window.addEventListener("beforeinstallprompt", function (e) {
+    e.preventDefault();
+    e.prompt();
+});
 
 
 loadGameSettings();

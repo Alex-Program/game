@@ -7,6 +7,21 @@ let gameInfo = {};
 /// nick => {password, skin, skin_id, is_transparent_skin}
 let cachedNicks = {};
 let cachedClans = {};
+let nicksStatistic = {};
+
+function updateStatistic() {
+    if (Object.keys(nicksStatistic).length === 0) return setTimeout(() => updateStatistic(), 300000);
+
+    let worker = new Worker("/var/www/" + game.serverName + "/server/GameClasses/Worker.js");
+    worker.on("message", function () {
+        worker.terminate();
+        setTimeout(() => updateStatistic(), 300000);
+    });
+    worker.postMessage({action: "update_statistic", data: nicksStatistic});
+    nicksStatistic = {};
+}
+
+setTimeout(() => updateStatistic(), 300000);
 
 function clearCachedNicks() {
     cachedNicks = {};
@@ -79,6 +94,23 @@ class Arc {
         return c <= maxRadius - minRadius / 2;
     }
 
+    static checkCollision(unit1, unit2) {
+        let c = Math.sqrt((unit1.x - unit2.x) ** 2 + (unit1.y - unit2.y) ** 2);
+        return c <= unit1.drawableRadius + unit2.drawableRadius;
+    }
+
+    checkBorder() {
+        if (this.x < 0) this.x = 0;
+        else if (this.x > gameInfo.width) this.x = gameInfo.width;
+
+        if (this.y < 0) this.y = 0;
+        else if (this.y > gameInfo.height) this.y = gameInfo.height;
+    }
+
+    static checkIsPlayer(player) {
+        return !player.isSpectator && player.type === "player" && player.isSpawned;
+    }
+
 }
 
 
@@ -104,7 +136,7 @@ let Food = exports.Food = class Food extends Arc {
 
 class Bullet extends Arc {
 
-    constructor(x, y, sin, cos, mass, distance, color = "#ff0400", fromFeedingVirus = false, isDecreaseMass = false) {
+    constructor(x, y, sin, cos, mass, distance, color = "#ff0400", fromFeedingVirus = false, isDecreaseMass = false, isMoving = false) {
         super();
 
         this.id = ++game.bulletId;
@@ -117,6 +149,7 @@ class Bullet extends Arc {
         this.color = color;
         this.fromFeedingVirus = fromFeedingVirus;
         this.isDecreaseMass = isDecreaseMass;
+        this.isMoving = isMoving;
 
         game.onSpawnUnit(this);
     }
@@ -240,7 +273,9 @@ class Virus extends Arc {
             let c = Math.sqrt((this.x - bullet.x) ** 2 + (this.y - bullet.y) ** 2);
             if (c > this.drawableRadius + bullet.drawableRadius) continue;
 
-            this.toMass += bullet.mass;
+            if (!bullet.isMoving) {
+                this.toMass += bullet.mass;
+            } else this.distance += 10;
 
             bullet.destroy();
             game.bulletsArr.splice(i, 1);
@@ -275,6 +310,111 @@ class Virus extends Arc {
 
 }
 
+class Enemy extends Arc {
+    constructor(x, y, mass, angle, color = "#000000", isMoving = true, isDecreaseMass = false, isRandomMass = false, isRandomSpeed = false) {
+        super();
+
+        this.id = ++game.enemyId;
+        this.x = x;
+        this.y = y;
+        this.mass = mass;
+        this.toMass = 0;
+        this.angle = angle;
+        this.color = color;
+        this.isMoving = isMoving;
+        this.lastShootTime = performance.now();
+        this.isDecreaseMass = isDecreaseMass;
+        this.isRandomMass = isRandomMass;
+        this.isChanged = true;
+        this.lastUpdateDirection = performance.now();
+        this.lastUpdateMass = performance.now();
+        this.speedCoefficient = 1;
+        this.isRandomSpeed = isRandomSpeed;
+        this.lastSpeedCoefficient = performance.now();
+
+        game.onSpawnUnit(this);
+    }
+
+    update(delta = 1) {
+        if (performance.now() - this.lastShootTime >= gameInfo.enemyShootInterval) {
+            let bulletRadius = Arc.getDrawableRadius(gameInfo.enemyBulletMass);
+            let byX = (this.drawableRadius + bulletRadius) * this.cos;
+            let byY = (this.drawableRadius + bulletRadius) * this.sin;
+
+            let count = Functions.getRandomInt(1, 5);
+
+            for (let i = 0; i < count; i++) {
+                game.bulletsArr.push(
+                    new Bullet(this.x + byX, this.y + byY, this.sin, this.cos, gameInfo.enemyBulletMass, gameInfo.enemyBulletDistance, this.color, false, Functions.getRandomBoolean(), Functions.getRandomBoolean())
+                );
+            }
+            this.lastShootTime = performance.now();
+        }
+
+        if (this.isRandomMass && performance.now() - this.lastUpdateMass >= 60000) {
+            if (Functions.getRandomBoolean()) {
+                let mass = Functions.getRandomInt(1000, 20000);
+                this.toMass = mass - this.mass - this.toMass;
+            }
+
+            this.lastUpdateMass = performance.now();
+        }
+
+        if (this.isRandomSpeed && this.isMoving && performance.now() - this.lastSpeedCoefficient >= 5000) {
+            this.speedCoefficient = Functions.getRandomInt(1, 3);
+            this.lastSpeedCoefficient = performance.now();
+        }
+
+        if (performance.now() - this.lastUpdateDirection > 1000) {
+            this.angle = Functions.getRandomInt(0, 360);
+            for (let i = 0; i < game.playersArr.length; i++) {
+                let player = game.playersArr[i];
+                if (!Arc.checkIsPlayer(player)) continue;
+                if (!Functions.getRandomInt(0, 1)) continue;
+                let coords = player.getMainCoords();
+
+                let different = Functions.getDifferentByCoords(coords.x, this.x, coords.y, this.y);
+                this.angle = different.angle.degree;
+                break;
+            }
+            this.lastUpdateDirection = performance.now();
+        }
+
+
+        if (Math.abs(this.toMass) > 0) {
+            let speed = this.toMass * delta / 5;
+            if (Math.abs(speed) < 1) speed = this.toMass >= 0 ? 1 : -1;
+            if (Math.abs(this.toMass) < Math.abs(speed)) speed = this.toMass;
+
+            this.mass = Math.round(this.mass + speed);
+            this.toMass = Math.round(this.toMass - speed);
+            // if (this.mass >= gameInfo.maxCellMass) {
+            //     this.mass = gameInfo.maxCellMass;
+            //     this.toMass = 0;
+            // }
+
+            this.isChanged = true;
+        }
+
+        if (!this.isMoving) return true;
+
+        this.x = Functions.roundFloor(this.x + this.cos * this.speed * gameInfo.enemySpeedCoefficient * this.speedCoefficient * delta, 2);
+        this.y = Functions.roundFloor(this.y + this.sin * this.speed * gameInfo.enemySpeedCoefficient * this.speedCoefficient * delta, 2);
+
+        this.checkBorder();
+
+        this.isChanged = true;
+    }
+
+    get sin() {
+        return Math.sin(Functions.degreeToRadians(this.angle));
+    }
+
+    get cos() {
+        return Math.cos(Functions.degreeToRadians(this.angle));
+    }
+
+}
 
 class BlackHole extends Arc {
 
@@ -308,7 +448,7 @@ class BlackHole extends Arc {
             let byY = (this.drawableRadius + bulletRadius) * sin;
 
             game.bulletsArr.push(
-                new Bullet(this.x + byX, this.y + byY, sin, cos, gameInfo.blackHoleBulletMass, gameInfo.blackHoleBulletDistance, "#FF0000", false, true)
+                new Bullet(this.x + byX, this.y + byY, sin, cos, gameInfo.blackHoleBulletMass, gameInfo.blackHoleBulletDistance, "#FF0000", false, true, Boolean(Functions.getRandomInt(0, 1)))
             );
             this.lastShootTime = performance.now();
         }
@@ -459,7 +599,7 @@ class Cell extends Arc {
                 if (this.mass * 1.25 <= virus.mass) {
                     if (c > virus.drawableRadius - 0.5 * this.drawableRadius) continue;
 
-                    virus.toMass += this.mass;
+                    virus.toMass = Functions.roundFloor(virus.toMass + this.mass + this.toMass, 2);
                     this.destroy();
                     return true;
                 }
@@ -479,7 +619,6 @@ class Cell extends Arc {
                 let blackHole = game.blackHoleArr[i];
 
                 if (!Arc.checkEatCollision(this, blackHole)) continue;
-                this.owner.score += Math.round(this.mass);
                 this.destroy();
             }
 
@@ -490,21 +629,28 @@ class Cell extends Arc {
                 this.destroy();
             }
 
+            for (let i = 0; i < game.enemyArr.length; i++) {
+                let enemy = game.enemyArr[i];
+                if (!Arc.checkCollision(this, enemy) || !enemy.isDecreaseMass) continue;
+
+                this.toMass = Functions.roundFloor(this.toMass - enemy.mass / Functions.getRandomInt(500, 1000), 2);
+            }
+
         }
 
         if (this.isCollising) {
             for (let i = 0; i < game.bulletsArr.length; i++) {
                 let bullet = game.bulletsArr[i];
-                let c = Math.sqrt((this.x - bullet.x) ** 2 + (this.y - bullet.y) ** 2);
-                if (this.drawableRadius >= c) {
-                    let mass = bullet.mass * gameInfo.bulletEatenCoefficient;
-                    if (bullet.isDecreaseMass) mass *= -1;
-                    this.toMass += mass;
+                if (!Arc.checkEatCollision(this, bullet)) continue;
 
-                    bullet.destroy();
-                    game.bulletsArr.splice(i, 1);
-                    i--;
-                }
+                let mass = bullet.mass * gameInfo.bulletEatenCoefficient;
+                if (bullet.isDecreaseMass) mass *= -1;
+                this.toMass += mass;
+
+                bullet.destroy();
+                game.bulletsArr.splice(i, 1);
+                i--;
+
             }
 
 
@@ -521,14 +667,8 @@ class Cell extends Arc {
 
         }
 
-        if (this.x < 0) this.x = 0;
-        else if (this.x > gameInfo.width) this.x = gameInfo.width;
+        this.checkBorder();
 
-        if (this.y < 0) this.y = 0;
-        else if (this.y > gameInfo.height) this.y = gameInfo.height;
-
-        // this.engineSin = 0;
-        // this.engineCos = 0;
         if (this.x <= 0 || this.x >= gameInfo.width) {
             this.engineCos = -this.cos;
             this.engineDistance = this.x <= 0 ? -this.x : this.x - gameInfo.width;
@@ -578,7 +718,7 @@ class Cell extends Arc {
                     if (Math.abs(this.spaceDistance) > 0 || this.mass < cell.mass || !this.isConnect || !cell.isConnect) continue;
 
                     if (distance <= Functions.roundFloor(this.drawableRadius - cell.drawableRadius / 2, 2)) {
-                        this.toMass = Functions.roundFloor(this.toMass + cell.mass, 2);
+                        this.toMass = Functions.roundFloor(this.toMass + cell.mass + cell.toMass, 2);
                         this.main = cell.main || this.main;
                         this.owner.cells.splice(i, 1);
                         if (this.owner.updateI > i) {
@@ -595,7 +735,7 @@ class Cell extends Arc {
                 if (this.mass < 1.25 * cell.mass) continue;
                 if (distance > Functions.roundFloor(this.drawableRadius - cell.drawableRadius / 2, 2)) continue;
 
-                this.toMass = Functions.roundFloor(this.toMass + cell.mass, 2);
+                this.toMass = Functions.roundFloor(this.toMass + cell.mass + cell.toMass, 2);
                 game.playersArr[p].cells.splice(i, 1);
                 i--;
 
@@ -707,12 +847,39 @@ class Cell extends Arc {
 
     }
 
+    dSplit() {
+        this.isCollising = true;
+        let mass = this.mass + this.toMass;
+        if (this.owner.cells.length === gameInfo.maxCells || mass < 1000) return true;
+
+
+        // this.isConnect = false;
+        // setTimeout(() => this.isConnect = true, gameInfo.connectTime + this.mass * gameInfo.connectTimeMassCoefficient);
+
+        let newCellMass = mass / 20;
+        if (newCellMass > 500) newCellMass = 500;
+
+        let height = this.radius * this.sin;
+        let width = this.radius * this.cos;
+        let distance = Arc.getDrawableRadius(newCellMass);
+
+        this.toMass = Math.floor(this.toMass - newCellMass);
+
+        let c = new Cell(Functions.roundFloor(this.x + width, 2), Functions.roundFloor(this.y + height), newCellMass, this.sin, this.cos, false, this.color, this.owner, ++this.owner.cellId, distance);
+        c.isConnect = true;
+        this.owner.cells.push(c);
+    }
+
 
     shoot() {
         if (this.mass + this.toMass <= 70) return true;
 
+        let angle = Functions.getAngle(this.sin, this.cos);
+        angle = Functions.degreeToRadians(Functions.getRandomInt(angle.degree - 5, angle.degree + 5));
+        let sin = Math.sin(angle);
+        let cos = Math.cos(angle);
         game.bulletsArr.push(
-            new Bullet(this.x + (this.radius + 5) * this.cos, this.y + (this.radius + 5) * this.sin, this.sin, this.cos, gameInfo.bulletMass, gameInfo.bulletDistance, this.color, false)
+            new Bullet(this.x + (this.radius + 5) * cos, this.y + (this.radius + 5) * sin, sin, cos, gameInfo.bulletMass, gameInfo.bulletDistance, this.color, false, false, false)
         );
         this.toMass -= gameInfo.bulletMass;
     }
@@ -724,20 +891,22 @@ class Cell extends Arc {
             this.toMass -= gameInfo.bulletMass;
             let rand = this.getRandomInRound(100, Arc.getDrawableRadius(gameInfo.bulletMass) + 5);
             game.bulletsArr.push(
-                new Bullet(rand.x, rand.y, 0, 0, gameInfo.bulletMass, 0, "#ff0400", false)
+                new Bullet(rand.x, rand.y, 0, 0, gameInfo.bulletMass, 0, "#ff0400", false, false, false)
             );
         }
     }
 
     getRandomInRound(radius = 300, distance = 0) {
-        let minX = this.x - this.drawableRadius - radius;
-        let maxX = this.x + this.drawableRadius + radius;
-        let minY = this.y - this.drawableRadius - radius;
-        let maxY = this.y + this.drawableRadius + radius;
-        let x = Functions.getRandomInt(minX, maxX);
-        let y = Functions.getRandomInt(minY, maxY);
-        if ((this.x - x) ** 2 + (this.y - y) ** 2 <= (this.drawableRadius + distance) ** 2 || Arc.outOfBorder(x, y)) return this.getRandomInRound(radius, distance);
-        return {x, y};
+        while (true) {
+            let minX = this.x - this.drawableRadius - radius;
+            let maxX = this.x + this.drawableRadius + radius;
+            let minY = this.y - this.drawableRadius - radius;
+            let maxY = this.y + this.drawableRadius + radius;
+            let x = Functions.getRandomInt(minX, maxX);
+            let y = Functions.getRandomInt(minY, maxY);
+            if ((this.x - x) ** 2 + (this.y - y) ** 2 <= (this.drawableRadius + distance) ** 2 || Arc.outOfBorder(x, y)) continue;
+            return {x, y};
+        }
     }
 
 
@@ -772,6 +941,7 @@ class Player {
         this.isTurningSkin = isTurningSkin;
         this.isInvisibleNick = isInvisibleNick;
         this.isRandomColor = true;
+        this.isRandomNickColor = false;
         this.lastRandomColor = performance.now();
 
         this.isVerified = false;
@@ -814,14 +984,17 @@ class Player {
         this.stickerI = null;
         this.lastShootTime = performance.now();
         this.lastSplitTime = performance.now();
+        this.lastDSplitTime = performance.now();
         this.isSpawned = false;
         // this.lastUpdateUnitsTime = performance.now();
         this.isSpectator = isSpectator;
         this.isNeedSplit = false;
+        this.isNeedDSplit = false;
         this.isNeedShoot = false;
         this.isDisconnect = false;
 
         this.lastUpdateDirection = performance.now();
+        this.startPlayTime = null;
 
         this.main();
     }
@@ -840,6 +1013,7 @@ class Player {
                 this.cells[0].updateDirection();
             }
             this.isSpawned = !this.isSpectator;
+            if (this.isSpawned) this.startPlayTime = performance.now();
             game.onSpawnUnit(this);
         } catch (e) {
         }
@@ -889,10 +1063,15 @@ class Player {
         this.isTurningSkin = false;
         this.isInvisibleNick = false;
         this.isRandomColor = false;
+        this.isRandomNickColor = false;
+        this.password = "";
     }
 
 
     async authNick() {
+        if (this.clan.length > 8) this.clan = this.clan.substr(0, 8);
+        let lengthForNick = 15 - this.clan.length;
+        if (this.nick.length > lengthForNick) this.nick = this.nick.substr(0, lengthForNick);
         let searchObj = Functions.isEmpty(this.clan) ? cachedNicks : cachedClans;
         let search = Functions.isEmpty(this.clan) ? this.nick.toLowerCase() : this.clan.toLowerCase();
         let nickInfo = search in searchObj ? searchObj[search] : await this.getNickInfo();
@@ -912,7 +1091,8 @@ class Player {
                     is_turning_skin: +nickInfo.is_turning_skin,
                     is_invisible_nick: +nickInfo.is_invisible_nick,
                     is_random_color: +nickInfo.is_random_color,
-                    is_clan: +nickInfo.is_clan
+                    is_clan: +nickInfo.is_clan,
+                    is_random_nick_color: +nickInfo.is_random_nick_color
                 };
             }
             if (!Functions.isEmpty(nickInfo.password) && String(this.password) !== String(nickInfo.password)) {
@@ -934,6 +1114,7 @@ class Player {
             this.isVerified = !Functions.isEmpty(nickInfo.password);
             this.isInvisibleNick = Boolean(+nickInfo.is_invisible_nick);
             this.isRandomColor = Boolean(+nickInfo.is_random_color);
+            this.isRandomNickColor = Boolean(+nickInfo.is_random_nick_color);
         } else {
             if (!(this.nick.toLowerCase() in searchObj)) searchObj[this.nick.toLowerCase()] = false;
             this.resetNick();
@@ -974,9 +1155,9 @@ class Player {
             let dR = targetColor.r - currentColor.r;
             let dG = targetColor.g - currentColor.g;
             let dB = targetColor.b - currentColor.b;
-            let sR = Math.round(dR / 20);
-            let sG = Math.round(dG / 20);
-            let sB = Math.round(dB / 20);
+            let sR = Math.round(dR / 40);
+            let sG = Math.round(dG / 40);
+            let sB = Math.round(dB / 40);
             if (Math.abs(sR) < 1) sR = Functions.toSignNumber(1, dR);
             if (Math.abs(sG) < 1) sG = Functions.toSignNumber(1, dG);
             if (Math.abs(sB) < 1) sB = Functions.toSignNumber(1, dB);
@@ -996,6 +1177,12 @@ class Player {
                 this.cells[i].split();
             }
             this.isNeedSplit = false;
+        }
+
+        if (this.isNeedDSplit) {
+            let cell = this.findMainCell();
+            this.cells[cell.count].dSplit();
+            this.isNeedDSplit = false;
         }
 
         for (; this.updateI < this.cells.length; this.updateI++) {
@@ -1021,7 +1208,10 @@ class Player {
             }
             // rendersArr.push(this.cells[this.updateI]);
         }
-        if (mass > this.totalMass) this.totalMass = Math.floor(mass);
+        if (mass > this.totalMass) {
+            this.totalMass = Math.floor(mass);
+            this.score = this.totalMass;
+        }
         this.mass = Math.floor(mass);
         this.isBreak = false;
         this.isNeedShoot = false;
@@ -1033,6 +1223,12 @@ class Player {
         this.lastSplitTime = performance.now();
     }
 
+    dSplit() {
+        if (performance.now() - this.lastDSplitTime < 100) return true;
+        this.isNeedDSplit = true;
+        this.lastDSplitTime = performance.now();
+    }
+
     shoot() {
         if (performance.now() - this.lastShootTime < 100) return true;
         this.isNeedShoot = true;
@@ -1041,7 +1237,7 @@ class Player {
 
 
     mouseMove(x, y) {
-        this.mouse = {x, y};
+        this.mouse = {x: +x, y: +y};
 
     }
 
@@ -1054,19 +1250,32 @@ class Player {
     destroy() {
         this.isSpawned = false;
 
-        if (this.type === "player" && this.score > dailyTop.score) {
-            dailyTop.score = this.score;
-            dailyTop.nick = this.nick;
-            dailyTop.skin = this.skin || "";
-            dailyTop.skinId = this.skinId || "";
-            game.wsMessage({
-                action: "game_message",
-                message: "Новый ежедневный рекорд " + this.score + " установлен игроком " + this.nick
-            });
-            game.wsMessage({
-                action: "get_daily_top",
-                top: dailyTop
-            });
+        if (this.type === "player") {
+            if (!Functions.isEmpty(this.password)) {
+                let nick = this.nick.toLowerCase();
+                if (!(nick in nicksStatistic)) nicksStatistic[nick] = {score: 0, time: 0};
+                if (this.score > nicksStatistic[nick]) nicksStatistic[nick].score = this.score;
+                if (this.startPlayTime !== null) {
+                    nicksStatistic[nick].time += Math.round((performance.now() - this.startPlayTime) / 1000);
+                    this.startPlayTime = null;
+                }
+
+            }
+
+            if (this.score > dailyTop.score) {
+                dailyTop.score = this.score;
+                dailyTop.nick = this.nick;
+                dailyTop.skin = this.skin || "";
+                dailyTop.skinId = this.skinId || "";
+                game.wsMessage({
+                    action: "game_message",
+                    message: "Новый ежедневный рекорд " + this.score + " установлен игроком " + this.nick
+                });
+                game.wsMessage({
+                    action: "get_daily_top",
+                    top: dailyTop
+                });
+            }
         } else if (this.type === "bot") game.onDestroyUnit(this.constructor.name.toLowerCase(), this.wsId);
     }
 
@@ -1084,12 +1293,12 @@ class Player {
         this.isNeedShoot = false;
         this.isNeedSplit = false;
         this.cells[0].updateDirection();
+        this.startPlayTime = performance.now();
     }
 
     getMainCoords() {
-        for (let i = 0; i < this.cells.length; i++) {
-            if (this.cells[i].main) return {x: this.cells[i].x, y: this.cells[i].y};
-        }
+        let cell = this.findMainCell();
+        return {x: cell.cell.x, y: cell.cell.y};
     }
 
     setCoords(x, y) {
@@ -1109,6 +1318,16 @@ class Player {
         }
     }
 
+
+    /**
+     * @return {{count: number, cell: Cell}}
+     */
+    findMainCell() {
+        for (let i = 0; i < this.cells.length; i++) {
+            if (this.cells[i].main) return {count: i, cell: this.cells[i]};
+        }
+    }
+
 }
 
 
@@ -1125,8 +1344,8 @@ class Game {
         this.isStop = false;
         this.isStart = false;
 
-        // this.serverName = "game.pw";
-        this.serverName = "sandl.pw";
+        this.serverName = "game.pw";
+        // this.serverName = "sandl.pw";
     }
 
     clearAll() {
@@ -1136,6 +1355,7 @@ class Game {
         this.playersArr = [];
         this.virusFeedingArr = [];
         this.blackHoleArr = [];
+        this.enemyArr = [];
         this.shootingBlackHoleArr = [];
         this.gameStates = [];
         this.foodId = 0;
@@ -1143,6 +1363,7 @@ class Game {
         this.bulletId = 0;
         this.playerId = 0;
         this.blackHoleId = 0;
+        this.enemyId = 0;
         this.updatePlayerI = 0;
         this.isStop = false;
     }
@@ -1214,10 +1435,39 @@ class Game {
                 );
             }
         }
+        if (this.enemyArr.length < gameInfo.enemyCount) {
+            let count = Functions.getRandomInt(0, gameInfo.enemyCount - this.enemyArr.length);
+            for (let i = 0; i < count; i++) {
+                let coords = this.getRandomMapCoords();
+                this.enemyArr.push(
+                    new Enemy(coords.x, coords.y, Functions.getRandomInt(gameInfo.enemyMinMass, gameInfo.enemyMaxMass), Functions.getRandomInt(0, 360), Functions.getRandomColor(), Functions.getRandomBoolean(), Functions.getRandomBoolean(), Functions.getRandomBoolean(), Functions.getRandomBoolean())
+                );
+            }
+        }
     }
 
-    getRandomMapCoords() {
-        return {x: Functions.getRandomInt(50, gameInfo.width), y: Functions.getRandomInt(50, gameInfo.height)};
+    getRandomMapCoords(isCheckVirus = false, radius = null) {
+        let obj = {};
+        if (isCheckVirus) {
+            loop: while (true) {
+                let x = Functions.getRandomInt(50, gameInfo.width);
+                let y = Functions.getRandomInt(50, gameInfo.height);
+                for (let i = 0; i < this.virusArr.length; i++) {
+                    let virus = this.virusArr[i];
+                    let needDistance = virus.drawableRadius;
+                    if (radius !== null) needDistance += radius;
+                    if ((x - virus.x) ** 2 + (y - virus.y) ** 2 <= needDistance ** 2) continue loop;
+                }
+                obj.x = x;
+                obj.y = y;
+                break;
+            }
+
+        } else {
+            obj.x = Functions.getRandomInt(50, gameInfo.width);
+            obj.y = Functions.getRandomInt(50, gameInfo.height);
+        }
+        return obj;
     }
 
     spawnBots() {
@@ -1229,7 +1479,7 @@ class Game {
             let coords = this.getRandomMapCoords();
             let mouseCoords = this.getRandomMapCoords();
             this.playersArr.push(
-                new Player(this.playerId++, coords.x, coords.y, gameInfo.startMass, mouseCoords.x, mouseCoords.y, Functions.getRandomColor(), "ni", "", "", "", "bot")
+                new Player(this.playerId++, coords.x, coords.y, gameInfo.startMass, mouseCoords.x, mouseCoords.y, Functions.getRandomColor(), "bot", "", "", "", "bot")
             );
             count--;
         }
@@ -1267,6 +1517,10 @@ class Game {
 
         for (let i = 0; i < this.shootingBlackHoleArr.length; i++) {
             this.shootingBlackHoleArr[i].update(delta);
+        }
+
+        for (let i = 0; i < this.enemyArr.length; i++) {
+            this.enemyArr[i].update(delta);
         }
 
         // for (let i = 0; i < this.foodsArr.length; i++) {
@@ -1387,7 +1641,7 @@ class Game {
     }
 
     async playerConnect(wsId, color, nick = "SandL", password = "", token = "", userId = "", type = "player", clan = "") {
-        let coords = this.getRandomMapCoords();
+        let coords = this.getRandomMapCoords(true, Arc.getDrawableRadius(gameInfo.startMass));
         this.playersArr.push(
             new Player(wsId, coords.x, coords.y, gameInfo.startMass, 0, 0, color, nick, password, token, userId, "player", type === "spectator", false, false, false, false, clan)
         );
@@ -1445,6 +1699,14 @@ class Game {
             bh.push(this.getUnit(blackHole));
             this.shootingBlackHoleArr[i].isChanged = false;
         }
+        let en = [];
+        for (let i = 0; i < this.enemyArr.length; i++) {
+            let enemy = this.enemyArr[i];
+            if (!all && !enemy.isChanged) continue;
+
+            en.push(this.getUnit(enemy));
+            this.enemyArr[i].isChanged = false;
+        }
         if (all) {
 
             let foods = this.foodsArr.map(unit => {
@@ -1455,9 +1717,9 @@ class Game {
                 return this.getUnit(unit);
             });
 
-            return p.concat(foods, v, bullets, bh);
+            return p.concat(foods, v, bullets, bh, en);
         }
-        return p.concat(v, bh);
+        return p.concat(v, bh, en);
     }
 
     getUnit(unit, all = true) {
@@ -1472,6 +1734,7 @@ class Game {
                 y: unit.mouse.y, // mouseY
                 x: unit.mouse.x, // mouseX
                 cl: unit.color, // color,
+                m: unit.mass,
                 s: unit.selectedColor,
                 id: unit.wsId,
                 cn: unit.clan,
@@ -1482,7 +1745,8 @@ class Game {
                 stickerI: Functions.isEmpty(unit.stickerI) ? "" : unit.stickerI,
                 its: +unit.isTransparentSkin,
                 itrs: +unit.isTurningSkin,
-                iin: +unit.isInvisibleNick
+                iin: +unit.isInvisibleNick,
+                irn: +unit.isRandomNickColor
             };
             if (!all) {
                 // delete obj.mouseY;
@@ -1491,6 +1755,7 @@ class Game {
                 delete obj.itrs;
                 delete obj.iin;
                 delete obj.its;
+                delete obj.irn;
                 delete obj.nick;
                 delete obj.skin;
                 delete obj.skinId;
@@ -1526,6 +1791,10 @@ class Game {
         if (name === "bullet") {
             return ["b", unit.id, unit.x, unit.y, unit.sin, unit.cos, unit.mass, unit.distance, unit.color, unit.isDecreaseMass ? "t" : "f"].join(",") // id, x, y, sin, cos, mass, distance, color
         }
+
+        if (name === "enemy") {
+            return ["e", unit.id, unit.x, unit.y, unit.mass, unit.color].join(",");
+        }
     }
 
     /**
@@ -1548,24 +1817,16 @@ class Game {
         return {player, count: i};
     }
 
-    shoot(wsId, time) {
-        // let playerState = this.getPlayerInGameState(time, wsId);
+    shoot(wsId) {
         let playerNow = this.findPlayer(wsId);
-        // if (!playerState || !playerNow) return true;
         if (!playerNow) return true;
-        // this.playersArr[playerNow.count] = playerState;
         this.playersArr[playerNow.count].shoot();
-        // this.playersArr[playerNow.count].update(this.getTimeByDelta(Date.now() - time));
     }
 
-    split(wsId, time) {
-        // let playerState = this.getPlayerInGameState(time, wsId);
+    split(wsId) {
         let playerNow = this.findPlayer(wsId);
-        // if (!playerState || !playerNow) return true;
         if (!playerNow) return true;
-        // this.playersArr[playerNow.count] = playerState;
         this.playersArr[playerNow.count].split();
-        // this.playersArr[playerNow.count].update(this.getTimeByDelta(Date.now() - time));
     }
 
     mouseMove(wsId, x, y, time) {
@@ -1665,6 +1926,20 @@ class Game {
         else if (y > gameInfo.height) y = gameInfo.height;
 
         player.player.setCoords(x, y);
+    }
+
+    kickPlayer(wsId) {
+        let player = this.findPlayer(wsId);
+        if (!player) return true;
+
+        this.playersArr[player.count].isDisconnect = true;
+    }
+
+    dSplit(wsId) {
+        let player = this.findPlayer(wsId);
+        if (!player) return true;
+
+        this.playersArr[player.count].dSplit();
     }
 
 }

@@ -102,6 +102,15 @@
                 </div>
             </div>
         </div>
+        <div class="flex_row">
+            <span class="main_text">Цветной ник</span>
+            <div class="tumbler">
+                <input type="checkbox" class="search_filter" data-name="is_random_nick_color">
+                <div>
+                    <div></div>
+                </div>
+            </div>
+        </div>
 
         <div class="flex_row" style="justify-content: flex-start;">
             <button id="show_nicks" class="button button_primary">Показать</button>
@@ -116,6 +125,8 @@
 
     </div>
 </div>
+
+<input type="file" style="display: none;" id="image_input">
 
 <div id="nick_info" class="closed">
     <h3 style="text-align: center;"></h3>
@@ -231,6 +242,21 @@
                 <div></div>
             </div>
         </div>
+    </div>
+    <div class="flex_row">
+        <span class="main_text">Цветной ник</span>
+        <div class="flex_grow_all"></div>
+
+        <div class="tumbler">
+            <input type="checkbox" class="search_filter" data-name="is_random_nick_color">
+            <div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex_row" style="justify-content: center;">
+        <img id="nick_image">
     </div>
 
     <div class="flex_row">

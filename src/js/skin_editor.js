@@ -1,8 +1,89 @@
 (function () {
 
+    class Instruments {
+        selectedInstrument = "move";
+        availableInstruments = {
+            move: this.move,
+            brush: this.brush.bind(this)
+        };
+        currentAngleData = {
+            sin: null,
+            cos: null
+        };
+        lastUseInstrumentCoords = {
+            x: null,
+            y: null
+        };
+        colors = {
+            main: "#000000"
+        };
+
+        selectColor(name, color) {
+            if (!(name in this.colors)) return true;
+            this.colors[name] = color;
+        }
+
+        useInstrument(event) {
+            if (this.selectedInstrument !== "move") canvas.isUsedInstrument = true;
+            this.availableInstruments[this.selectedInstrument](event);
+            previousMouseCoords.x = event.pageX;
+            previousMouseCoords.y = event.pageY;
+        }
+
+        mouseDown(event) {
+            if (!event.shiftKey) {
+                previousMouseCoords.x = event.pageX;
+                previousMouseCoords.y = event.pageY;
+            }
+            this.availableInstruments[this.selectedInstrument](event);
+        }
+
+        mouseUp(event) {
+
+        }
+
+        selectInstrument(name) {
+            if (!(name in this.availableInstruments)) return true;
+            this.selectedInstrument = name;
+        }
+
+        move(event) {
+            canvas.moveImage(event.pageX - previousMouseCoords.x, event.pageY - previousMouseCoords.y);
+        }
+
+        brush(event) {
+            let startCoords = canvas.getCanvasCoords(previousMouseCoords.x, previousMouseCoords.y);
+            let endCoords = canvas.getCanvasCoords(event.pageX, event.pageY);
+            let dX = endCoords.x - startCoords.x;
+            let dY = endCoords.y - startCoords.y;
+            let c = Math.sqrt(dX ** 2 + dY ** 2);
+            let sin = dY / c || 0;
+            let cos = dX / c || 0;
+            c = Math.floor(c);
+            for (let i = 0; i <= c; i += 5) {
+                let x = startCoords.x + i * cos;
+                let y = startCoords.y + i * sin;
+                canvas.drawArc(x, y, this.colors.main, 10, 0.5);
+                // canvas.copyElement(x, y, 10);
+                // canvas.clearArc(x, y, 10);
+            }
+            // canvas.drawLine({startX: startCoords.x, startY: startCoords.y}, {endX: endCoords.x, endY: endCoords.y}, 10, "black");
+
+        }
+
+    }
+
     class Canvas {
+        /**
+         * @type {HTMLCanvasElement}
+         */
         canvas = document.getElementById("canvas");
+        /**
+         * @type {HTMLCanvasElement}
+         */
+        backgroundCanvas = document.createElement("canvas");
         context = this.canvas.getContext("2d");
+        backgroundContext = this.backgroundCanvas.getContext("2d");
         /**
          * @type {HTMLImageElement|null}
          */
@@ -10,11 +91,19 @@
         x = 0;
         y = 0;
         scale = 1;
-        canvasX = this.canvas.getBoundingClientRect().left + document.getElementsByTagName("body")[0].scrollLeft;
-        canvasY = this.canvas.getBoundingClientRect().top + document.getElementsByTagName("body")[0].scrollTop;
+        canvasX = this.canvas.getBoundingClientRect().left + document.getElementsByTagName("html")[0].scrollLeft;
+        canvasY = this.canvas.getBoundingClientRect().top + document.getElementsByTagName("html")[0].scrollTop;
+        isUsedInstrument = false;
 
         constructor() {
             this.noImageText();
+        }
+
+        getCanvasCoords(pageX, pageY) {
+            return {
+                x: pageX - this.canvasX,
+                y: pageY - this.canvasY
+            }
         }
 
         clear() {
@@ -59,8 +148,9 @@
             this.drawImage();
         }
 
-        drawImage() {
+        async drawImage() {
             if (!this.image) return true;
+
             this.clear();
             this.fillBlack();
 
@@ -116,17 +206,74 @@
             return dataUrl;
         }
 
+        drawArc(x, y, color, size, alpha) {
+            this.context.beginPath();
+            this.context.globalAlpha = alpha;
+            this.context.fillStyle = color;
+            this.context.arc(x, y, size, 0, Math.PI * 2, true);
+            this.context.fill();
+            this.context.closePath();
+            this.context.globalAlpha = 1;
+            this.context.save();
+            this.context.clip();
+            this.context.drawImage(this.image, 0, 0, this.canvas.width, this.canvas.height);
+            this.context.restore();
+            this.context.beginPath();
+            this.context.globalAlpha = alpha;
+            this.context.fillStyle = color;
+            this.context.arc(x, y, size, 0, Math.PI * 2, true);
+            this.context.fill();
+            this.context.closePath();
+            this.context.globalAlpha = 1;
+        }
+
+        drawLine({startX, startY}, {endX, endY}, size, color) {
+            this.context.beginPath();
+            this.context.lineWidth = size;
+            this.context.strokeStyle = color;
+            this.context.moveTo(startX, startY);
+            this.context.lineTo(endX, endY);
+            this.context.stroke();
+            this.context.closePath();
+        }
+
+        clearArc(x, y, size) {
+            this.context.save();
+            this.context.beginPath();
+            this.context.arc(x, y, size, 0, Math.PI * 2, true);
+            this.context.fill();
+            this.context.closePath();
+            this.context.clip();
+            this.context.clearRect(x - size, y - size, size * 2, size * 2);
+            this.context.restore();
+        }
+
+        copyElement(x, y, size) {
+            this.clear();
+            this.context.beginPath();
+            this.context.globalAlpha = 0;
+            this.context.arc(this.canvas.width / 2, this.canvas.height / 2, this.canvas.width / 2, 0, Math.PI * 2, true);
+            this.context.fill();
+            this.context.closePath();
+            this.context.clip();
+            this.context.globalAlpha = 1;
+            let ratio = this.canvas.width / (2 * size);
+            this.context.drawImage(this.image, -(x - this.canvas.width / 2) * ratio, -(y - this.canvas.height / 2) * ratio, this.canvas.width * ratio, this.canvas.height * ratio);
+            // console.log(this.canvas.toDataURL());
+        }
+
     }
 
 
     let canvas = new Canvas();
+    let instruments = new Instruments();
 
     let previousMouseCoords = {
         x: 0,
         y: 0
     };
 
-    let isMoveImage = false;
+    let isUseInstrument = false;
 
     $("body").on("click", "#select_image", () => $("#image_input").click())
 
@@ -148,22 +295,27 @@
         .on("mousedown", "#canvas", function (event) {
             if (!canvas.image) return true;
 
+            instruments.mouseDown(event);
+
+
             previousMouseCoords.x = event.pageX;
             previousMouseCoords.y = event.pageY;
-            isMoveImage = true;
+            isUseInstrument = true;
             $("*").css("cursor", "move")
         })
 
-        .on("mouseup", () => {
-            isMoveImage = false;
+        .on("mouseup", event => {
+            isUseInstrument = false;
+            instruments.mouseUp(event);
             $("*").css("cursor", "");
         })
 
         .on("mousemove", function (event) {
-            if (!isMoveImage) return true;
-            canvas.moveImage(event.pageX - previousMouseCoords.x, event.pageY - previousMouseCoords.y);
-            previousMouseCoords.x = event.pageX;
-            previousMouseCoords.y = event.pageY;
+            if (!isUseInstrument) return true;
+            instruments.useInstrument(event);
+            // canvas.moveImage(event.pageX - previousMouseCoords.x, event.pageY - previousMouseCoords.y);
+            // previousMouseCoords.x = event.pageX;
+            // previousMouseCoords.y = event.pageY;
         })
 
         .on("click", "#save_image", function () {
@@ -173,6 +325,25 @@
             link.href = href;
             link.download = "skin.png";
             link.click();
+        })
+
+        .on("click", ".instrument:not(div)", function () {
+            if ($(this).hasClass("selected")) return true;
+            $(".instrument").removeClass("selected");
+            $(this).addClass("selected");
+            let name = $(this).attr("data-name");
+            instruments.selectInstrument(name);
+        })
+
+        .on("click", "div.instrument", function () {
+            $(this).prev("input").click();
+        })
+
+        .on("change", ".select_color", function () {
+            let name = $(this).attr("data-name");
+            let color = $(this).val();
+            instruments.selectColor(name, color);
+            $(this).next("div").css({background: color});
         });
 
 

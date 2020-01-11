@@ -107,6 +107,10 @@ if ($request['action'] == "update_nick") {
 
     $allowedFields = ["nick", "password", "user_id", "is_admin", "is_moder", "is_helper", "is_gold", "is_transparent_skin", "is_turning_skin", "is_invisible_nick", "is_random_color", "is_violet"];
     $id = $request['id'];
+
+    $skinBase64 = "";
+    if (!empty($request['skin'])) $skinBase64 = $request['skin'];
+
     foreach ($request as $name => $value) {
         if (!in_array($name, $allowedFields)) unset($request[$name]);
     }
@@ -134,6 +138,15 @@ if ($request['action'] == "update_nick") {
 
     foreach ($request as $name => $value) {
         if (!$skin->updateColumn($name, $value, $id)) {
+            echo json_encode(["result" => "false", "data" => "error"], 256);
+            exit;
+        }
+    }
+
+    if (!empty($skinBase64)) {
+        $image = new Image();
+        $imageId = $image->addImgByBase64($skinBase64);
+        if (!$skin->updateColumn("skin_id", $imageId, $id)) {
             echo json_encode(["result" => "false", "data" => "error"], 256);
             exit;
         }

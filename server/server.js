@@ -68,6 +68,21 @@ httpServer.on("request", function (request, response) {
 });
 
 
+let chatMessages = [];
+
+function updateChatLogs() {
+    if (chatMessages.length === 0) return setTimeout(updateChatLogs, 300000);
+    let worker = new Worker("/var/www/" + Units.game.serverName + "/server/GameClasses/Worker.js");
+    worker.on("message", () => {
+        setTimeout(updateChatLogs, 300000);
+        worker.terminate();
+    });
+    worker.postMessage({action: "chat_logs", data: chatMessages});
+    chatMessages = [];
+}
+
+setTimeout(updateChatLogs, 300000);
+
 // подключенные клиенты
 let clients = {};
 let bannedIP = [];
@@ -137,6 +152,7 @@ function onChangeNick(id) {
         isTransparentSkin: +player.isTransparentSkin,
         isTurningSkin: +player.isTurningSkin,
         isInvisibleNick: +player.isInvisibleNick,
+        isRandomNickColor: +player.isRandomNickColor,
         skin: player.skin,
         skinId: player.skinId,
         clan: player.clan
@@ -204,7 +220,7 @@ class Command {
     }
 
     kickPlayer(id, params) {
-        if (Functions.isEmpty(params.target_id)) params.target_id = id;
+        if (Functions.isEmpty(params.target_id)) return true;
         let player = Units.game.findPlayer(params.target_id);
         if (!player) return true;
 
@@ -216,6 +232,7 @@ class Command {
         currentPlayer = currentPlayer.player;
         if (player.isModer && !currentPlayer.isAdmin) return true;
 
+        Units.game.kickPlayer(+params.target_id);
         clients[params.target_id].ws.close();
 
     }
@@ -321,10 +338,11 @@ function chatMessage(id, message, pm, pmId, isSecondary = false) {
     player = player.player;
     pm = +pm;
     pmId = +pmId;
+    let nick = Functions.isEmpty(player.clan) ? player.nick : player.clan + " " + player.nick;
     let json = {
         action: "chat_message",
         message: message,
-        nick: player.isSpectator ? "Spectator" : player.nick,
+        nick: player.isSpectator ? "Spectator" : nick,
         color: (player.isSpectator || !player.isSpawned) ? "#b0b0b0" : player.selectedColor,
         isAdmin: player.isSpectator ? 0 : player.isAdmin,
         isModer: player.isSpectator ? 0 : player.isModer,
@@ -340,9 +358,10 @@ function chatMessage(id, message, pm, pmId, isSecondary = false) {
         wsMessage(json, pmId);
         if (pmId !== id) wsMessage(json, id);
     } else wsMessage(json);
-}
 
-let startUpdate = Date.now();
+    delete json.action;
+    chatMessages.push(json);
+}
 
 
 let arr = [];
@@ -351,25 +370,6 @@ for (let i = 0; i < 5000; i++) {
 }
 arr = JSON.stringify(arr);
 console.log(Buffer.from(arr).length);
-
-function updateUnits() {
-    // console.log(Date.now() - startUpdate);
-    // startUpdate = Date.now();
-    // let time = Date.now();
-    // let arr = Units.game.getAllUnits();
-    // wsMessage({
-    //     action: "update_units",
-    //     units: arr,
-    //     time
-    // });
-    wsMessage({
-        arr
-    });
-    setTimeout(updateUnits, 50);
-}
-
-// setTimeout(updateUnits, 50);
-// setInterval(updateUnits, 10);
 
 
 webSocketServer.on('connection', function (ws, req) {
@@ -383,6 +383,7 @@ webSocketServer.on('connection', function (ws, req) {
     clients[id].isConnect = false;
     clients[id].isMute = false;
     clients[id].IPAddress = req.connection.remoteAddress || ws._socket.remoteAddress;
+    clients[id].lastChatMessageTime = performance.now();
 
 
     ws.on('close', function () {
@@ -406,6 +407,9 @@ webSocketServer.on('connection', function (ws, req) {
         top: Units.game.exportDailyTop()
     });
 
+    let arr = Units.game.getAllUnits();
+    wsMessage({u: arr, action: "get_all_units"}, id);
+
     ws.on('message', async function (data) {
         data = Functions.arrayBufferToString(data).split("").filter(val => val !== String.fromCharCode(0)).join("");
         try {
@@ -420,24 +424,24 @@ webSocketServer.on('connection', function (ws, req) {
 
             if (!data.color) data.color = Functions.rgbToHex(Functions.getRandomInt(0, 255), Functions.getRandomInt(0, 255), Functions.getRandomInt(0, 255));
             if (data.type !== "player" && data.type !== "spectator") data.type = "player";
-            let password = isEmpty(data.password) ? "" : data.password;
-            let token = isEmpty(data.token) ? "" : data.token;
-            let userId = isEmpty(data.userId) ? "" : data.userId;
-            let nick = isEmpty(data.nick) ? "SandL" : data.nick;
-            let clan = isEmpty(data.clan) ? "" : data.clan;
-            Units.game.playerConnect(id, data.color, nick, password, token, userId, data.type, clan);
+            let password = isEmpty(data.password.trim()) ? "" : data.password.trim();
+            let token = isEmpty(data.token.trim()) ? "" : data.token.trim();
+            let userId = isEmpty(data.userId.trim()) ? "" : data.userId.trim();
+            let nick = isEmpty(data.nick.trim()) ? "SandL" : data.nick.trim();
+            let clan = isEmpty(data.clan.trim()) ? "" : data.clan.trim();
+            Units.game.playerConnect(id, data.color.trim(), nick, password, token, userId, data.type.trim(), clan);
 
             return true;
         }
-        if (data.action === "get_all_units") {
-            // if (!clients[id].isConnect) return true;
-
-            let arr = Units.game.getAllUnits();
-
-            wsMessage({u: arr, action: "get_all_units"}, id);
-
-            return true;
-        }
+        // if (data.action === "get_all_units") {
+        //     // if (!clients[id].isConnect) return true;
+        //
+        //     let arr = Units.game.getAllUnits();
+        //
+        //     wsMessage({u: arr, action: "get_all_units"}, id);
+        //
+        //     return true;
+        // }
 
         if (data.action === "respawn_player") {
             Units.game.respawnPlayer(id);
@@ -447,60 +451,44 @@ webSocketServer.on('connection', function (ws, req) {
 
         if (data.action === "mouse_move") {
             Units.game.mouseMove(id, data.x, data.y, data.time);
-            // wsMessage({
-            //     action: "mouse_move",
-            //     x: data.x,
-            //     y: data.y,
-            //     id
-            // });
+
 
             return true;
         }
         if (data.action === "player_shoot") {
-            Units.game.shoot(id, data.time);
+            Units.game.shoot(id);
 
             return true;
         }
         if (data.action === "player_split") {
-            Units.game.split(id, data.time);
-            // wsMessage({
-            //     action: "player_split",
-            //     id,
-            //     time: data.time
-            // });
+            Units.game.split(id);
 
             return true;
         }
-        // if (data.action === "update_units") {
-        //     return true;
-        //     let time = Date.now();
-        //     let arr = Units.game.getAllUnits(false);
-        //     wsMessage({
-        //         action: "update_units",
-        //         units: arr,
-        //         time
-        //     }, id);
-        //
-        //     return true;
-        // }
+        if (data.action === "d_split") {
+            Units.game.dSplit(id);
+
+            return true;
+        }
+
 
         if (data.action === "chat_message") {
-            if (clients[id].isMute) return true;
-            if (!data.message) return true;
-            chatMessage(id, data.message, +data.pm, +data.pmId);
+            if (!data.message.trim() || clients[id].isMute || performance.now() - clients[id].lastChatMessageTime < 2000) return true;
+            chatMessage(id, data.message.trim(), +data.pm, +data.pmId);
+            clients[id].lastChatMessageTime = performance.now();
 
             return true;
         }
 
         if (data.action === "send_command") {
-            if (!data.command) return true;
+            if (!data.command.trim()) return true;
 
             let player = Units.game.findPlayer(id);
             if (!player) return true;
             player = player.player;
             if (!player.isModer && !player.isAdmin) return true;
 
-            let cmd = data.command;
+            let cmd = data.command.trim();
             delete data.command;
             command.sendCommand(id, cmd, data);
 
@@ -513,8 +501,7 @@ webSocketServer.on('connection', function (ws, req) {
             let player = Units.game.findPlayer(id);
             if (!player) return true;
             player = player.player;
-            if (!player.account) return true;
-            if (!player.account.stickers.includesByType(+data.id)) return true;
+            if (!player.account || !player.account.stickers.includesByType(+data.id)) return true;
 
             Functions.sendRequest("api/admin", {action: "get_sticker_set", id: data.id})
                 .then(data => {
@@ -554,11 +541,7 @@ webSocketServer.on('connection', function (ws, req) {
             if (Functions.isEmpty(data.color)) return true;
 
             Units.game.changeColor(id, data.color);
-            // wsMessage({
-            //     action: "change_color",
-            //     id,
-            //     color: data.color
-            // });
+
 
             return true;
         }

@@ -107,7 +107,7 @@ function isEmpty(val, isDefault = false) {
     }
     if (typeof val === "number") return val === 0 && isDefault;
     if (typeof val === "bigint" || typeof val === "symbol" || typeof val === "function") return false;
-    if (typeof val === "string") return val === "";
+    if (typeof val === "string") return val.trim() === "";
     if (typeof val === "boolean") return !val;
     if (typeof val === "undefined" || val === null || isNaN(val) || val === undefined) return true;
 
@@ -198,13 +198,17 @@ function objectLength(obj) {
 
 function randomText(size){
     let str = "";
-    for(let i = 0; i < size; i++){
+    for (let i = 0; i < size; i++) {
         let strCode = getRandomInt(33, 126);
         let symbol = String.fromCharCode(strCode);
-        if(getRandomInt(0, 1)) symbol = symbol.toUpperCase();
+        if (getRandomInt(0, 1)) symbol = symbol.toUpperCase();
         str += symbol;
     }
     return str;
+}
+
+function getRandomColor() {
+    return rgbToHex(getRandomInt(0, 255), getRandomInt(0, 255), getRandomInt(0, 255));
 }
 
 class Preloader {

@@ -1,5 +1,8 @@
 class Ws {
     isConnect = false;
+    /**
+     * @type {null|String}
+     */
     address = null;
     message = "";
     isStart = false;
@@ -8,7 +11,8 @@ class Ws {
         this.address = address;
         this.listeners = {
             "message": () => "",
-            "open": () => ""
+            "open": () => "",
+            "close": () => ""
         };
         this.connection();
     }
@@ -26,6 +30,7 @@ class Ws {
         };
         this.ws.onclose = () => {
             this.isConnect = false;
+            this.listeners.close();
             // this.connection();
             // this.setListeners();
         }
@@ -36,7 +41,7 @@ class Ws {
     }
 
     on(event, listener) {
-        if (!["message", "open"].includes(event)) return true;
+        if (!["message", "open", "close"].includes(event)) return true;
         this.listeners[event] = listener;
         this.setListeners();
     }

@@ -162,6 +162,12 @@ if ($request['action'] === "create_nick") {
         $isRandomColor = 1;
     }
 
+    $isRandomNickColor = 0;
+    if ($request['is_random_nick_color'] == 1) {
+        $sum += (int)$prices[$clanPrice . 'random_nick_color'];
+        $isRandomNickColor = 1;
+    }
+
     $skinId = "";
 
     if (!empty($request['skin'])) {
@@ -195,7 +201,7 @@ if ($request['action'] === "create_nick") {
     }
 
 
-    if ($nickId = $skin->createNick($request['nick'], $password, $skinId, USER_ID, $isTransparentSkin, $isTurningSkin, $isInvisibleNick, $isRandomColor, $isClan)) {
+    if ($nickId = $skin->createNick($request['nick'], $password, $skinId, USER_ID, $isTransparentSkin, $isTurningSkin, $isInvisibleNick, $isRandomColor, $isClan, $isRandomNickColor)) {
         echo json_encode(["result" => "true", "data" => $nickId], 256);
         exit;
     }
@@ -210,7 +216,7 @@ if ($request['action'] === "change_nick") {
         exit;
     }
 
-    $allowedToChange = ["password", "skin", "is_transparent_skin", "is_turning_skin", "is_invisible_nick", "is_random_color"]; // разрешено изменять
+    $allowedToChange = ["password", "skin", "is_transparent_skin", "is_turning_skin", "is_invisible_nick", "is_random_color", "is_random_nick_color"]; // разрешено изменять
 
     $id = $request['id'];
 
@@ -265,6 +271,10 @@ if ($request['action'] === "change_nick") {
     if (key_exists("is_random_color", $request)) {
         $sum += (int)$prices[$clanPrice . 'random_color'];
         $request['is_random_color'] = (int)$request['is_random_color'];
+    }
+    if (key_exists("is_random_nick_color", $request)) {
+        $sum += (int)$prices[$clanPrice . 'random_nick_color'];
+        $request['is_random_nick_color'] = (int)$request['is_random_nick_color'];
     }
 
     if (!empty($request['skin'])) {

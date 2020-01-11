@@ -141,24 +141,28 @@ body {
     padding: 5px;
     background: #f2f2f2;
     border-top: solid 1px #e6e6e6;
+    flex-grow: 0;
 }
 
 #send_message > img {
     cursor: pointer;
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translate(0, -50%);
+    /*position: absolute;*/
+    /*right: 10px;*/
+    /*top: 50%;*/
+    /*transform: translate(0, -50%);*/
     width: 30px;
     height: 30px;
 }
 
 #message_input {
-    padding-right: 40px;
+    /*padding-right: 40px;*/
+    flex-grow: 1;
+    width: 30px;
 }
 
 #messages {
     position: relative;
+    flex-grow: 1;
 }
 
 #messages > div {

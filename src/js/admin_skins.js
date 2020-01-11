@@ -1,7 +1,7 @@
 (function () {
 
     class Nick {
-        constructor(id, nick, password, time, skinId, skin, isAdmin, isModer, userId, isTransparentSkin, isTurningSkin, isInvisibleNick, isRandomColor, isHelper, isGold, isClan, arrCount, isViolet) {
+        constructor(id, nick, password, time, skinId, skin, isAdmin, isModer, userId, isTransparentSkin, isTurningSkin, isInvisibleNick, isRandomColor, isHelper, isGold, isClan, arrCount, isViolet, isRandomNickColor) {
             this.values = {};
             this.id = this.values.id = +id;
             this.nick = this.values.nick = nick;
@@ -11,7 +11,7 @@
             this.skin = this.values.skin = skin;
             this.isAdmin = this.values.is_admin = +isAdmin;
             this.isModer = this.values.is_moder = +isModer;
-            this.userId = this.values.user_id = +userId;
+            this.userId = this.values.user_id = String(userId);
             this.isTransparentSkin = this.values.is_transparent_skin = +isTransparentSkin;
             this.isTurningSkin = this.values.is_turning_skin = +isTurningSkin;
             this.isInvisibleNick = this.values.is_invisible_nick = +isInvisibleNick;
@@ -20,6 +20,7 @@
             this.isGold = this.values.is_gold = +isGold;
             this.isClan = this.values.is_clan = +isClan;
             this.isViolet = this.values.is_violet = +isViolet;
+            this.isRandomNickColor = this.values.is_random_nick_color = +isRandomNickColor;
             this.arrCount = +arrCount;
         }
 
@@ -54,7 +55,7 @@
             .then(data => {
                 if (data.result !== "true") return true;
                 for (let n of data.data) {
-                    let nick = new Nick(n.id, n.nick, n.password, n.time, n.skin_id, n.skin, n.is_admin, n.is_moder, n.user_id, n.is_transparent_skin, n.is_turning_skin, n.is_invisible_nick, n.is_random_color, n.is_helper, n.is_gold, n.is_clan, allNicks.length, n.is_violet);
+                    let nick = new Nick(n.id, n.nick, n.password, n.time, n.skin_id, n.skin, n.is_admin, n.is_moder, n.user_id, n.is_transparent_skin, n.is_turning_skin, n.is_invisible_nick, n.is_random_color, n.is_helper, n.is_gold, n.is_clan, allNicks.length, n.is_violet, n.is_random_nick_color);
                     allNicks.push(nick);
                 }
             });
@@ -147,6 +148,7 @@
                 let val = nick.getValue(name);
                 (type === "checkbox") ? $(el).prop("checked", Boolean(val)) : $(el).val(val);
             });
+            if (!isEmpty(nick.skin)) $("#nick_info img").attr("src", nick.skin);
             $("#nick_info").removeClass("closed");
         })
 
@@ -155,7 +157,7 @@
             $("#nick_info").addClass("closed");
         })
 
-        .on("click", "#save_button", function () {
+        .on("click", "#save_button", async function () {
             if (isEmpty(selectedNickEq) || !(selectedNickEq in allNicks)) return true;
             let nick = allNicks[selectedNickEq];
             let obj = {};
@@ -166,6 +168,24 @@
                 if (val === nick.getValue(name)) return true;
                 obj[name] = val;
             });
+
+            let src = $("#nick_image").attr("src");
+            if (src !== nick.skin) {
+                await new Promise(resolve => {
+                    let image = new Image();
+                    image.onload = () => {
+                        let c = document.createElement("canvas");
+                        [c.width, c.height] = [512, 512];
+                        let ctx = c.getContext("2d");
+                        ctx.clearRect(0, 0, c.width, c.height);
+                        ctx.drawImage(image, 0, 0, c.width, c.height);
+                        obj.skin = c.toDataURL("image/png", 1.0);
+                        resolve();
+                    };
+                    image.src = src;
+                });
+            }
+
             if (objectLength(obj) === 0) return true;
             obj.action = "update_nick";
             obj.id = nick.getValue("id");
@@ -182,6 +202,15 @@
                     new Notify("Изменение ника", message);
                 });
 
+        })
+
+        .on("click", "#nick_image", () => $("#image_input").click())
+
+        .on("change", "#image_input", function () {
+            let fileReader = new FileReader();
+            fileReader.onload = () => $("#nick_image").attr("src", fileReader.result);
+            fileReader.readAsDataURL(this.files[0]);
+            $(this).val("");
         });
 
 })();

@@ -147,6 +147,34 @@
         <span>Дистанция стрельбы черных дыр</span>
         <input class="gold_input" data-name="blackHoleBulletDistance" value="0" placeholder="0">
     </div>
+    <div class="flex_row">
+        <span>Количество врагов</span>
+        <input class="gold_input" data-name="enemyCount" value="0" placeholder="0">
+    </div>
+    <div class="flex_row">
+        <span>Интервал стрельбы врагов</span>
+        <input class="gold_input" data-name="enemyShootInterval" value="0" placeholder="0">
+    </div>
+    <div class="flex_row">
+        <span>Масса стрельбы врагов</span>
+        <input class="gold_input" data-name="enemyBulletMass" value="0" placeholder="0">
+    </div>
+    <div class="flex_row">
+        <span>Дистанция стрельбы врагов</span>
+        <input class="gold_input" data-name="enemyBulletDistance" value="0" placeholder="0">
+    </div>
+    <div class="flex_row">
+        <span>Коэффициент скорости врагов</span>
+        <input class="gold_input" data-name="enemySpeedCoefficient" value="0" placeholder="0">
+    </div>
+    <div class="flex_row">
+        <span>Минимальная масса врагов</span>
+        <input class="gold_input" data-name="enemyMinMass" value="0" placeholder="0">
+    </div>
+    <div class="flex_row">
+        <span>Максимальная масса врагов</span>
+        <input class="gold_input" data-name="enemyMaxMass" value="0" placeholder="0">
+    </div>
 
 
     <div class="flex_row" style="justify-content: flex-start;">

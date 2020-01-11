@@ -12,7 +12,8 @@
             <div class="message from_user admin">
                 <div class="message_header">
                     <div class="verified"></div>
-                    <span>Name</span></div>
+                    <span>Name</span>
+                </div>
                 <div class="message_text">Messageeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
                     eeeeeeeeeeeeeeeeeeeeeeeeeewefwefwef
                 </div>
@@ -37,18 +38,18 @@
             </div>
         </div>
     </div>
-    <div id="send_message">
-        <input type="text" id="message_input">
+    <div id="send_message" class="flex_row">
+        <input type="text" id="message_input" class="gold_input">
         <img src="/src/images/send_message.png" alt="Отправить сообщение" id="send_message_button" title="Enter">
     </div>
 </div>
 
 
 <div id="notifications">
-<!--        <div class="notification">-->
-<!--            <div class="notification_header"><span>sdfeg</span></div>-->
-<!--            <div class="notification_body">-->
-<!--                <div class="notification_text">weggwef</div>-->
+    <!--        <div class="notification">-->
+    <!--            <div class="notification_header"><span>sdfeg</span></div>-->
+    <!--            <div class="notification_body">-->
+    <!--                <div class="notification_text">weggwef</div>-->
 <!--                <div class="notification_time">325235</div>-->
 <!--            </div>-->
 <!--        </div>-->

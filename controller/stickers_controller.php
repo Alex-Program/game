@@ -77,7 +77,7 @@ if ($request['action'] == "buy_stickers") {
         exit;
     }
 
-    if (!$auth->updateColumn("balance", $userInfo['balance'] - $stickerInfo['price'], USER_ID)) {
+    if (!$auth->addBalance(-$stickerInfo['price'], USER_ID)) {
         echo json_encode(["result" => "false", "data" => "error"], 256);
         exit;
     }

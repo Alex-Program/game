@@ -21,6 +21,11 @@ class User {
     balance = 0;
     level = 0;
     experience = 0;
+    token = "";
+    /**
+     * @type {null|Number}
+     */
+    userId = null;
 
     /**
      * @type {null|Promise}
@@ -34,6 +39,8 @@ class User {
     }
 
     getUserInfo() {
+        this.userId = +getCookie("User-Id");
+        this.token = getCookie("Token");
         return sendRequest("api/user", {action: "get_user_info"})
             .then(data => {
                 this.stickers = data.data.stickers.toNumber();
@@ -49,9 +56,12 @@ class User {
 
 }
 
+
 let user = new User();
 user.start();
-
+/**
+ * @type {null|Chat}
+ */
 
 let prices = {};
 
@@ -61,7 +71,8 @@ let createToPrices = {
     is_transparent_skin: "transparent_skin",
     is_turning_skin: "turning_skin",
     is_invisible_nick: "invisible_nick",
-    is_random_color: "random_color"
+    is_random_color: "random_color",
+    is_random_nick_color: "random_nick_color"
 };
 let changeToPrices = {
     skin: "change_skin",
@@ -69,7 +80,8 @@ let changeToPrices = {
     is_transparent_skin: "transparent_skin",
     is_turning_skin: "turning_skin",
     is_invisible_nick: "invisible_nick",
-    is_random_color: "random_color"
+    is_random_color: "random_color",
+    is_random_nick_color: "random_nick_color"
 };
 
 function openImage(src) {
@@ -79,7 +91,6 @@ function openImage(src) {
 }
 
 $(document).ready(function () {
-
 
     {
         let page = window.location.pathname.substring(1);
@@ -95,22 +106,6 @@ $(document).ready(function () {
         });
 
 
-    function getMessage(data) {
-        let cl = data.from === "from" ? "from_user" : "to_user";
-        let html = `<div class="message ` + cl + ` admin">
-                <div class="message_header"><div class="verified"></div><span>` + data.userName + `</span></div>
-                <div class="message_text">` + data.message + `
-                </div>
-            </div>`;
-
-
-        let div = $("#messages > div");
-        let scrolled = div[0].scrollHeight - div[0].scrollTop >= div[0].clientHeight + 10;
-        div.append(html);
-        if (data.from === "from" || !scrolled) {
-            div.animate({"scrollTop": div[0].scrollHeight - div[0].clientHeight}, 150);
-        }
-    }
 
 
     sendRequest("/api/user", {action: "get_user_info"})
@@ -128,21 +123,6 @@ $(document).ready(function () {
         });
 
 
-    let ws = new Ws("ws://127.0.0.1:8082");
-
-    ws.on("message", function (event) {
-        let data = "";
-        try {
-            data = JSON.parse(event.data);
-            if (typeof (data) !== "object") throw("Error");
-        } catch (e) {
-            return true;
-        }
-
-        if (data.action === "message") return getMessage(data);
-    });
-
-
     $("body").on("click", "#open_chat", function () {
         let messagesDiv = $("#messages > div");
         messagesDiv[0].scrollTop = messagesDiv[0].scrollHeight - messagesDiv[0].clientHeight;
@@ -156,20 +136,7 @@ $(document).ready(function () {
             $("#chat").addClass("closed");
         })
 
-        .on("click", "#send_message_button", function () {
-            let messageInput = $("#message_input");
-            let message = messageInput.val();
-            messageInput.val("");
-            if (!message) return true;
-
-            let json = {
-                action: "message",
-                message
-            };
-            json = JSON.stringify(json);
-            ws.send(json);
-
-        })
+        .on("click", "#send_message_button", () => chat.sendMessage())
 
         .on("submit", "form", function (event) {
             event.preventDefault();
@@ -223,11 +190,13 @@ $(document).ready(function () {
 
 
     $("#message_input")[0].addEventListener("keypress", function (event) {
+        event.stopPropagation();
         if (event.code.toLowerCase() === "enter") {
-            $("#send_message_button").click();
+            chat.sendMessage();
             return true;
         }
     });
+
 
 });
 

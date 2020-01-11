@@ -11,5 +11,14 @@
         <button class="button button_green" id="save_image">Сохранить</button>
     </div>
 </div>
+<div id="instruments">
+    <div class="flex_row">
+        <img class="instrument" src="/src/images/pencil.png" data-name="brush">
+    </div>
+    <div class="flex_row">
+        <input type="color" style="display: none;" class="select_color" data-name="main">
+        <div class="instrument color" style="background: #000000; border: solid 3px gold;"></div>
+    </div>
+</div>
 
 <script defer src="/src/js/skin_editor.js"></script>

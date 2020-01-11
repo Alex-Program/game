@@ -85,6 +85,12 @@ class Sticker extends Model
         return $arr;
     }
 
+
+    /**
+     * Return [stickers => [[src => "", image_id => ""], ...], ...]
+     * @param $stickerSetId
+     * @return array|bool|null
+     */
     public function getStickerSet($stickerSetId)
     {
         $stickerSetId = $this->mysqli->real_escape_string($stickerSetId);

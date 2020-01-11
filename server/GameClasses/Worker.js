@@ -40,7 +40,14 @@ async function getGameSettings() {
             shootingBlackHoleCount: 0,
             blackHoleShootInterval: 200,
             blackHoleBulletMass: 50,
-            blackHoleBulletDistance: 100
+            blackHoleBulletDistance: 100,
+            enemyCount: 0,
+            enemyShootInterval: 100,
+            enemyBulletMass: 50,
+            enemyBulletDistance: 100,
+            enemySpeedCoefficient: 5,
+            enemyMinMass: 1000,
+            enemyMaxMass: 5000
         };
         fileData = JSON.stringify(fileData);
         await file.writeFile(fileData);
@@ -48,6 +55,24 @@ async function getGameSettings() {
 
     return JSON.parse(fileData);
 }
+
+/**
+ * @param file Files
+ * @param isArray Boolean
+ * @return {Array|Object}
+ */
+async function getFileData(file, isArray = false) {
+    let data = await file.readFile();
+
+    try {
+        data = JSON.parse(data);
+        if (typeof data !== "object") throw("e");
+        return data;
+    } catch {
+    }
+    return isArray ? [] : {};
+}
+
 
 parentPort.on("message", async function (data) {
     if (data.action === "load_game_settings") {
@@ -61,6 +86,34 @@ parentPort.on("message", async function (data) {
         for (let key in data.data) {
             if (!(key in fileData) || isNaN(data.data[key])) continue;
             fileData[key] = +data.data[key];
+        }
+
+        await file.writeFile(JSON.stringify(fileData));
+        parentPort.postMessage({result: true});
+        return true;
+    }
+
+    if (data.action === "chat_logs") {
+        let file = new Files("chat_logs.json");
+        let fileData = await getFileData(file, true);
+        fileData = fileData.concat(data.data);
+        await file.writeFile(JSON.stringify(fileData));
+        parentPort.postMessage({result: true});
+        return true;
+    }
+
+    if (data.action === "update_statistic") {
+        let time = Functions.timeFormat(Date.now(), true);
+        let file = new Files(time.year + "-" + time.month + "-" + time.day + ".json");
+        let fileData = await file.readFile();
+        if (Functions.isEmpty(fileData)) fileData = "{}";
+        fileData = JSON.parse(fileData);
+
+        for (let nick in data.data) {
+            if (!(nick in fileData)) fileData[nick] = {score: 0, time: 0};
+            let nickStats = data.data[nick];
+            if (nickStats.score > fileData[nick].score) fileData[nick].score = nickStats.score;
+            fileData[nick].time += nickStats.time;
         }
 
         await file.writeFile(JSON.stringify(fileData));

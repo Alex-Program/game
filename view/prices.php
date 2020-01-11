@@ -49,6 +49,12 @@
         <button class="button button_primary save_button">Сохранить</button>
         <button class="button button_green cancel_button">Отмена</button>
     </div>
+    <div class="price flex_row" data-value="0" data-name="random_nick_color">
+        <span>Рандомно Меняющийся цвет</span>
+        <input type="text" class="gold_input" value="0">
+        <button class="button button_primary save_button">Сохранить</button>
+        <button class="button button_green cancel_button">Отмена</button>
+    </div>
 
     <h3 style="text-align: center">Для клана</h3>
 
@@ -95,6 +101,12 @@
         <button class="button button_green cancel_button">Отмена</button>
     </div>
     <div class="price flex_row" data-value="0" data-name="clan_random_color">
+        <span>Рандомно Меняющийся цвет</span>
+        <input type="text" class="gold_input" value="0">
+        <button class="button button_primary save_button">Сохранить</button>
+        <button class="button button_green cancel_button">Отмена</button>
+    </div>
+    <div class="price flex_row" data-value="0" data-name="clan_random_nick_color">
         <span>Рандомно Меняющийся цвет</span>
         <input type="text" class="gold_input" value="0">
         <button class="button button_primary save_button">Сохранить</button>

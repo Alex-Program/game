@@ -14,3 +14,36 @@
 #select_image {
     margin: 10px;
 }
+
+#instruments {
+    position: fixed;
+    right: 0;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    border-left: solid 5px gold;
+    padding: 20px;
+}
+
+#instruments > div:not(:first-child) {
+    margin-top: 10px;
+}
+
+.instrument {
+    transition: background 0.5s;
+    width: 40px;
+    background: white;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+div.instrument {
+    height: 40px;
+}
+
+.instrument:not(div).selected {
+    background: lightseagreen;
+}
+
+.instrument:not(.selected):not(div):hover {
+    background: gold;
+}

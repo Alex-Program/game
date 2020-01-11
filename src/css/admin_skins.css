@@ -78,3 +78,10 @@
     width: 300px;
     margin-right: 10px;
 }
+
+#nick_image {
+    width: 256px;
+    height: 256px;
+    border-radius: 128px;
+    cursor: pointer;
+}

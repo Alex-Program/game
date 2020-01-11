@@ -352,6 +352,9 @@
     <div id="music_button">
         <img src="/src/images/music_button.png">
     </div>
+    <div id="screenshot">
+        <img src="/src/images/screenshot.png">
+    </div>
     <div id="to_admin_panel" class="for_moder" style="display: none;">
         <img src="/src/images/admin.png">
     </div>
@@ -390,16 +393,17 @@
 
 <div id="game_settings" class="closed">
     <h2 style="text-align: center;">Настройки</h2>
-    <!--    <div>-->
-    <!--        <span class="label_settings">Картинка на фон</span>-->
-    <!--        <input type="text" class="gold_input" data-name="backgroundImage" placeholder="http://...">-->
-    <!--        <div class="tumbler">-->
-    <!--            <input type="checkbox" class="toggle_settings" data-name="isBackgroundImage">-->
-    <!--            <div>-->
-    <!--                <div></div>-->
-    <!--            </div>-->
-    <!--        </div>-->
-    <!--    </div>-->
+    <div>
+        <span class="label_settings">Картинка на фон</span>
+        <input type="text" class="gold_input settings_input" data-name="backgroundImage" id="background_image"
+               placeholder="http://..." style="width: 130px; font-size: 12pt;">
+        <div class="tumbler">
+            <input type="checkbox" class="toggle_settings" data-name="isBackgroundImage">
+            <div>
+                <div></div>
+            </div>
+        </div>
+    </div>
     <div>
         <span class="label_settings">Фон</span>
         <input type="color" class="select_color_input" data-name="background" value="#000000">
@@ -439,6 +443,17 @@
         <span class="select_color_span" style="background: #FFD700; color: black;">#FFD700</span>
         <div class="tumbler">
             <input type="checkbox" class="toggle_settings" data-name="isClanCellColor">
+            <div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <span class="label_settings">Цвет массы игроков</span>
+        <input type="color" class="select_color_input" data-name="cellMassColor" value="#FFFFFF">
+        <span class="select_color_span" style="background: #FFFFFF; color: black;">#FFFFFF</span>
+        <div class="tumbler">
+            <input type="checkbox" class="toggle_settings" data-name="isCellMassColor">
             <div>
                 <div></div>
             </div>
@@ -505,6 +520,28 @@
         <span class="select_color_span" style="background: #000000; color: white;">#000000</span>
         <div class="tumbler">
             <input type="checkbox" class="toggle_settings" data-name="isShadowColor">
+            <div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <span class="label_settings">Свечение текста</span>
+        <input type="color" class="select_color_input" data-name="textShadowColor" value="#000000">
+        <span class="select_color_span" style="background: #000000; color: white;">#000000</span>
+        <div class="tumbler">
+            <input type="checkbox" class="toggle_settings" data-name="isTextShadowColor">
+            <div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <span class="label_settings">Показывать сообщения над игроком</span>
+        <input type="color" class="select_color_input" data-name="textShowMessage" value="#000000">
+        <span class="select_color_span" style="background: #000000; color: white;">#000000</span>
+        <div class="tumbler">
+            <input type="checkbox" class="toggle_settings" data-name="isShowMessage">
             <div>
                 <div></div>
             </div>
@@ -599,6 +636,17 @@
         </div>
     </div>
     <div>
+        <span class="label_settings">Отображать массу вирусов</span>
+        <!--                <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
+        <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
+        <div class="tumbler">
+            <input type="checkbox" class="toggle_settings" data-name="isVirusMass">
+            <div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+    <div>
         <span class="label_settings">Отображать  везде массу (возможны лаги)</span>
         <!--        <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
         <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
@@ -665,6 +713,39 @@
         </div>
     </div>
     <div>
+        <span class="label_settings">Отключить поворачивающиеся скины</span>
+        <!--        <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
+        <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
+        <div class="tumbler">
+            <input type="checkbox" class="toggle_settings" data-name="isDisableTurningSkin">
+            <div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <span class="label_settings">Без скинов</span>
+        <!--        <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
+        <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
+        <div class="tumbler">
+            <input type="checkbox" class="toggle_settings" data-name="hideSkins">
+            <div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <span class="label_settings">Без стикеров</span>
+        <!--        <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
+        <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
+        <div class="tumbler">
+            <input type="checkbox" class="toggle_settings" data-name="hideStickers">
+            <div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+    <div>
         <span class="label_settings">Не загружать картинки</span>
         <!--        <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
         <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
@@ -681,6 +762,17 @@
         <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
         <div class="tumbler">
             <input type="checkbox" class="toggle_settings" data-name="isLowImage">
+            <div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <span class="label_settings">Не кешировать картинки</span>
+        <!--        <input type="color" class="select_color_input" data-name="gridColor" value="#000000">-->
+        <span class="select_color_span" style="background: #000000; color: white; visibility: hidden;">#000000</span>
+        <div class="tumbler">
+            <input type="checkbox" class="toggle_settings" data-name="isDisableImageCache">
             <div>
                 <div></div>
             </div>

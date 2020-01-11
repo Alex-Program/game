@@ -1,6 +1,7 @@
 const request = require("request");
 
 exports.getRandomInt = function (min, max) {
+    if (max < min) [min, max] = [max, min];
     return Math.round((max - min + 1) * Math.random() + min - 0.5);
 };
 
@@ -22,9 +23,10 @@ exports.degreeToRadians = function (degree) {
     return degree * Math.PI / 180;
 };
 
-exports.isEmpty = function (val) {
-    if (typeof val === "number" || typeof val === "bigint" || typeof val === "function" || typeof val === "symbol") return false;
-    if (typeof val === "string") return val === "";
+exports.isEmpty = function (val, isDefault = false) {
+    if (typeof val === "number") return isDefault && val === 0;
+    if (typeof val === "bigint" || typeof val === "function" || typeof val === "symbol") return false;
+    if (typeof val === "string") return val.trim() === "";
     if (typeof val === "boolean") return !val;
     if (typeof val === "object") {
         for (let k in val) {
@@ -47,7 +49,7 @@ exports.rgbToHex = function (...rgb) {
 };
 
 exports.sendRequest = function (url, obj, method = "POST") {
-    url = "http://sandl.pw/" + url;
+    url = "http://game.pw/" + url;
     let options = {
         url,
         method,
@@ -111,4 +113,51 @@ exports.hexToRgb = function (hex) {
 exports.toSignNumber = function (number, sign) {
     number = Math.abs(number);
     return sign < 0 ? -number : number;
+};
+
+/**
+ * @param targetX Number
+ * @param currentX Number
+ * @param targetY Number
+ * @param currentY Number
+ * @return {{cos: number, sin: number, angle: {degree: number, radians: number}}}
+ */
+exports.getDifferentByCoords = function (targetX, currentX, targetY, currentY) {
+    let dX = targetX - currentX;
+    let dY = targetY - currentY;
+    let c = Math.sqrt(dX ** 2 + dY ** 2);
+    if (c === 0) return {cos: 0, sin: 0, angle: {degree: 0, radians: 0}};
+
+    let sin = dY / c;
+    let cos = dX / c;
+    return {sin, cos, angle: exports.getAngle(sin, cos)};
+};
+
+exports.getRandomBoolean = function () {
+    return Boolean(exports.getRandomInt(0, 1));
+};
+
+
+/**
+ * @param utcTime Number|String
+ * @param isNeedUtc Boolean
+ * @return {{hours: string, seconds: string, month: string, year: number, minutes: string, day: string}}
+ */
+exports.timeFormat = function (utcTime, isNeedUtc = false) {
+    let date = new Date();
+    utcTime *= 1000;
+    if (isNeedUtc) {
+        let timeZone = -date.getTimezoneOffset() * 60 * 1000;
+        utcTime -= timeZone;
+    }
+    date.setTime(utcTime);
+
+    return {
+        year: date.getFullYear(),
+        month: ("0" + date.getMonth()).substr(-2),
+        day: ("0" + date.getDate()).substr(-2),
+        hours: ("0" + date.getHours()).substr(-2),
+        minutes: ("0" + date.getMinutes()).substr(-2),
+        seconds: ("0" + date.getSeconds()).substr(-2)
+    }
 };

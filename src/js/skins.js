@@ -2,7 +2,7 @@
 
     class Skin {
 
-        constructor(id, nick, skinId = "", password = "", isAdmin = 0, isModer = 0, userId = getCookie("User-Id"), skin = "", count = 0, isTransparentSkin = 0, isTurningSkin = 0, isInvisibleNick = 0, isRandomColor = 0, isClan = 0) {
+        constructor(id, nick, skinId = "", password = "", isAdmin = 0, isModer = 0, userId = getCookie("User-Id"), skin = "", count = 0, isTransparentSkin = 0, isTurningSkin = 0, isInvisibleNick = 0, isRandomColor = 0, isClan = 0, isRandomNickColor = 0) {
             this.id = id;
             this.nick = escapeHtml(nick);
             this.skinId = skinId;
@@ -17,6 +17,7 @@
             this.isTurningSkin = isTurningSkin;
             this.isInvisibleNick = isInvisibleNick;
             this.isRandomColor = isRandomColor;
+            this.isRandomNickColor = isRandomNickColor;
             this.isClan = isClan;
         }
 
@@ -34,6 +35,7 @@
             $("input[data-name='is_turning_skin']").prop("checked", Boolean(this.isTurningSkin));
             $("input[data-name='is_invisible_nick']").prop("checked", Boolean(this.isInvisibleNick));
             $("input[data-name='is_random_color']").prop("checked", Boolean(this.isRandomColor));
+            $("input[data-name='is_random_nick_color']").prop("checked", Boolean(this.isRandomNickColor));
             // $("#remove_image_button").hide();
 
             if (this.skin) {
@@ -55,6 +57,7 @@
             else if (name === "is_invisible_nick") return Boolean(this.isInvisibleNick);
             else if (name === "is_random_color") return Boolean(this.isRandomColor);
             else if (name === "is_clan") return Boolean(this.isClan);
+            else if (name === "is_random_nick_color") return Boolean(this.isRandomNickColor);
         }
 
         checkChanges(name, value) {
@@ -86,6 +89,9 @@
                     defaultValue = this.isClan;
                     value = +value;
                     break;
+                case "is_random_nick_color":
+                    defaultValue = this.isRandomNickColor;
+                    value = +value;
                 default:
                     defaultValue = this.id;
                     value = +value;
@@ -104,6 +110,7 @@
             else if (name === "is_invisible_nick") this.isInvisibleNick = +value;
             else if (name === "is_random_color") this.isRandomColor = +value;
             else if (name === "is_clan") this.isClan = +value;
+            else if (name === "is_random_nick_color") this.isRandomNickColor = +value;
         }
 
     }
@@ -245,7 +252,7 @@
                 let nicksHtml = "";
                 let clansHtml = "";
                 for (let skin of data.data) {
-                    let s = new Skin(skin.id, skin.nick, skin.skin_id, skin.password, skin.is_admin, skin.is_moder, skin.user_id, skin.skin, skinsArr.length, +skin.is_transparent_skin, +skin.is_turning_skin, +skin.is_invisible_nick, +skin.is_random_color, +skin.is_clan);
+                    let s = new Skin(skin.id, skin.nick, skin.skin_id, skin.password, skin.is_admin, skin.is_moder, skin.user_id, skin.skin, skinsArr.length, +skin.is_transparent_skin, +skin.is_turning_skin, +skin.is_invisible_nick, +skin.is_random_color, +skin.is_clan, +skin.is_random_nick_color);
                     skinsArr.push(s);
                     if (+skin.is_clan) clansHtml += s.renderHtml();
                     else nicksHtml += s.renderHtml();
