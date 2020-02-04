@@ -31,6 +31,9 @@
         }
 
         mouseDown(event) {
+            let coords = canvas.getCanvasCoords(event.pageX, event.pageY);
+            canvas.copyElement(coords.x, coords.y, 30);
+            return true;
             if (!event.shiftKey) {
                 previousMouseCoords.x = event.pageX;
                 previousMouseCoords.y = event.pageY;
@@ -39,7 +42,7 @@
         }
 
         mouseUp(event) {
-
+            if (["brush"].includes(this.selectedInstrument)) canvas.updateImage();
         }
 
         selectInstrument(name) {
@@ -148,7 +151,7 @@
             this.drawImage();
         }
 
-        async drawImage() {
+        drawImage() {
             if (!this.image) return true;
 
             this.clear();
@@ -258,8 +261,16 @@
             this.context.clip();
             this.context.globalAlpha = 1;
             let ratio = this.canvas.width / (2 * size);
-            this.context.drawImage(this.image, -(x - this.canvas.width / 2) * ratio, -(y - this.canvas.height / 2) * ratio, this.canvas.width * ratio, this.canvas.height * ratio);
+            let dX = ratio * (x - this.canvas.width / 2);
+            let dY = ratio * (y - this.canvas.height / 2);
+            this.context.drawImage(this.image, -dX, -dY, this.canvas.width * ratio, this.canvas.height * ratio);
             // console.log(this.canvas.toDataURL());
+        }
+
+        updateImage() {
+            let image = new Image();
+            image.onload = () => this.image = image;
+            image.src = this.canvas.toDataURL("image/png", 1.0);
         }
 
     }

@@ -103,7 +103,6 @@
         }
 
     }
-
     let chat = new Chat();
 
     $("body").on("click", "#chat_send_message", () => chat.sendMessage())
@@ -120,6 +119,7 @@
             if (event.ctrlKey) chat.selectPmMessage();
         });
 
+    // let svg = document.createElement("<svg><use xlink:href=''></use></svg>");
 
     document.getElementById("chat_text_message").addEventListener("keypress", event => {
         event.stopPropagation();
@@ -128,5 +128,22 @@
             return true;
         }
     });
+
+
+    // let previousMouseCoords = {
+    //     x: 0,
+    //     y: 0
+    // };
+    // $("#cursor").css({left: 0, top: 0});
+    // window.addEventListener("mousemove", function(event){
+    //     let dX = event.clientX - previousMouseCoords.x;
+    //     let dY = event.clientY - previousMouseCoords.y;
+    //     [previousMouseCoords.x, previousMouseCoords.y] = [event.clientX, event.clientY];
+    //     let cursorDom = $("#cursor");
+    //     let ratio = 1;
+    //     let left = cursorDom.css("left");
+    //     let top = cursorDom.css("top");
+    //     cursorDom.css({left: +left.substr(0, left.length - 2) + dX * ratio, top: +top.substr(0, top.length - 2) + dY * ratio});
+    // });
 
 })();

@@ -3,7 +3,7 @@
 
 class Skin extends Model
 {
-    protected $tableName = "nicks";
+    protected string $tableName = "nicks";
 
     public function __construct()
     {

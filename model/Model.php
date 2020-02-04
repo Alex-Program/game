@@ -3,13 +3,12 @@
 
 class Model
 {
-    protected $mysqli;
-    protected $tableName = "";
+    protected mysqli $mysqli;
+    protected string $tableName = "";
 
-    public function __construct()
-    {
+    public function __construct() {
 
-        $this->mysqli = new mysqli("localhost", "root", DB_PASS, "game");
+        $this->mysqli = DbConnect::getInstance();
         if ($this->mysqli->connect_errno) exit("DB ERROR");
         $this->mysqli->set_charset("utf8");
         $sql = "set global sql_mode=''";

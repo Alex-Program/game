@@ -24,5 +24,6 @@
 
     </div>
 </div>
+<!--<img id="cursor" src="/src/images/pencil.png">-->
 
 <script defer src="/src/js/chat.js"></script>

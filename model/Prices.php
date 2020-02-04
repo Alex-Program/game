@@ -3,7 +3,7 @@
 
 class Prices extends Model
 {
-    protected $tableName = "prices";
+    protected string $tableName = "prices";
 
     public function __construct()
     {

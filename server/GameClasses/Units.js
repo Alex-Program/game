@@ -791,7 +791,6 @@ class Cell extends Arc {
         let differentX = this.owner.mouse.x - this.x;
         let differentY = this.owner.mouse.y - this.y;
 
-        if (Math.abs(differentY) < 1) differentY = 0;
         if (Math.abs(differentX) < 1) differentX = 0;
 
         let c = Math.sqrt(differentX ** 2 + differentY ** 2);
@@ -1602,7 +1601,7 @@ class Game {
 
         this.spawnUnit();
         this.updateUnit();
-        this.addGameState();
+        // this.addGameState();
         this.spawnBots();
 
         if (this.playersArr.length > 0) {
