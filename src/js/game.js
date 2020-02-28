@@ -726,9 +726,7 @@
 
         }
 
-        setColor(color) {
-            this.color = color;
-        }
+
 
         update(delta = 1) {
             if (delta > 1) delta = 1;
@@ -919,12 +917,6 @@
             // this.context.restore();
         }
 
-        setColor(color) {
-            this.color = color;
-            for (let i = 0; i < this.cells.length; i++) {
-                this.cells[i].setColor(color);
-            }
-        }
 
         findMainCell() {
             for (let i = 0; i < this.cells.length; i++) {
@@ -987,6 +979,7 @@
 
         changePos(player) {
             this.color = player.color;
+            this.selectedColor = player.selectedColor;
             this.score = player.score;
             this.mass = player.mass;
             this.mouseMove(player.mouse.x, player.mouse.y);
@@ -1973,14 +1966,6 @@
                     return true;
                 }
 
-                if (data.action === "change_color") {
-                    let player = this.findPlayer(data.id);
-                    if (!player) return true;
-
-                    player.setColor(data.color);
-
-                    return true;
-                }
 
                 if (data.action === "destroy_unit") {
                     this.states.addGameCommand({
